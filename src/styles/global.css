@@ -1,0 +1,47 @@
+@layer base, starlight, theme, components, utilities;
+
+@import '@astrojs/starlight-tailwind';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+:root {
+  --agentflow-font: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --sl-font: var(--agentflow-font);
+  --sl-content-width: 52rem;
+  --sl-color-accent-low: #eaf2ff;
+  --sl-color-accent: #2563eb;
+  --sl-color-accent-high: #173b74;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #13213a;
+  --sl-color-accent: #7aa7ff;
+  --sl-color-accent-high: #dce8ff;
+}
+
+html,
+body {
+  font-family: var(--agentflow-font);
+}
+
+.skill-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  margin-block: 1.25rem 2rem;
+}
+
+.flow {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.75rem;
+  background: var(--sl-color-gray-7);
+  padding: 1rem;
+}
+
+.sl-markdown-content h1 {
+  letter-spacing: -0.025em;
+}
+
+.sl-markdown-content h2 {
+  margin-top: 2.5rem;
+}

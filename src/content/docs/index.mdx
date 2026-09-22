@@ -1,0 +1,58 @@
+---
+title: Agentflow
+description: Choose the smallest useful engineering skill for the decision that is actually unclear.
+template: splash
+hero:
+  tagline: Start from the task, not the skill catalog. Route each unresolved decision to the smallest useful skill.
+  actions:
+    - text: Choose a skill
+      link: /start/choose-a-skill/
+      icon: right-arrow
+      variant: primary
+    - text: Quickstart
+      link: /start/quickstart/
+      icon: open-book
+---
+
+import SkillCard from '../../components/SkillCard.astro';
+
+## What are you trying to decide?
+
+<div class="skill-grid">
+  <SkillCard title="Define product behavior" skill="product-design" description="The user problem, intended behavior, scope, or acceptance outcome is unclear or changing." href="/skills/product-design/" />
+  <SkillCard title="Design system guarantees" skill="engineering-design" description="Ownership, boundaries, contracts, consistency, migration, integration, or production guarantees need a system decision." href="/skills/engineering-design/" />
+  <SkillCard title="Model an interface flow" skill="design-graph" description="A screen or flow needs explicit surfaces, moves, rendered states, focus, accessibility, or responsive behavior." href="/skills/design-graph/" />
+  <SkillCard title="Plan the implementation" skill="design-thinking" description="The engineering contract is known, but data flow, errors, dependencies, concurrency, or resource behavior still need reasoning." href="/skills/design-thinking/" />
+  <SkillCard title="Design faithful proof" skill="test-engineering" description="Testing itself is non-trivial: race conditions, transactions, migrations, async behavior, recovery, or brittle suites." href="/skills/test-engineering/" />
+  <SkillCard title="Operate and recover production" skill="production-ops" description="Runtime health, alerts, incidents, recovery, restore, capacity, or operational readiness are the unresolved problem." href="/skills/production-ops/" />
+  <SkillCard title="Inspect implementation risk" skill="code-review" description="You need an independent correctness and maintainability review of a concrete implementation or diff." href="/skills/code-review/" />
+  <SkillCard title="Inspect trust and security" skill="security-review" description="Authority, sensitive data, trust boundaries, abuse paths, or security properties changed." href="/skills/security-review/" />
+  <SkillCard title="Delegate dependency-aware work" skill="graph-protocol" description="Delegation has concrete value through parallelism, specialization, context isolation, or separate verification." href="/skills/graph-protocol/" />
+  <SkillCard title="Render a known execution graph" skill="call-graph-output" description="The relationship is already understood and would be easier to communicate as a call, execution, or responsibility graph." href="/skills/call-graph-output/" />
+</div>
+
+## Mental model
+
+<div class="flow">
+
+```text
+task
+  ↓
+what decision is actually unclear?
+  ↓
+smallest useful skill
+  ↓
+resolve that decision
+  ↓
+another non-trivial decision appears?
+  ├─ no  → continue the work directly
+  └─ yes → hand off to the relevant skill
+```
+
+</div>
+
+A skill is **not** a mandatory phase. A small deterministic bug may need no specialist skill. A full-stack feature may use several skills, but each one owns a distinct decision.
+
+## Start here
+
+Use [Quickstart](/start/quickstart/) to learn automatic vs explicit routing, or go directly to [Choose a skill](/start/choose-a-skill/) with the task you have now.
