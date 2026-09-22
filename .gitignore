@@ -2,4 +2,6 @@ node_modules/
 dist/
 .astro/
 .wrangler/
+src/generated/
+src/content/docs/reference/
 .DS_Store

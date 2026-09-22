@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "skills:generate": "node scripts/generate-skills.mjs",
+    "predev": "npm run skills:generate",
     "dev": "astro dev",
+    "prebuild": "npm run skills:generate",
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "npm run build && wrangler deploy"

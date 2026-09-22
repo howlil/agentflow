@@ -3,108 +3,95 @@
 ## System
 
 ```text
-Markdown / MDX docs
-        ↓
+skills/*/SKILL.md
+        ↓ canonical runtime source
+scripts/generate-skills.mjs
+        ├→ src/generated/skills.json
+        └→ generated runtime reference pages
+                     ↓
+human MD/MDX guides + generated metadata/reference
+                     ↓
 Astro content collections
-        ↓
-Starlight
-  ├─ navigation
-  ├─ page structure
-  └─ Pagefind search
-        ↓
-Tailwind v4 presentation
-        ↓
-Astro static build
-        ↓
-dist/
-        ↓
+                     ↓
+Starlight + Pagefind
+                     ↓
+Tailwind v4
+                     ↓
+static dist/
+                     ↓
 Cloudflare Workers Static Assets
 ```
 
 ## Responsibilities
 
+- `skills/*/SKILL.md` owns canonical runtime skill behavior and routing descriptions.
+- `scripts/generate-skills.mjs` validates the ten-skill set, enforces directory/frontmatter identity, generates canonical metadata, and projects runtime reference pages.
+- Human Markdown/MDX owns usage guidance, examples, recipes, and product explanation.
 - Astro owns static build and content loading.
 - Starlight owns documentation navigation, layout, accessibility baseline, code rendering, and search integration.
-- Tailwind owns project-specific presentation utilities and custom documentation components.
-- Markdown/MDX owns human-authored guides, recipes, and skill usage pages.
-- Cloudflare Workers Static Assets owns delivery of the generated `dist/` output.
-- GitHub Actions proves that `master` still builds.
+- Tailwind owns project-specific presentation.
+- Cloudflare Workers Static Assets owns delivery of `dist/`.
+- GitHub Actions proves that `master` still generates artifacts and builds.
 
 ## State & Invariants
 
-- Documentation content is repository state; there is no mutable runtime application state.
-- The production artifact is generated entirely from the committed repository.
-- No database or server-side runtime is required for v1.
-- Runtime `SKILL.md` files, when introduced, remain canonical for agent behavior.
-- Human documentation must not silently become a second runtime contract.
-
-## Contracts
-
-```text
-content files
-  → Astro/Starlight content schema
-  → static routes
-
-Tailwind classes
-  → build-time CSS
-  → generated assets
-
-npm run build
-  → dist/
-
-wrangler deploy
-  → Cloudflare static deployment
-```
+- Runtime behavior has one repository source of truth: `skills/<name>/SKILL.md`.
+- A skill directory name must equal its frontmatter `name`.
+- Exactly the intended ten skill packages must exist unless the product/system contract changes deliberately.
+- Canonical `name` and `description` shown by the homepage are generated.
+- Runtime reference pages are generated from canonical `SKILL.md`; they are not edited by hand.
+- Human guides may teach or summarize a skill but must not silently redefine runtime behavior.
+- There is no mutable runtime application state or database.
 
 ## Critical Flows
 
-### Read documentation
+### Change a skill
 
 ```text
-request
-  → Cloudflare edge
-  → immutable static asset
-  → browser
+edit skills/<name>/SKILL.md
+  ↓
+npm run build
+  ↓
+validate package identity/set
+  ↓
+regenerate metadata + runtime reference
+  ↓
+Astro/Starlight build
 ```
 
-### Publish documentation
+### Publish
 
 ```text
 commit to master
-  → CI build proof
+  → CI
+  → generate skill artifacts
   → Astro build
   → dist/
-  → Wrangler / Cloudflare build
-  → static deployment
+  → Cloudflare
 ```
 
 ## Guarantees
 
-- A content or dependency error fails at build time instead of creating a partially broken runtime.
-- Search and navigation work without an application backend.
-- Static delivery keeps runtime failure surface small.
-- Tailwind does not require a client-side framework.
-- Cloudflare deployment does not require the Astro Cloudflare adapter while all pages remain pre-rendered.
+- Metadata/reference drift is prevented structurally by generation.
+- Missing, unexpected, or misnamed skill packages fail before the site builds.
+- Content/config errors fail at build time instead of creating a partially broken runtime.
+- Search/navigation require no application backend.
+- Cloudflare delivery stays static until a real server-side requirement appears.
 
 ## Decisions
 
-### Astro + Starlight
+### Canonical runtime packages in-repo
 
-The product is documentation-first. Starlight already owns the generic docs shell, so Agentflow only builds the task router and skill-specific presentation.
+The ten `SKILL.md` files under `skills/` are authoritative for agent behavior.
 
-### Tailwind v4
+### Generated metadata and runtime reference
 
-Use `@tailwindcss/vite` with Starlight's Tailwind compatibility package. Avoid a custom CSS framework or React component system for a mostly static docs product.
+Do not manually duplicate runtime descriptions or complete skill instructions in human docs. Generate those projections on every dev/build run.
 
-### Cloudflare Workers Static Assets
+### Human guides stay separate
 
-Deploy the generated `dist/` directly with Wrangler. Do not add SSR or `@astrojs/cloudflare` until a real server-side behavior requires it.
+Generated reference optimizes fidelity. Human guides optimize discovery and usage. They intentionally solve different jobs.
 
-### No backend
+### Astro + Starlight + Tailwind + Cloudflare
 
-Database, CMS, auth, API server, queues, and caches do not trace to a v1 requirement, so they are intentionally absent.
-
-## Assumptions / Risks
-
-- Actual runtime skill packages are not yet stored in this repository. Current pages document routing/usage boundaries and should later link directly to canonical `SKILL.md` files.
-- Cloudflare credentials and production domain are intentionally not committed.
+The site remains documentation-first, build-time generated, and statically delivered. No backend capability currently traces to a product requirement.

@@ -14,22 +14,11 @@ hero:
       icon: open-book
 ---
 
-import SkillCard from '../../components/SkillCard.astro';
+import SkillGrid from '../../components/SkillGrid.astro';
 
 ## What are you trying to decide?
 
-<div class="skill-grid">
-  <SkillCard title="Define product behavior" skill="product-design" description="The user problem, intended behavior, scope, or acceptance outcome is unclear or changing." href="/skills/product-design/" />
-  <SkillCard title="Design system guarantees" skill="engineering-design" description="Ownership, boundaries, contracts, consistency, migration, integration, or production guarantees need a system decision." href="/skills/engineering-design/" />
-  <SkillCard title="Model an interface flow" skill="design-graph" description="A screen or flow needs explicit surfaces, moves, rendered states, focus, accessibility, or responsive behavior." href="/skills/design-graph/" />
-  <SkillCard title="Plan the implementation" skill="design-thinking" description="The engineering contract is known, but data flow, errors, dependencies, concurrency, or resource behavior still need reasoning." href="/skills/design-thinking/" />
-  <SkillCard title="Design faithful proof" skill="test-engineering" description="Testing itself is non-trivial: race conditions, transactions, migrations, async behavior, recovery, or brittle suites." href="/skills/test-engineering/" />
-  <SkillCard title="Operate and recover production" skill="production-ops" description="Runtime health, alerts, incidents, recovery, restore, capacity, or operational readiness are the unresolved problem." href="/skills/production-ops/" />
-  <SkillCard title="Inspect implementation risk" skill="code-review" description="You need an independent correctness and maintainability review of a concrete implementation or diff." href="/skills/code-review/" />
-  <SkillCard title="Inspect trust and security" skill="security-review" description="Authority, sensitive data, trust boundaries, abuse paths, or security properties changed." href="/skills/security-review/" />
-  <SkillCard title="Delegate dependency-aware work" skill="graph-protocol" description="Delegation has concrete value through parallelism, specialization, context isolation, or separate verification." href="/skills/graph-protocol/" />
-  <SkillCard title="Render a known execution graph" skill="call-graph-output" description="The relationship is already understood and would be easier to communicate as a call, execution, or responsibility graph." href="/skills/call-graph-output/" />
-</div>
+<SkillGrid />
 
 ## Mental model
 
@@ -52,6 +41,10 @@ another non-trivial decision appears?
 </div>
 
 A skill is **not** a mandatory phase. A small deterministic bug may need no specialist skill. A full-stack feature may use several skills, but each one owns a distinct decision.
+
+## One source of truth
+
+The canonical descriptions shown above are generated from each `skills/*/SKILL.md`. Human guides explain when and how to use a skill; **Runtime Reference** pages are regenerated from those same files on every build.
 
 ## Start here
 

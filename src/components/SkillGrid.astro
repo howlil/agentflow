@@ -1,0 +1,34 @@
+---
+import SkillCard from './SkillCard.astro';
+import skills from '../generated/skills.json';
+
+const guides = {
+  'product-design': { title: 'Define product behavior', href: '/skills/product-design/' },
+  'engineering-design': { title: 'Design system guarantees', href: '/skills/engineering-design/' },
+  'design-graph': { title: 'Model an interface flow', href: '/skills/design-graph/' },
+  'design-thinking': { title: 'Plan the implementation', href: '/skills/design-thinking/' },
+  'test-engineering': { title: 'Design faithful proof', href: '/skills/test-engineering/' },
+  'production-ops': { title: 'Operate and recover production', href: '/skills/production-ops/' },
+  'code-review': { title: 'Inspect implementation risk', href: '/skills/code-review/' },
+  'security-review': { title: 'Inspect trust and security', href: '/skills/security-review/' },
+  'graph-protocol': { title: 'Delegate dependency-aware work', href: '/skills/graph-protocol/' },
+  'call-graph-output': { title: 'Render a known execution graph', href: '/skills/call-graph-output/' },
+};
+
+const cards = skills.map((skill) => {
+  const guide = guides[skill.name];
+  if (!guide) throw new Error(`Missing human guide metadata for ${skill.name}`);
+  return { ...skill, ...guide };
+});
+---
+
+<div class="skill-grid">
+  {cards.map((skill) => (
+    <SkillCard
+      title={skill.title}
+      skill={skill.name}
+      description={skill.description}
+      href={skill.href}
+    />
+  ))}
+</div>

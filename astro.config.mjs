@@ -41,6 +41,10 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Runtime Reference',
+          items: [{ autogenerate: { directory: 'reference' } }],
+        },
+        {
           label: 'Recipes',
           items: [
             'recipes/build-a-feature',
