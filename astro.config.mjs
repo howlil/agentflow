@@ -7,9 +7,13 @@ export default defineConfig({
     starlight({
       title: 'Agentflow',
       description: 'A practical guide to choosing and composing reusable software-engineering agent skills.',
-      social: {
-        github: 'https://github.com/howlil/agentflow',
-      },
+      social: [
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/howlil/agentflow',
+        },
+      ],
       customCss: ['./src/styles/global.css'],
       sidebar: [
         { label: 'Overview', link: '/' },
