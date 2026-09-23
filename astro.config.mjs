@@ -15,6 +15,10 @@ export default defineConfig({
         },
       ],
       customCss: ['./src/styles/global.css'],
+      components: {
+        Header: './src/components/starlight/Header.astro',
+        Hero: './src/components/starlight/Hero.astro',
+      },
       sidebar: [
         { label: 'Overview', link: '/' },
         {

@@ -1,0 +1,325 @@
+---
+import { ArrowRight } from '@lucide/astro';
+import AsciiWaves from './AsciiWaves.astro';
+---
+
+<section class="agentflow-hero" aria-labelledby="agentflow-hero-title">
+  <div class="ascii-layer" aria-hidden="true">
+    <AsciiWaves
+      characters=" .:-=+*#%@"
+      color="225,230,242"
+      elementSize={14}
+      noiseScale={1}
+      speed={0.9}
+      waveTension={0.5}
+      waveTwist={0.1}
+      intensity={1}
+      hasCursorInteraction={true}
+      interactionIntensity={0.55}
+    />
+  </div>
+
+  <div class="quiet-zone" aria-hidden="true"></div>
+
+  <div class="hero-shell">
+    <div class="copy">
+      <p class="micro-label">10 focused engineering skills</p>
+
+      <h1 id="agentflow-hero-title">
+        <span>Use the right</span>
+        <span>way to think.</span>
+      </h1>
+
+      <p class="description">
+        Focused skills that help software agents reason across the decisions
+        that matter in software engineering.
+      </p>
+
+      <div class="domains" aria-label="Skill domains">
+        <span>Product</span>
+        <span>System</span>
+        <span>Interface</span>
+        <span>Implement</span>
+        <span>Prove</span>
+      </div>
+
+      <div class="cta">
+        <a class="ring-button" href="#skill-system">
+          <span class="ring-inner">
+            Explore the system
+            <ArrowRight size={15} strokeWidth={1.9} />
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="micro-bottom" aria-hidden="true">Agentflow</div>
+</section>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+
+  .agentflow-hero {
+    --landing-bg: #08090a;
+    --landing-fg: #f7f6f2;
+    --landing-body: rgba(247, 246, 242, 0.84);
+    position: relative;
+    left: 50%;
+    width: 100vw;
+    min-height: calc(100svh - var(--sl-nav-height, 4rem));
+    margin-left: -50vw;
+    overflow: hidden;
+    background: var(--landing-bg);
+    color: var(--landing-fg);
+    isolation: isolate;
+  }
+
+  .ascii-layer,
+  .quiet-zone {
+    position: absolute;
+    inset: 0;
+  }
+
+  .ascii-layer {
+    z-index: 0;
+  }
+
+  .quiet-zone {
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        ellipse 32% 27% at 50% 52%,
+        rgba(8, 9, 10, 0.94) 0%,
+        rgba(8, 9, 10, 0.80) 34%,
+        rgba(8, 9, 10, 0.46) 63%,
+        rgba(8, 9, 10, 0.10) 86%,
+        transparent 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(8, 9, 10, 0.12) 0%,
+        transparent 18%,
+        transparent 79%,
+        rgba(8, 9, 10, 0.24) 100%
+      );
+  }
+
+  .hero-shell {
+    position: relative;
+    z-index: 2;
+    width: min(1180px, calc(100% - 48px));
+    min-height: calc(100svh - var(--sl-nav-height, 4rem));
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    padding: 12px 0 96px;
+  }
+
+  .copy {
+    width: min(900px, 92vw);
+    text-align: center;
+  }
+
+  .micro-label {
+    margin: 0 0 23px;
+    color: rgba(255, 255, 255, 0.68);
+    font: 500 11px/1.4 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.105em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+  }
+
+  h1 {
+    margin: 0 auto;
+    max-width: 820px;
+    color: #fbfaf6;
+    font-family: "Instrument Serif", "Times New Roman", serif;
+    font-weight: 400;
+    font-size: clamp(72px, 7.5vw, 104px);
+    line-height: 0.89;
+    letter-spacing: -0.046em;
+    text-shadow:
+      0 2px 26px rgba(0, 0, 0, 0.34),
+      0 0 1px rgba(255, 255, 255, 0.18);
+  }
+
+  h1 span {
+    display: block;
+  }
+
+  .description {
+    max-width: 575px;
+    margin: 27px auto 0;
+    color: var(--landing-body);
+    font: 400 15px/1.7 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: -0.012em;
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.52);
+  }
+
+  .domains {
+    max-width: 780px;
+    margin: 25px auto 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 11px 22px;
+    color: rgba(255, 255, 255, 0.66);
+    font: 500 11px/1.4 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.42);
+  }
+
+  .domains span {
+    position: relative;
+  }
+
+  .domains span:not(:last-child)::after {
+    content: "·";
+    position: absolute;
+    right: -14px;
+    color: rgba(255, 255, 255, 0.34);
+  }
+
+  .cta {
+    margin-top: 34px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .ring-button {
+    position: relative;
+    isolation: isolate;
+    min-height: 46px;
+    padding: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.10);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.10),
+      0 0 22px rgba(120, 145, 255, 0.08),
+      0 12px 38px rgba(0, 0, 0, 0.34);
+    text-decoration: none;
+  }
+
+  .ring-button::before {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    width: 190%;
+    aspect-ratio: 1;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 242deg,
+      rgba(131, 154, 255, 0.06) 262deg,
+      rgba(155, 176, 255, 0.34) 288deg,
+      rgba(205, 215, 255, 0.92) 314deg,
+      #fff 326deg,
+      rgba(152, 173, 255, 0.72) 341deg,
+      transparent 360deg
+    );
+    animation: agentflow-ring-spin 2.8s linear infinite;
+  }
+
+  .ring-button::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 1px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(21, 22, 26, 0.98), rgba(11, 12, 15, 0.98));
+  }
+
+  .ring-inner {
+    min-height: 44px;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #fff;
+    font: 600 13px/1 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: -0.008em;
+  }
+
+  .ring-inner :global(svg) {
+    transition: transform 180ms ease;
+  }
+
+  .ring-button:hover::before {
+    animation-duration: 1.5s;
+  }
+
+  .ring-button:hover .ring-inner :global(svg) {
+    transform: translateX(2px);
+  }
+
+  .micro-bottom {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: 27px;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.34);
+    font: 500 9px/1 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  @keyframes agentflow-ring-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ring-button::before {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .hero-shell {
+      width: min(100% - 28px, 1180px);
+      padding-bottom: 84px;
+    }
+
+    .copy {
+      width: 100%;
+    }
+
+    .micro-label {
+      font-size: 10px;
+    }
+
+    h1 {
+      font-size: clamp(60px, 17vw, 84px);
+    }
+
+    .description {
+      max-width: 92%;
+      font-size: 14px;
+    }
+
+    .domains {
+      max-width: 92%;
+      gap: 10px 18px;
+      font-size: 10px;
+    }
+
+    .quiet-zone {
+      background:
+        radial-gradient(
+          ellipse 62% 31% at 50% 52%,
+          rgba(8, 9, 10, 0.93) 0%,
+          rgba(8, 9, 10, 0.80) 39%,
+          rgba(8, 9, 10, 0.34) 73%,
+          transparent 100%
+        );
+    }
+  }
+</style>

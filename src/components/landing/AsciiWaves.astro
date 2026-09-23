@@ -1,0 +1,187 @@
+---
+interface Props {
+  characters?: string;
+  color?: string;
+  elementSize?: number;
+  noiseScale?: number;
+  speed?: number;
+  waveTension?: number;
+  waveTwist?: number;
+  intensity?: number;
+  hasCursorInteraction?: boolean;
+  interactionIntensity?: number;
+  className?: string;
+}
+
+const {
+  characters = ' .:-=+*#%@',
+  color = '225,230,242',
+  elementSize = 14,
+  noiseScale = 1,
+  speed = 0.9,
+  waveTension = 0.5,
+  waveTwist = 0.1,
+  intensity = 1,
+  hasCursorInteraction = true,
+  interactionIntensity = 0.55,
+  className = '',
+} = Astro.props;
+---
+
+<canvas
+  class:list={['ascii-waves', className]}
+  data-ascii-waves
+  data-characters={characters}
+  data-color={color}
+  data-element-size={elementSize}
+  data-noise-scale={noiseScale}
+  data-speed={speed}
+  data-wave-tension={waveTension}
+  data-wave-twist={waveTwist}
+  data-intensity={intensity}
+  data-cursor={hasCursorInteraction ? 'true' : 'false'}
+  data-interaction-intensity={interactionIntensity}
+  aria-hidden="true"
+></canvas>
+
+<script>
+  function initAsciiWaves(canvas) {
+    if (!(canvas instanceof HTMLCanvasElement) || canvas.dataset.initialized === 'true') return;
+    canvas.dataset.initialized = 'true';
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const characters = canvas.dataset.characters || ' .:-=+*#%@';
+    const color = canvas.dataset.color || '225,230,242';
+    const cell = Number(canvas.dataset.elementSize || 14);
+    const noiseScale = Number(canvas.dataset.noiseScale || 1);
+    const speed = Number(canvas.dataset.speed || 0.9);
+    const tension = Number(canvas.dataset.waveTension || 0.5);
+    const twist = Number(canvas.dataset.waveTwist || 0.1);
+    const intensity = Number(canvas.dataset.intensity || 1);
+    const interactionIntensity = Number(canvas.dataset.interactionIntensity || 0.55);
+    const interactive = canvas.dataset.cursor === 'true';
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let width = 0;
+    let height = 0;
+    let cols = 0;
+    let rows = 0;
+    let raf = 0;
+    let pointer = { x: -9999, y: -9999, active: false };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+
+      canvas.width = Math.max(1, Math.floor(width * dpr));
+      canvas.height = Math.max(1, Math.floor(height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      cols = Math.ceil(width / cell);
+      rows = Math.ceil(height / cell);
+      ctx.font = "11px 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+    };
+
+    const sample = (x, y, t) => {
+      const nx = x / Math.max(cols - 1, 1);
+      const ny = y / Math.max(rows - 1, 1);
+
+      const scale = Math.max(0.25, noiseScale);
+      const tensionScale = 0.72 + tension * 0.62;
+      const twistScale = 0.45 + twist * 2.1;
+
+      const a = Math.sin(nx * 8.2 * scale + t * 1.0 * tensionScale + Math.sin(ny * 4.0) * (1.0 + twistScale * 0.18));
+      const b = Math.cos(ny * 7.4 * scale - t * 0.68 + Math.sin(nx * 5.0) * (0.82 + twistScale * 0.16));
+      const c = Math.sin((nx + ny) * 6.7 * scale + t * (0.38 + twistScale * 0.08));
+
+      let value = (a * 0.50 + b * 0.31 + c * 0.19 + 1) * 0.5;
+
+      if (interactive && pointer.active) {
+        const px = x * cell + cell / 2;
+        const py = y * cell + cell / 2;
+        const dx = px - pointer.x;
+        const dy = py - pointer.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const radius = 165;
+
+        if (distance < radius) {
+          const influence = 1 - distance / radius;
+          value += Math.sin(distance * 0.044 - t * 4.1) * influence * 0.34 * interactionIntensity;
+        }
+      }
+
+      return Math.max(0, Math.min(1, value * intensity));
+    };
+
+    const draw = (ms = 0) => {
+      const t = ms * 0.001 * speed;
+      ctx.clearRect(0, 0, width, height);
+
+      for (let y = 0; y < rows; y += 1) {
+        for (let x = 0; x < cols; x += 1) {
+          const nx = x / Math.max(cols - 1, 1);
+          const ny = y / Math.max(rows - 1, 1);
+          const dx = nx - 0.5;
+          const dy = ny - 0.5;
+          const centerDistance = Math.sqrt(dx * dx * 1.05 + dy * dy);
+          const centerPenalty = Math.min(1, 0.40 + centerDistance * 1.80);
+
+          const value = sample(x, y, t);
+          const index = Math.min(characters.length - 1, Math.floor(value * characters.length));
+          const char = characters[index];
+
+          if (char === ' ') continue;
+
+          const alpha = (0.08 + value * 0.62) * centerPenalty;
+          ctx.fillStyle = `rgba(${color},${alpha.toFixed(3)})`;
+          ctx.fillText(char, x * cell + cell / 2, y * cell + cell / 2);
+        }
+      }
+
+      if (!reducedMotion) raf = requestAnimationFrame(draw);
+    };
+
+    const updatePointer = (event) => {
+      if (!interactive) return;
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      pointer.active = true;
+    };
+
+    const clearPointer = () => {
+      pointer.active = false;
+    };
+
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
+    canvas.addEventListener('pointermove', updatePointer);
+    canvas.addEventListener('pointerleave', clearPointer);
+
+    resize();
+    draw();
+
+    window.addEventListener('beforeunload', () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      canvas.removeEventListener('pointermove', updatePointer);
+      canvas.removeEventListener('pointerleave', clearPointer);
+    }, { once: true });
+  }
+
+  document.querySelectorAll('[data-ascii-waves]').forEach(initAsciiWaves);
+</script>
+
+<style>
+  .ascii-waves {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

@@ -1,0 +1,114 @@
+---
+import { BookOpen, Github, Workflow } from '@lucide/astro';
+---
+
+<div class="agentflow-home-header">
+  <div class="inner">
+    <a class="brand" href="/" aria-label="Agentflow home">
+      <span class="mark" aria-hidden="true">A</span>
+      <span>Agentflow</span>
+    </a>
+
+    <nav aria-label="Landing navigation">
+      <a href="#skill-system">
+        <Workflow size={13} strokeWidth={1.8} />
+        <span>Skills</span>
+      </a>
+      <a href="/start/quickstart/">
+        <BookOpen size={13} strokeWidth={1.8} />
+        <span>Docs</span>
+      </a>
+      <a href="https://github.com/howlil/agentflow" target="_blank" rel="noreferrer">
+        <Github size={13} strokeWidth={1.8} />
+        <span>GitHub</span>
+      </a>
+    </nav>
+  </div>
+</div>
+
+<style>
+  .agentflow-home-header {
+    --landing-fg: #f7f6f2;
+    position: relative;
+    left: 50%;
+    width: 100vw;
+    height: 100%;
+    transform: translateX(-50%);
+    background: #08090a;
+    color: var(--landing-fg);
+  }
+
+  .inner {
+    width: min(1180px, calc(100% - 48px));
+    height: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.94);
+    font: 600 14px/1 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .mark {
+    width: 27px;
+    height: 27px;
+    display: grid;
+    place-items: center;
+    border-radius: 7px;
+    background: #f5f4ef;
+    color: #111214;
+    font: 600 10px/1 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 19px;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.68);
+    font: 500 12px/1 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    text-decoration: none;
+    transition: color 160ms ease;
+  }
+
+  nav a:hover {
+    color: #fff;
+  }
+
+  :global(body:has(.agentflow-home-header)) {
+    --sl-color-bg-nav: #08090a;
+    --sl-color-hairline-light: rgba(255, 255, 255, 0.08);
+  }
+
+  @media (max-width: 760px) {
+    .inner {
+      width: min(100% - 28px, 1180px);
+    }
+
+    nav {
+      gap: 16px;
+    }
+
+    nav a span {
+      display: none;
+    }
+
+    nav :global(svg) {
+      width: 15px;
+      height: 15px;
+    }
+  }
+</style>
