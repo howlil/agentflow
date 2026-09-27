@@ -1,5 +1,4 @@
 ---
-import { ArrowRight } from '@lucide/astro';
 import AsciiWaves from './AsciiWaves.astro';
 ---
 
@@ -23,7 +22,7 @@ import AsciiWaves from './AsciiWaves.astro';
 
   <div class="hero-shell">
     <div class="copy">
-      <p class="micro-label">10 focused engineering skills</p>
+      <p class="micro-label">Agentflow · Coming soon</p>
 
       <h1 id="agentflow-hero-title">
         <span>Use the right</span>
@@ -43,13 +42,9 @@ import AsciiWaves from './AsciiWaves.astro';
         <span>Prove</span>
       </div>
 
-      <div class="cta">
-        <a class="ring-button" href="#skill-system">
-          <span class="ring-inner">
-            Explore the system
-            <ArrowRight size={15} strokeWidth={1.9} />
-          </span>
-        </a>
+      <div class="status" aria-label="Agentflow is coming soon">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Coming soon</span>
       </div>
     </div>
   </div>
@@ -183,80 +178,29 @@ import AsciiWaves from './AsciiWaves.astro';
     color: rgba(255, 255, 255, 0.34);
   }
 
-  .cta {
-    margin-top: 34px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .ring-button {
-    position: relative;
-    isolation: isolate;
-    min-height: 46px;
-    padding: 1px;
+  .status {
+    width: fit-content;
+    min-height: 38px;
+    margin: 34px auto 0;
+    padding: 0 14px;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 11px;
-    background: rgba(255, 255, 255, 0.10);
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.10),
-      0 0 22px rgba(120, 145, 255, 0.08),
-      0 12px 38px rgba(0, 0, 0, 0.34);
-    text-decoration: none;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.055);
+    color: rgba(255, 255, 255, 0.82);
+    font: 500 12px/1 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: -0.006em;
+    backdrop-filter: blur(10px);
   }
 
-  .ring-button::before {
-    content: "";
-    position: absolute;
-    z-index: -2;
-    width: 190%;
-    aspect-ratio: 1;
-    background: conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      transparent 242deg,
-      rgba(131, 154, 255, 0.06) 262deg,
-      rgba(155, 176, 255, 0.34) 288deg,
-      rgba(205, 215, 255, 0.92) 314deg,
-      #fff 326deg,
-      rgba(152, 173, 255, 0.72) 341deg,
-      transparent 360deg
-    );
-    animation: agentflow-ring-spin 2.8s linear infinite;
-  }
-
-  .ring-button::after {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    inset: 1px;
-    border-radius: 10px;
-    background: linear-gradient(180deg, rgba(21, 22, 26, 0.98), rgba(11, 12, 15, 0.98));
-  }
-
-  .ring-inner {
-    min-height: 44px;
-    padding: 0 18px;
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    color: #fff;
-    font: 600 13px/1 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    letter-spacing: -0.008em;
-  }
-
-  .ring-inner :global(svg) {
-    transition: transform 180ms ease;
-  }
-
-  .ring-button:hover::before {
-    animation-duration: 1.5s;
-  }
-
-  .ring-button:hover .ring-inner :global(svg) {
-    transform: translateX(2px);
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
   }
 
   .micro-bottom {
@@ -270,16 +214,6 @@ import AsciiWaves from './AsciiWaves.astro';
     letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
-  }
-
-  @keyframes agentflow-ring-spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ring-button::before {
-      animation: none;
-    }
   }
 
   @media (max-width: 760px) {
