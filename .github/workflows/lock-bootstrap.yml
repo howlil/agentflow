@@ -5,7 +5,7 @@ on:
     branches: [fix/discovery-and-validation]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   lock:
@@ -17,8 +17,12 @@ jobs:
           node-version: 22
       - name: Generate lockfile
         run: npm install --package-lock-only --ignore-scripts --no-audit
-      - name: Export lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-lockfile
-          path: package-lock.json
+      - name: Commit dependency lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Generate npm lockfile"
+            git push origin HEAD:fix/discovery-and-validation
+          fi
