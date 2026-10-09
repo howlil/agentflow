@@ -62,7 +62,7 @@ export function parseFrontmatter(source, file) {
 }
 
 function stripLeadingTitle(body) {
-  return body.replace(/^#\s+[^\n]+\r?\n+/, '');
+  return body.replace(/^\s*#\s+[^\n]+\r?\n+/, '\n');
 }
 
 export async function generateSkills({ root = process.cwd(), expected = EXPECTED } = {}) {
