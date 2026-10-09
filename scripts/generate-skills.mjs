@@ -1,12 +1,8 @@
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = process.cwd();
-const SKILLS_DIR = join(ROOT, 'skills');
-const GENERATED_DIR = join(ROOT, 'src', 'generated');
-const REFERENCE_DIR = join(ROOT, 'src', 'content', 'docs', 'reference');
-
-const EXPECTED = [
+export const EXPECTED = [
   'product-design',
   'engineering-design',
   'design-graph',
@@ -19,16 +15,38 @@ const EXPECTED = [
   'call-graph-output',
 ];
 
-function parseFrontmatter(source, file) {
-  const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+// The canonical skill contract uses flat, single-line YAML scalars only.
+// Reject unsupported syntax rather than silently generating incorrect metadata.
+export function parseFrontmatter(source, file) {
+  const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   if (!match) throw new Error(`Missing YAML frontmatter: ${file}`);
 
-  const fields = {};
+  const fields = Object.create(null);
   for (const line of match[1].split(/\r?\n/)) {
-    const separator = line.indexOf(':');
-    if (separator === -1) continue;
-    const key = line.slice(0, separator).trim();
-    const value = line.slice(separator + 1).trim();
+    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    const property = line.match(/^([a-z][a-z0-9-]*):\s*(.*?)\s*$/);
+    if (!property || !property[2]) {
+      throw new Error(`Unsupported frontmatter field in ${file}: ${line}`);
+    }
+    const [, key, raw] = property;
+    if (Object.hasOwn(fields, key)) throw new Error(`Duplicate frontmatter key "${key}": ${file}`);
+
+    let value = raw;
+    if (raw.startsWith('"')) {
+      try {
+        value = JSON.parse(raw);
+      } catch {
+        throw new Error(`Invalid quoted frontmatter value for "${key}": ${file}`);
+      }
+    } else if (raw.startsWith("'")) {
+      if (!raw.endsWith("'") || raw.length < 2) {
+        throw new Error(`Invalid quoted frontmatter value for "${key}": ${file}`);
+      }
+      value = raw.slice(1, -1).replaceAll("''", "'");
+    }
+    if (typeof value !== 'string' || !value.trim()) {
+      throw new Error(`Empty frontmatter value for "${key}": ${file}`);
+    }
     fields[key] = value;
   }
 
@@ -47,51 +65,44 @@ function stripLeadingTitle(body) {
   return body.replace(/^#\s+[^\n]+\r?\n+/, '');
 }
 
-await mkdir(GENERATED_DIR, { recursive: true });
-await rm(REFERENCE_DIR, { recursive: true, force: true });
-await mkdir(REFERENCE_DIR, { recursive: true });
+export async function generateSkills({ root = process.cwd(), expected = EXPECTED } = {}) {
+  const skillsDir = join(root, 'skills');
+  const generatedDir = join(root, 'src', 'generated');
+  const referenceDir = join(root, 'src', 'content', 'docs', 'reference');
+  const guidesDir = join(root, 'src', 'content', 'docs', 'skills');
 
-const directories = (await readdir(SKILLS_DIR, { withFileTypes: true }))
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name)
-  .sort();
+  const directories = (await readdir(skillsDir, { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
 
-const missing = EXPECTED.filter((name) => !directories.includes(name));
-const unexpected = directories.filter((name) => !EXPECTED.includes(name));
-
-if (missing.length || unexpected.length) {
-  throw new Error(
-    [
-      missing.length ? `Missing skills: ${missing.join(', ')}` : '',
-      unexpected.length ? `Unexpected skills: ${unexpected.join(', ')}` : '',
-    ].filter(Boolean).join('\n'),
-  );
-}
-
-const manifest = [];
-
-for (const directory of EXPECTED) {
-  const file = join(SKILLS_DIR, directory, 'SKILL.md');
-  const source = await readFile(file, 'utf8');
-  const skill = parseFrontmatter(source, file);
-
-  if (skill.name !== directory) {
+  const missing = expected.filter((name) => !directories.includes(name));
+  const unexpected = directories.filter((name) => !expected.includes(name));
+  if (missing.length || unexpected.length) {
     throw new Error(
-      `Directory/frontmatter mismatch: ${relative(ROOT, file)} declares "${skill.name}"`,
+      [
+        missing.length ? `Missing skills: ${missing.join(', ')}` : '',
+        unexpected.length ? `Unexpected skills: ${unexpected.join(', ')}` : '',
+      ].filter(Boolean).join('\n'),
     );
   }
 
-  const sourcePath = `skills/${directory}/SKILL.md`;
-  const referencePath = `/reference/${directory}/`;
+  // Validate the entire input set before removing any existing generated files.
+  const outputs = await Promise.all(expected.map(async (directory) => {
+    const file = join(skillsDir, directory, 'SKILL.md');
+    const skill = parseFrontmatter(await readFile(file, 'utf8'), file);
+    if (skill.name !== directory) {
+      throw new Error(
+        `Directory/frontmatter mismatch: ${relative(root, file)} declares "${skill.name}"`,
+      );
+    }
+    await readFile(join(guidesDir, `${directory}.md`), 'utf8');
 
-  manifest.push({
-    name: skill.name,
-    description: skill.description,
-    sourcePath,
-    referencePath,
-  });
-
-  const reference = `---
+    const sourcePath = `skills/${directory}/SKILL.md`;
+    const referencePath = `/reference/${directory}/`;
+    return {
+      metadata: { name: skill.name, description: skill.description, sourcePath, referencePath },
+      reference: `---
 title: ${JSON.stringify(skill.name)}
 description: ${JSON.stringify(skill.description)}
 editUrl: false
@@ -100,14 +111,27 @@ editUrl: false
 > Generated at build time from [\`${sourcePath}\`](https://github.com/howlil/agentflow/blob/master/${sourcePath}). Do not edit this page directly.
 
 ${stripLeadingTitle(skill.body)}
-`;
+`,
+      directory,
+    };
+  }));
 
-  await writeFile(join(REFERENCE_DIR, `${directory}.md`), reference);
+  await mkdir(generatedDir, { recursive: true });
+  await rm(referenceDir, { recursive: true, force: true });
+  await mkdir(referenceDir, { recursive: true });
+
+  await Promise.all(outputs.map(({ directory, reference }) =>
+    writeFile(join(referenceDir, `${directory}.md`), reference)
+  ));
+  await writeFile(
+    join(generatedDir, 'skills.json'),
+    JSON.stringify(outputs.map(({ metadata }) => metadata), null, 2) + '\n',
+  );
+
+  return outputs.length;
 }
 
-await writeFile(
-  join(GENERATED_DIR, 'skills.json'),
-  JSON.stringify(manifest, null, 2) + '\n',
-);
-
-console.log(`Generated manifest and ${manifest.length} runtime reference pages.`);
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const count = await generateSkills();
+  console.log(`Generated manifest and ${count} runtime reference pages.`);
+}

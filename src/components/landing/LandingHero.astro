@@ -22,7 +22,7 @@ import AsciiWaves from './AsciiWaves.astro';
 
   <div class="hero-shell">
     <div class="copy">
-      <p class="micro-label">Agentflow · Coming soon</p>
+      <p class="micro-label">Agentflow · Engineering skills</p>
 
       <h1 id="agentflow-hero-title">
         <span>Use the right</span>
@@ -42,9 +42,9 @@ import AsciiWaves from './AsciiWaves.astro';
         <span>Prove</span>
       </div>
 
-      <div class="status" aria-label="Agentflow is coming soon">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span>Coming soon</span>
+      <div class="hero-actions">
+        <a class="primary-action" href="/start/choose-a-skill/">Find the right skill <span aria-hidden="true">→</span></a>
+        <a class="secondary-action" href="/start/quickstart/">Read quickstart</a>
       </div>
     </div>
   </div>
@@ -178,29 +178,47 @@ import AsciiWaves from './AsciiWaves.astro';
     color: rgba(255, 255, 255, 0.34);
   }
 
-  .status {
-    width: fit-content;
-    min-height: 38px;
-    margin: 34px auto 0;
-    padding: 0 14px;
-    display: inline-flex;
+  .hero-actions {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.055);
-    color: rgba(255, 255, 255, 0.82);
-    font: 500 12px/1 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    letter-spacing: -0.006em;
-    backdrop-filter: blur(10px);
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 34px auto 0;
   }
 
-  .status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.72);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
+  .hero-actions a {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font: 500 13px/1 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    text-decoration: none;
+    transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+  }
+
+  .primary-action {
+    background: #f7f6f2;
+    color: #111214;
+  }
+
+  .primary-action:hover {
+    background: #dce5f7;
+    color: #111214;
+  }
+
+  .secondary-action {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .secondary-action:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: #fff;
   }
 
   .micro-bottom {

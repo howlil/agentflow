@@ -19,9 +19,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Install
-        run: npm install
+        run: npm ci
 
-      - name: Build
+      - name: Test generator
+        run: npm test
+
+      - name: Build docs
         run: npm run build
+
+      - name: Check critical static routes
+        run: |
+          test -f dist/index.html
+          test -f dist/start/choose-a-skill/index.html
+          test -f dist/skills/product-design/index.html
+          test -f dist/reference/product-design/index.html

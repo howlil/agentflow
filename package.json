@@ -10,7 +10,8 @@
     "prebuild": "npm run skills:generate",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "test": "node --test scripts/*.test.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "0.42.2",

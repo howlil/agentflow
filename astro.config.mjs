@@ -31,18 +31,7 @@ export default defineConfig({
         },
         {
           label: 'Skills',
-          items: [
-            'skills/product-design',
-            'skills/engineering-design',
-            'skills/design-graph',
-            'skills/design-thinking',
-            'skills/test-engineering',
-            'skills/production-ops',
-            'skills/code-review',
-            'skills/security-review',
-            'skills/graph-protocol',
-            'skills/call-graph-output',
-          ],
+          items: [{ autogenerate: { directory: 'skills' } }],
         },
         {
           label: 'Runtime Reference',
