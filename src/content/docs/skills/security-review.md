@@ -41,3 +41,7 @@ evidence / mitigation
 Use $security-review on the new admin booking endpoint,
 focusing on authorization and cross-tenant data access.
 ```
+
+## Canonical runtime reference
+
+[Read the complete `security-review` instructions](/reference/security-review/).

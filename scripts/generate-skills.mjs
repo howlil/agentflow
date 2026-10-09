@@ -96,10 +96,12 @@ export async function generateSkills({ root = process.cwd(), expected = EXPECTED
         `Directory/frontmatter mismatch: ${relative(root, file)} declares "${skill.name}"`,
       );
     }
-    await readFile(join(guidesDir, `${directory}.md`), 'utf8');
-
     const sourcePath = `skills/${directory}/SKILL.md`;
     const referencePath = `/reference/${directory}/`;
+    const guide = await readFile(join(guidesDir, `${directory}.md`), 'utf8');
+    if (!guide.includes(referencePath)) {
+      throw new Error(`Human guide lacks runtime reference link: ${directory}`);
+    }
     return {
       metadata: { name: skill.name, description: skill.description, sourcePath, referencePath },
       reference: `---

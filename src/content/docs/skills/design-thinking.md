@@ -41,3 +41,7 @@ against the existing scheduling contract.
 ```
 
 If verification becomes a separate hard problem, hand it to `test-engineering`.
+
+## Canonical runtime reference
+
+[Read the complete `design-thinking` instructions](/reference/design-thinking/).

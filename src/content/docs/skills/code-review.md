@@ -40,3 +40,7 @@ Prefer concrete, reproducible findings over stylistic preference.
 Use $code-review on this diff.
 Prioritize correctness blockers and missing faithful verification.
 ```
+
+## Canonical runtime reference
+
+[Read the complete `code-review` instructions](/reference/code-review/).

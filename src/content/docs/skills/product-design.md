@@ -60,3 +60,7 @@ product-design
   → design-graph when interface structure becomes non-trivial
   → engineering-design when system guarantees need architecture
 ```
+
+## Canonical runtime reference
+
+[Read the complete `product-design` instructions](/reference/product-design/).

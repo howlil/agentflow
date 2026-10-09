@@ -41,7 +41,7 @@ async function withFixture(run) {
   await mkdir(skillDir, { recursive: true });
   await mkdir(guideDir, { recursive: true });
   await writeFile(join(skillDir, 'SKILL.md'), source('example'));
-  await writeFile(join(guideDir, 'example.md'), '---\ntitle: Example\n---\n');
+  await writeFile(join(guideDir, 'example.md'), '---\ntitle: Example\n---\n\n[Runtime](/reference/example/)\n');
   try {
     await run(root, skillDir);
   } finally {
@@ -77,5 +77,12 @@ test('rejects unexpected skill directories', async () => {
   await withFixture(async (root) => {
     await mkdir(join(root, 'skills', 'surprise'), { recursive: true });
     await assert.rejects(generateSkills({ root, expected: ['example'] }), /Unexpected skills/);
+  });
+});
+
+test('requires each human guide to link to its canonical reference', async () => {
+  await withFixture(async (root) => {
+    await writeFile(join(root, 'src/content/docs/skills/example.md'), '---\\ntitle: Example\\n---\\n');
+    await assert.rejects(generateSkills({ root, expected: ['example'] }), /lacks runtime reference link/);
   });
 });

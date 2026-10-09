@@ -34,3 +34,7 @@ BookingService.create
   → real ConflictPolicy
   → test database repository
 ```
+
+## Canonical runtime reference
+
+[Read the complete `call-graph-output` instructions](/reference/call-graph-output/).
