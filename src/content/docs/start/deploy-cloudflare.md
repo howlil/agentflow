@@ -1,58 +1,64 @@
 ---
-title: Deploy to Cloudflare
-description: Deploy the pre-rendered Agentflow documentation through Cloudflare Workers Static Assets.
+title: Deploy to Cloudflare Pages
+description: Deploy Agentflow directly from GitHub using Cloudflare Pages' native Git integration.
 ---
 
-Agentflow builds into static HTML, CSS, and JavaScript in `dist/`. It deploys as a **Cloudflare Worker with Static Assets**, not a Cloudflare Pages project or an Astro SSR Worker. No database or Astro Cloudflare adapter is required.
+Agentflow is a **fully static Astro + Starlight** site. Cloudflare Pages installs dependencies, runs the build, and serves `dist/` itself. You do **not** need GitHub Actions, Wrangler, a Cloudflare API token, or an Astro SSR adapter.
 
-## One-time GitHub setup
+## Connect GitHub directly to Cloudflare Pages
 
-1. In the [Cloudflare dashboard](https://dash.cloudflare.com/), copy the **Account ID** for the account that will host Agentflow.
-2. Create an API token with the **Edit Cloudflare Workers** permission, scoped only to that account. Do not use a Global API Key.
-3. Open [Agentflow repository Actions secrets](https://github.com/howlil/agentflow/settings/secrets/actions) and add these two *repository secrets*:
+1. Open the [Cloudflare dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create application** → **Pages**.
+2. Choose **Import an existing Git repository** (or **Connect to Git**), authorize GitHub if prompted, then select [howlil/agentflow](https://github.com/howlil/agentflow).
+3. Configure the project:
 
-| Secret | Value |
+| Setting | Value |
 | --- | --- |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Account ID |
-| `CLOUDFLARE_API_TOKEN` | Scoped Cloudflare API token |
+| Framework preset | Astro |
+| Production branch | `master` |
+| Root directory | `/` (repository root) |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Node.js version | Read from `.node-version` (`22.23.3`) |
 
-4. In [GitHub Actions](https://github.com/howlil/agentflow/actions), select **CI** → **Run workflow** → branch `master`. This executes the first authenticated deployment.
+4. Click **Save and Deploy**.
 
-Do not commit account credentials or store API tokens in `wrangler.jsonc`. If the secrets are absent, an ordinary push will skip publishing with a notice. A manually triggered deployment without the secrets will fail with a clear error.
+When the build finishes, Cloudflare Pages shows the project URL (a `*.pages.dev` address). The project name determines that subdomain, so do not assume it will be `agentflow.pages.dev` until Cloudflare confirms it.
 
-## Continuous deployment
-
-Every push to `master` runs:
+## Every subsequent change
 
 ```text
-npm ci → npm test → Astro build → route checks → Wrangler dry-run
-   → verified build artifact → Cloudflare deploy
+Push to master
+    ↓
+Cloudflare Pages Git integration
+    ↓
+npm install from package-lock.json
+    ↓
+npm run build
+  └→ prebuild: generate canonical skill references
+    ↓
+Upload static dist/
+    ↓
+Serve on *.pages.dev or custom domain
 ```
 
-Pull requests run build and validation only; they do not deploy. Production deployment runs **only after a successful build**, using the same verified `dist/` artifact rather than building the site again.
+Cloudflare Pages handles deployments automatically. Other branches and pull requests can receive preview deployments if enabled in Pages project settings.
 
-After publishing, the **Publish Workers Static Assets** step prints the deployment URL. If workers.dev is enabled for the account, the Worker can be reached through its `*.workers.dev` address. To use a custom domain, configure it under the Worker in Cloudflare → **Settings → Domains & Routes**.
-
-## Deploy from your computer
+## Local verification
 
 ```bash
 npm ci
 npm test
 npm run build
-npx wrangler deploy --dry-run
-npx wrangler login
-npm run deploy
 ```
 
-`npm run deploy` builds the site and publishes static assets using the `agentflow` Worker defined in `wrangler.jsonc`. Local deployment requires Wrangler login or valid Cloudflare API credentials.
+The generated pages and search index are emitted to `dist/`. No server-side runtime is required.
 
-## Routing and troubleshooting
+## Troubleshooting
 
-- **Trailing slashes:** URLs such as `/skills/design-graph/` map to the generated `index.html`.
-- **Missing pages:** Cloudflare returns the generated `404.html` with HTTP 404 instead of sending all unknown paths to the homepage.
-- **Deployment skipped:** configure both GitHub Actions secrets, then manually rerun **CI** or push another commit to `master`.
-- **Authentication denied:** verify Account ID, token scope, and **Edit Cloudflare Workers** permissions.
-- **Green build, no site:** check the separate **Deploy to Cloudflare** job for a skip notice or deployment failure.
-- **Competing deployments:** avoid enabling a second Cloudflare dashboard Git integration that publishes to this same Worker.
+- **Build fails on Node:** confirm the Pages build environment honors `.node-version` (or set `NODE_VERSION=22.23.3` in Pages settings).
+- **Wrong page or missing guides:** verify output directory is exactly `dist` and the project is built from repository root.
+- **404 on homepage:** ensure `dist/index.html` is generated; Starlight also produces `404.html`.
+- **Custom domain:** open the Pages project → **Custom domains**, and attach the domain there.
+- **Existing Cloudflare Worker:** it is not the same as a Pages project. Create or select a **Pages** project with Git integration instead.
 
-Only add `astrojs/cloudflare` if Agentflow later needs on-demand/server-side rendering.
+For this static project, do not add `wrangler.jsonc`, `@astrojs/cloudflare`, a deployment workflow, or GitHub Actions secrets unless the hosting model explicitly changes.
