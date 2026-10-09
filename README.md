@@ -51,7 +51,7 @@ npm test
 npm run build
 ```
 
-## Deploy via Cloudflare Pages
+## Deploy to Cloudflare
 
 Connect [howlil/agentflow](https://github.com/howlil/agentflow) to **Cloudflare Pages** using its native GitHub integration.
 
@@ -61,11 +61,11 @@ Connect [howlil/agentflow](https://github.com/howlil/agentflow) to **Cloudflare 
 - Build output directory: `dist`
 - Root directory: repository root
 
-Cloudflare Pages installs dependencies, builds and publishes the site on each push. **No GitHub Actions, Wrangler, Cloudflare API token, or backend is required.** See the [deployment guide](src/content/docs/start/deploy-cloudflare.md).
+Cloudflare Pages can install, build, and publish the site on each push without custom CI/CD. If your Cloudflare project runs `npx wrangler deploy`, it is **Workers Builds**, not Pages. The checked-in `wrangler.jsonc` supports that existing Worker as static assets without adding the Astro SSR adapter. See the [deployment guide](src/content/docs/start/deploy-cloudflare.md).
 
 ## Hosting
 
-The site is fully pre-rendered. Astro/Starlight generates `dist/` (including the search index); Cloudflare Pages serves the static output. No database, CMS, API server, or SSR runtime is required.
+The site is fully pre-rendered. Astro/Starlight generates `dist/` (including the search index); Cloudflare Pages (or Workers Static Assets) serves the static output. No database, CMS, API server, or SSR runtime is required.
 
 ## Repository
 
