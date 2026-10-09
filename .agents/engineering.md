@@ -19,7 +19,7 @@ Tailwind v4
                      ↓
 static dist/
                      ↓
-Cloudflare Workers Static Assets
+Cloudflare Pages
 ```
 
 ## Responsibilities
@@ -63,12 +63,10 @@ Astro/Starlight build
 
 ```text
 commit to master
-  → CI
-  → generate skill artifacts
-  → Astro build
-  → static route checks and Wrangler dry-run
-  → verified dist/ artifact
-  → authenticated Cloudflare publish
+  → Cloudflare Pages native Git integration
+  → npm run build (includes skill artifact generation)
+  → static dist/
+  → Pages deployment
 ```
 
 ## Guarantees
@@ -77,7 +75,7 @@ commit to master
 - Missing, unexpected, or misnamed skill packages fail before the site builds.
 - Content/config errors fail at build time instead of creating a partially broken runtime.
 - Search/navigation require no application backend.
-- Cloudflare delivery stays static until a real server-side requirement appears.
+- Cloudflare Pages serves static assets until a real server-side requirement appears.
 
 ## Decisions
 

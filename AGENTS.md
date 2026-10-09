@@ -11,7 +11,7 @@ A skill is a decision tool, not a mandatory lifecycle stage.
 - `src/content/docs/skills/`: human-facing usage, examples, and when-not-to-use boundaries.
 - `src/content/docs/start/` and `recipes/`: discovery and composition.
 - `src/components/`: presentation and interaction only.
-- Astro/Starlight: static routing, rendering and search. Cloudflare: static asset delivery.
+- Astro/Starlight: static routing, rendering and search. Cloudflare Pages: native GitHub build and static delivery (no GitHub Actions or Wrangler deployment).
 - `.agents/product.md` and `.agents/engineering.md`: authoritative product/system decisions.
 
 Never create a competing skill manifest or hand-copy full runtime instructions into guides.
