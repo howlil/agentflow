@@ -31,7 +31,7 @@ Cloudflare Workers Static Assets
 - Starlight owns documentation navigation, layout, accessibility baseline, code rendering, and search integration.
 - Tailwind owns project-specific presentation.
 - Cloudflare Workers Static Assets owns delivery of `dist/`.
-- GitHub Actions proves that `master` still generates artifacts and builds.
+- GitHub Actions validates skill generation, static routes and Wrangler packaging. On successful `master` builds, the deployment job publishes the verified artifact when Cloudflare credentials are present.
 
 ## State & Invariants
 
@@ -66,8 +66,9 @@ commit to master
   → CI
   → generate skill artifacts
   → Astro build
-  → dist/
-  → Cloudflare
+  → static route checks and Wrangler dry-run
+  → verified dist/ artifact
+  → authenticated Cloudflare publish
 ```
 
 ## Guarantees
