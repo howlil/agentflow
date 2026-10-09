@@ -63,10 +63,10 @@ Astro/Starlight build
 
 ```text
 commit to master
-  → Cloudflare Pages native Git integration
+  → Cloudflare Pages or Workers Builds native Git integration
   → npm run build (includes skill artifact generation)
   → static dist/
-  → Pages deployment
+  → Cloudflare static hosting
 ```
 
 ## Guarantees
@@ -75,7 +75,7 @@ commit to master
 - Missing, unexpected, or misnamed skill packages fail before the site builds.
 - Content/config errors fail at build time instead of creating a partially broken runtime.
 - Search/navigation require no application backend.
-- Cloudflare Pages serves static assets until a real server-side requirement appears.
+- Cloudflare Pages or Workers Static Assets serves the same static files until a real server-side requirement appears.
 
 ## Decisions
 

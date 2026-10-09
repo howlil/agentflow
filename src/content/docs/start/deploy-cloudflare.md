@@ -1,49 +1,75 @@
 ---
-title: Deploy to Cloudflare Pages
-description: Deploy Agentflow directly from GitHub using Cloudflare Pages' native Git integration.
+title: Deploy to Cloudflare
+description: Deploy Agentflow from GitHub as a static site without Astro SSR.
 ---
 
-Agentflow is a **fully static Astro + Starlight** site. Cloudflare Pages installs dependencies, runs the build, and serves `dist/` itself. You do **not** need GitHub Actions, Wrangler, a Cloudflare API token, or an Astro SSR adapter.
+Agentflow is fully pre-rendered by Astro/Starlight. The build output is `dist/`. There is no need for the `@astrojs/cloudflare` adapter or a Worker JavaScript entry point.
 
-## Connect GitHub directly to Cloudflare Pages
+## Which Cloudflare project do I have?
 
-1. Open the [Cloudflare dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create application** → **Pages**.
-2. Choose **Import an existing Git repository** (or **Connect to Git**), authorize GitHub if prompted, then select [howlil/agentflow](https://github.com/howlil/agentflow).
-3. Configure the project:
+**Cloudflare Pages:** The build runs `npm run build`, and Pages publishes `dist/` automatically. There is no deploy command.
+
+**Cloudflare Workers Builds:** The build runs `npm run build`, followed by `npx wrangler deploy`. This is the same hosting family as `howlil-app` (Workers Static Assets), but Agentflow has no Worker API.
+
+If your logs include **"Executing user deploy command: npx wrangler deploy"**, you are using **Workers Builds**, not Pages. For this existing project, the root `wrangler.jsonc` prevents Wrangler from trying to reconfigure Astro and adding an unnecessary SSR adapter.
+
+## Option A — keep the existing Worker (matches howlil-app)
+
+In the Cloudflare dashboard, open the **agentflow** Worker → **Settings → Build** and use:
 
 | Setting | Value |
 | --- | --- |
-| Framework preset | Astro |
+| Git repository | `howlil/agentflow` |
 | Production branch | `master` |
-| Root directory | `/` (repository root) |
+| Root directory | Repository root |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
-| Node.js version | Read from `.node-version` (`22.23.3`) |
+| Deploy command | `npx wrangler deploy` |
+| Node version | `22.23.3` (see `.node-version`) |
 
-4. Click **Save and Deploy**.
+The repository already contains:
 
-When the build finishes, Cloudflare Pages shows the project URL (a `*.pages.dev` address). The project name determines that subdomain, so do not assume it will be `agentflow.pages.dev` until Cloudflare confirms it.
+```json
+{
+  "name": "agentflow",
+  "compatibility_date": "2026-10-09",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
+```
 
-## Every subsequent change
+The build/deployment path becomes:
 
 ```text
 Push to master
-    ↓
-Cloudflare Pages Git integration
-    ↓
-npm install from package-lock.json
-    ↓
-npm run build
-  └→ prebuild: generate canonical skill references
-    ↓
-Upload static dist/
-    ↓
-Serve on *.pages.dev or custom domain
+  → Workers Builds
+  → npm run build
+    → generate 10 skill references
+    → Astro + Starlight produce dist/
+  → wrangler deploy
+    → upload dist/ as static assets
 ```
 
-Cloudflare Pages handles deployments automatically. Other branches and pull requests can receive preview deployments if enabled in Pages project settings.
+No custom GitHub Actions CI/CD or Cloudflare API token in the repository is required.
 
-## Local verification
+## Option B — use an actual Cloudflare Pages project
+
+If you specifically want Cloudflare **Pages**, create a **Pages** project using **Import an existing Git repository** from [Cloudflare Dashboard](https://dash.cloudflare.com/) and select [howlil/agentflow](https://github.com/howlil/agentflow).
+
+| Setting | Value |
+| --- | --- |
+| Framework | Astro |
+| Production branch | `master` |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Root directory | Repository root |
+| Deploy command | **None** (Pages handles publishing) |
+
+Pages deploys to a `*.pages.dev` address and handles preview builds. The `wrangler.jsonc` is for Workers Builds; Pages should not invoke `npx wrangler deploy`. Creating a Pages project is a Cloudflare dashboard action; changing repository files does not convert an existing Worker into Pages.
+
+## Verify locally
 
 ```bash
 npm ci
@@ -51,14 +77,12 @@ npm test
 npm run build
 ```
 
-The generated pages and search index are emitted to `dist/`. No server-side runtime is required.
+Ensure `dist/index.html`, `dist/404.html`, and skill/reference HTML pages exist.
 
 ## Troubleshooting
 
-- **Build fails on Node:** confirm the Pages build environment honors `.node-version` (or set `NODE_VERSION=22.23.3` in Pages settings).
-- **Wrong page or missing guides:** verify output directory is exactly `dist` and the project is built from repository root.
-- **404 on homepage:** ensure `dist/index.html` is generated; Starlight also produces `404.html`.
-- **Custom domain:** open the Pages project → **Custom domains**, and attach the domain there.
-- **Existing Cloudflare Worker:** it is not the same as a Pages project. Create or select a **Pages** project with Git integration instead.
-
-For this static project, do not add `wrangler.jsonc`, `@astrojs/cloudflare`, a deployment workflow, or GitHub Actions secrets unless the hosting model explicitly changes.
+- **`npx wrangler deploy` tries `astro add cloudflare`:** The build is running Workers Builds without a recognized Wrangler config. Check the root directory, branch, and committed `wrangler.jsonc`.
+- **`@bruits/satteri-wasm32-wasi` unresolved:** This was caused by the unwanted auto-configuration and second Astro build. Do not add a WASM package just to suppress this symptom.
+- **Worker name mismatch:** The Worker name in Cloudflare must be `agentflow`, matching `wrangler.jsonc`.
+- **Expected Pages but see a deploy command:** You created/connected a Worker, not a Pages project. Choose Option B.
+- **Missing documentation routes:** Verify `dist/` contains static HTML; do not configure a single-page-app fallback for Starlight.
