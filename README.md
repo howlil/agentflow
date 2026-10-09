@@ -51,12 +51,14 @@ npm test
 npm run build
 ```
 
-Deploy to Cloudflare:
+Deploy manually to Cloudflare:
 
 ```bash
 npx wrangler login
 npm run deploy
 ```
+
+For automatic production deployment, add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Actions repository secrets. Every successful `master` build deploys the verified static site. For the first deployment after adding secrets, manually run the **CI** workflow on `master`. See [deployment guide](src/content/docs/start/deploy-cloudflare.md).
 
 ## Hosting
 
