@@ -19,7 +19,7 @@ Tailwind v4
                      ↓
 static dist/
                      ↓
-Cloudflare Pages
+Cloudflare Pages / Workers Static Assets
 ```
 
 ## Responsibilities
@@ -30,8 +30,8 @@ Cloudflare Pages
 - Astro owns static build and content loading.
 - Starlight owns documentation navigation, layout, accessibility baseline, code rendering, and search integration.
 - Tailwind owns project-specific presentation.
-- Cloudflare Workers Static Assets owns delivery of `dist/`.
-- GitHub Actions validates skill generation, static routes and Wrangler packaging. On successful `master` builds, the deployment job publishes the verified artifact when Cloudflare credentials are present.
+- Cloudflare Pages owns static publishing when using a Pages Git integration.
+- The existing Workers Builds project uses `wrangler.jsonc` to publish `dist/` as static assets. No Worker source entrypoint, Astro SSR adapter, or custom GitHub Actions deployment is required.
 
 ## State & Invariants
 
