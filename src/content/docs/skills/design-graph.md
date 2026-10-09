@@ -36,3 +36,7 @@ including empty, pending, invalid, and conflict states.
 ```
 
 Implementation-specific data and execution flow belong to `design-thinking`. If the interface reveals contradictory product behavior, return to `product-design`.
+
+## Canonical runtime reference
+
+[Read the complete `design-graph` instructions](/reference/design-graph/).

@@ -66,3 +66,7 @@ engineering-design
   → design-thinking for implementation
   → test-engineering if proof is non-trivial
 ```
+
+## Canonical runtime reference
+
+[Read the complete `engineering-design` instructions](/reference/engineering-design/).

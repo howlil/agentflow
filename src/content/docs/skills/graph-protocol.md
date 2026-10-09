@@ -37,3 +37,7 @@ primary agent verifies integration
 Use $graph-protocol to split repository research,
 implementation, and independent verification where they are actually independent.
 ```
+
+## Canonical runtime reference
+
+[Read the complete `graph-protocol` instructions](/reference/graph-protocol/).

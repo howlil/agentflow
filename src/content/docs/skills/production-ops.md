@@ -42,3 +42,7 @@ recovery verification
 Use $production-ops to define health signals and recovery
 for the booking service after the new database dependency.
 ```
+
+## Canonical runtime reference
+
+[Read the complete `production-ops` instructions](/reference/production-ops/).

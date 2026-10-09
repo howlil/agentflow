@@ -10,6 +10,7 @@ import { Code2 } from '@lucide/astro';
     </a>
 
     <nav aria-label="Landing navigation">
+      <a class="explore-link" href="/start/choose-a-skill/">Explore skills</a>
       <a href="https://github.com/howlil/agentflow" target="_blank" rel="noreferrer">
         <Code2 size={13} strokeWidth={1.8} />
         <span>GitHub</span>
@@ -63,6 +64,7 @@ import { Code2 } from '@lucide/astro';
   nav {
     display: flex;
     align-items: center;
+    gap: 24px;
   }
 
   nav a {
@@ -92,6 +94,8 @@ import { Code2 } from '@lucide/astro';
     nav a span {
       display: none;
     }
+
+    nav { gap: 16px; }
 
     nav :global(svg) {
       width: 15px;

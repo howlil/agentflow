@@ -41,3 +41,7 @@ assertion that proves the invariant
 Use $test-engineering to design a race test proving that
 two concurrent bookings cannot both commit.
 ```
+
+## Canonical runtime reference
+
+[Read the complete `test-engineering` instructions](/reference/test-engineering/).
