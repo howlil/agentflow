@@ -54,7 +54,7 @@ jobs:
           set -euo pipefail
           npm --version
           npm install -g npm@11
-          node -e "const [a,b]=process.versions.npm.split('.').map(Number); if (a < 11 || (a === 11 && b < 5)) process.exit(1)"
+          node -e "const v=require('child_process').execFileSync('npm',['--version'],{encoding:'utf8'}).trim().split('.').map(Number); if(v[0]<11 || (v[0]===11 && v[1]<5)) process.exit(1)"
       - name: Publish scoped CLI using npm OIDC
         working-directory: packages/cli
         run: npm publish --access public
