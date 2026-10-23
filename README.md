@@ -79,6 +79,24 @@ npm run plugins:sync
 npm run plugins:check
 ```
 
+## Agentflow CLI (M3)
+
+A thin, separate Node.js executable lives under `packages/cli`. The CLI delegates portable skill lifecycle to pinned `skills@1.7.4`, adds safe project bootstrap and offline diagnosis, and never overwrites steering files.
+
+```bash
+# From a local checkout of M3; not yet published on npm
+npm install -g ./packages/cli
+agentflow init --agent codex
+agentflow doctor
+agentflow install --global --agent codex --skill agentflow
+agentflow status --global
+agentflow update --check
+agentflow update --skill agentflow --global
+agentflow uninstall --global --agent codex
+```
+
+Bare `agentflow update` is deliberately rejected because the upstream bare update is not restricted to this source. Read the [CLI documentation](src/content/docs/start/cli.md) for supported flags, dry runs, and configuration safety.
+
 ## Local development
 
 ```bash
