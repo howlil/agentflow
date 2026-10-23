@@ -20,3 +20,23 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Smoke-test portable skill discovery and install/remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE="$PWD"
+          TARGET="$(mktemp -d)"
+          trap 'rm -rf "$TARGET"' EXIT
+          cd "$TARGET"
+          npx --yes skills@latest add "$SOURCE" --list | tee discovery.log
+          grep -q 'agentflow' discovery.log
+          npx --yes skills@latest add "$SOURCE" --skill agentflow --agent codex --copy --yes
+          npx --yes skills@latest list -a codex | tee installed.log
+          grep -q 'agentflow' installed.log
+          npx --yes skills@latest remove agentflow --agent codex --yes
+          npx --yes skills@latest list -a codex | tee removed.log
+          if grep -q 'agentflow' removed.log; then
+            echo "Router was not removed" >&2
+            exit 1
+          fi
+
