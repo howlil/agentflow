@@ -113,11 +113,11 @@ test('rejects empty instructions instead of publishing blank skill packages', ()
 
 test('rejects unquoted YAML special scalars before external installers silently skip skills', () => {
   assert.throws(
-    () => parseFrontmatter('---\\nname: example\\ndescription: Choose tests: unit or E2E\\n---\\nBody', 'bad.md'),
+    () => parseFrontmatter('---\nname: example\ndescription: Choose tests: unit or E2E\n---\nBody', 'bad.md'),
     /Quote YAML-special/,
   );
   assert.throws(
-    () => parseFrontmatter('---\\nname: example\\ndescription: Use tests # opinion\\n---\\nBody', 'bad.md'),
+    () => parseFrontmatter('---\nname: example\ndescription: Use tests # opinion\n---\nBody', 'bad.md'),
     /Quote YAML-special/,
   );
 });
