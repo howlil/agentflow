@@ -28,13 +28,13 @@ jobs:
           TARGET="$(mktemp -d)"
           trap 'rm -rf "$TARGET"' EXIT
           cd "$TARGET"
-          npx --yes skills@latest add "$SOURCE" --list | tee discovery.log
+          npx --yes skills@1.7.4 add "$SOURCE" --list | tee discovery.log
           grep -q 'agentflow' discovery.log
-          npx --yes skills@latest add "$SOURCE" --skill agentflow --agent codex --copy --yes
-          npx --yes skills@latest list -a codex | tee installed.log
+          npx --yes skills@1.7.4 add "$SOURCE" --skill agentflow --agent codex --copy --yes
+          npx --yes skills@1.7.4 list -a codex | tee installed.log
           grep -q 'agentflow' installed.log
-          npx --yes skills@latest remove agentflow --agent codex --yes
-          npx --yes skills@latest list -a codex | tee removed.log
+          npx --yes skills@1.7.4 remove agentflow --agent codex --yes
+          npx --yes skills@1.7.4 list -a codex | tee removed.log
           if grep -q 'agentflow' removed.log; then
             echo "Router was not removed" >&2
             exit 1
