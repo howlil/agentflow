@@ -5,13 +5,13 @@ description: Install and manage Agentflow through Claude Code and Codex marketpl
 
 Agentflow bundles **one root set of eleven canonical skills** for two native plugin hosts. Native plugins are managed subscriptions: use **either** a native marketplace install **or** the editable [skills.sh installation](/start/install/) for a given agent, not both.
 
-All native routes below require the M2 manifests to be present on the selected Git ref. If M2 has not reached the default branch, inspect or test a local checkout of the M2 branch instead of assuming that the commands from the default branch will install this release.
+The native marketplace manifests are included in the public default branch and the immutable `v0.3.0` release. Managed refresh still depends on each client's configuration.
 
 ## Claude Code
 
 The GitHub repository is a Claude plugin marketplace at `.claude-plugin/marketplace.json`. The package is at the repository root and uses `.claude-plugin/plugin.json` plus the canonical `skills/` directory.
 
-After M2 merges into the public default branch:
+From the public repository:
 
 ```bash
 claude plugin marketplace add howlil/agentflow
@@ -42,7 +42,7 @@ claude plugin validate . --strict
 
 Codex discovers the [portable Agent Plugins](https://developers.openai.com/plugins/build/plugins) `plugin.json` in this repository root. The curated source is `.agents/plugins/marketplace.json`.
 
-After M2 merges, add the GitHub repository as a tracked Codex marketplace:
+Add the public repository as a tracked Codex marketplace:
 
 ```bash
 codex plugin marketplace add howlil/agentflow

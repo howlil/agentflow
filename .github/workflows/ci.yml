@@ -91,3 +91,24 @@ jobs:
       - run: agentflow install --global --agent codex --skill agentflow --dry-run
       - run: agentflow doctor
       - run: agentflow status --project
+
+  published-release-smoke:
+    name: Public v0.3.0 npm and GitHub acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Check the already-published npm package and release skill
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_RELEASE_SHA: ''
+          DISABLE_TELEMETRY: '1'
+        run: bash .github/scripts/remote-acceptance.sh v0.3.0 ""

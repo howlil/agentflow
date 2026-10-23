@@ -1,14 +1,17 @@
 name: Remote Skill Release Acceptance
 
 on:
+  workflow_run:
+    workflows: ['Publish Agentflow Release']
+    types: [completed]
   workflow_dispatch:
     inputs:
       release_ref:
-        description: "Published tag to install (e.g. v0.3.0)"
+        description: "Published tag to test (e.g. v0.3.0)"
         required: true
         type: string
       previous_ref:
-        description: "Optional previous tag for upgrade/rollback acceptance"
+        description: "Optional earlier published tag to exercise replacement and rollback"
         required: false
         type: string
 
@@ -17,66 +20,46 @@ permissions:
 
 jobs:
   remote-acceptance:
+    name: Validate published npm CLI and tagged skills
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository) }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Validate published tags before touching installer state
+      - name: Resolve target tag only from published release history
+        id: target
         shell: bash
         env:
-          RELEASE_REF: ${{ inputs.release_ref }}
-          PREVIOUS_REF: ${{ inputs.previous_ref }}
+          EVENT_NAME: ${{ github.event_name }}
+          SOURCE_COMMIT: ${{ github.event.workflow_run.head_sha }}
+          INPUT_TAG: ${{ inputs.release_ref }}
         run: |
           set -euo pipefail
-          for ref in "$RELEASE_REF" "$PREVIOUS_REF"; do
-            test -z "$ref" && continue
-            [[ "$ref" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]] || exit 1
-            git show-ref --verify --quiet "refs/tags/$ref" || exit 1
-          done
-          git fetch origin master
-          git merge-base --is-ancestor "refs/tags/$RELEASE_REF" origin/master
-      - name: Install release and optionally verify rollback
+          if [ "$EVENT_NAME" = workflow_run ]; then
+            [[ "$SOURCE_COMMIT" =~ ^[a-f0-9]{40}$ ]] || exit 1
+            git cat-file -e "$SOURCE_COMMIT^{commit}"
+            VERSION="$(git show "$SOURCE_COMMIT:package.json" |
+              node -e "let s='';process.stdin.on('data',c=>s+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(s).version))")"
+            RELEASE_REF="v$VERSION"
+            echo "sha=$SOURCE_COMMIT" >> "$GITHUB_OUTPUT"
+          else
+            RELEASE_REF="$INPUT_TAG"
+          fi
+          [[ "$RELEASE_REF" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]] || exit 1
+          echo "tag=$RELEASE_REF" >> "$GITHUB_OUTPUT"
+      - name: Validate public release and exercise isolated install/rollback
         shell: bash
         env:
-          RELEASE_REF: ${{ inputs.release_ref }}
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_RELEASE_SHA: ${{ steps.target.outputs.sha }}
+          RELEASE_REF: ${{ steps.target.outputs.tag }}
           PREVIOUS_REF: ${{ inputs.previous_ref }}
           DISABLE_TELEMETRY: '1'
-        run: |
-          set -euo pipefail
-          TARGET="$(mktemp -d)"
-          trap 'rm -rf "$TARGET"' EXIT
-          ROOT="$PWD"
-          cd "$TARGET"
-
-          verify() {
-            local tag="$1"
-            test -f .agents/skills/agentflow/SKILL.md
-            git -C "$ROOT" show "$tag:skills/agentflow/SKILL.md" > expected-skill.md
-            cmp expected-skill.md .agents/skills/agentflow/SKILL.md
-            npx --yes skills@1.7.4 list -a codex | grep -q agentflow
-          }
-
-          if test -n "$PREVIOUS_REF"; then
-            npx --yes skills@1.7.4 add "howlil/agentflow#$PREVIOUS_REF" --skill agentflow -a codex --copy --yes
-            verify "$PREVIOUS_REF"
-            npx --yes skills@1.7.4 remove agentflow -a codex --yes
-          fi
-
-          npx --yes skills@1.7.4 add "howlil/agentflow#$RELEASE_REF" --skill agentflow -a codex --copy --yes
-          verify "$RELEASE_REF"
-
-          if test -n "$PREVIOUS_REF"; then
-            npx --yes skills@1.7.4 remove agentflow -a codex --yes
-            npx --yes skills@1.7.4 add "howlil/agentflow#$PREVIOUS_REF" --skill agentflow -a codex --copy --yes
-            verify "$PREVIOUS_REF"
-          fi
-          npx --yes skills@1.7.4 remove agentflow -a codex --yes
-          if test -e .agents/skills/agentflow/SKILL.md; then
-            echo "Installer did not remove the skill" >&2
-            exit 1
-          fi
+        run: bash .github/scripts/remote-acceptance.sh "$RELEASE_REF" "$PREVIOUS_REF"

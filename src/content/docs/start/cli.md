@@ -3,23 +3,22 @@ title: Agentflow CLI
 description: Initialize, diagnose, inspect and manage portable Agentflow skills from one command.
 ---
 
-M3 introduces a small, dependency-free Node.js CLI in `packages/cli`. It is intentionally **not** a second package manager: installer actions delegate to the upstream `skills@1.7.4` command. Node.js **22.20.0 or later** and `npx` are required. `doctor` is offline. Other operations can download the pinned upstream CLI.
+Agentflow publishes a small, dependency-free Node.js CLI in `packages/cli`. It is intentionally **not** a second package manager: installer actions delegate to the upstream `skills@1.7.4` command. Node.js **22.20.0 or later** and `npx` are required. `doctor` is offline. Other operations can download the pinned upstream CLI.
 
 ## Install the CLI itself
 
-This package has not yet been published to npm. For now, from a local checkout of the M3 branch:
+Version `0.3.0` is available in the public npm registry. Install it with Node.js 22.20+:
 
 ```bash
-git clone https://github.com/howlil/agentflow.git
-cd agentflow
-git checkout feat/m3-agentflow-cli
-npm install -g ./packages/cli
+npm install -g @howlil/agentflow-cli@0.3.0
 agentflow --version
 ```
 
+Or install from the repository's `master` checkout with `npm install -g ./packages/cli` when developing the CLI.
+
 Alternatively, execute it without global installation using `node packages/cli/bin/agentflow.mjs` from the checkout.
 
-The intended package name for a later publish is `@howlil/agentflow-cli`. Do not confuse it with other npm packages named `agentflow`.
+The published package is [`@howlil/agentflow-cli`](https://www.npmjs.com/package/@howlil/agentflow-cli), which is distinct from other packages named `agentflow`.
 
 ## Initialize a project safely
 
@@ -95,4 +94,4 @@ Dry-run displays what would be executed or written and makes no change. Paths an
 
 ## Release boundaries
 
-Until the CLI package is explicitly published, a registry install such as `npm install -g @howlil/agentflow-cli` must not be presented as available. Node tests and packaging acceptance run in GitHub Actions. Remote tagged update/rollback is a separate release gate. See [release and rollback](/start/release-and-rollback/).
+The npm package and [GitHub v0.3.0 release](https://github.com/howlil/agentflow/releases/tag/v0.3.0) are public. CI verifies command execution on Windows, macOS and Linux. The dedicated post-release acceptance workflow additionally checks version-pinned GitHub skill files, the public npm executable and protected uninstall. Reinstall-based rollback requires a previous published tag; native host auto-updates remain outside this test. See [release and rollback](/start/release-and-rollback/).

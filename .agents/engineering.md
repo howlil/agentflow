@@ -107,7 +107,7 @@ commit to master
 
 `packages/cli/src/ownership.mjs` validates installed source identity from official project `skills-lock.json` or global `$XDG_STATE_HOME/skills/.skill-lock.json` / `~/.agents/.skill-lock.json` before mutations. Unknown owners fail closed, and source-scoped uninstall expands to concrete owned names. Update/uninstall require explicit scope. Dry-run invokes no installer and makes no filesystem writes.
 
-The release workflow validates `vX.Y.Z` tag version and `master` ancestry, creates GitHub Release, and optionally publishes the CLI through npm OIDC. npm publication is gated by matching release version and a valid scoped `NPM_KEY` secret, with token exposure limited to the publish step. Preferred future transition is token-free OIDC trusted publishing. Remote tagged installation, upgrade, and rollback acceptance remains manual until the public tags exist. Never claim it passed before execution.
+The release workflow validates `vX.Y.Z` tag/version and `master` ancestry, publishes the CLI via the scoped `NPM_KEY` secret, and creates GitHub Release after verified npm publication. npm publication is gated by matching release version and a valid scoped `NPM_KEY` secret, with token exposure limited to the publish step. Preferred future transition is token-free OIDC trusted publishing. M5 adds automatic `workflow_run` acceptance after a successful release workflow, plus on-demand invocation; tests exercise the public npm executable and immutable release tag in disposable workspaces. Earlier-tag replacement and rollback only run when a previous published tag is provided. Do not equate these with host-managed auto-updates.
 
 ### M3 thin command-line adapter
 
