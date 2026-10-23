@@ -35,10 +35,7 @@ jobs:
           grep -q 'agentflow' codex-plugins.log
           npx --yes @openai/codex@latest plugin remove agentflow@agentflow
           npx --yes @openai/codex@latest plugin list | tee codex-removed.log
-          if grep -q 'agentflow@agentflow' codex-removed.log; then
-            echo "Codex native plugin was not removed" >&2
-            exit 1
-          fi
+          grep -Eq '^agentflow@agentflow[[:space:]]+not installed' codex-removed.log
       - name: Smoke-test portable skill discovery and install/remove
         shell: bash
         run: |
