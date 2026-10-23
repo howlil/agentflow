@@ -50,6 +50,8 @@ In:
 - documented installer-managed global/project install, update, and removal
 - native Claude and Codex plugin manifests and marketplace discovery
 - installable CLI executable with optional project initialization, diagnostics, dry-run and delegated lifecycle
+- source-ownership protection for name collisions during update/uninstall
+- release runbook, gated npm publishing and tag-pinned remote install/rollback acceptance
 - host-scoped managed updates, with version-change requirements and explicit release workflow
 
 Out:
