@@ -47,3 +47,18 @@ test('standalone CLI distribution is scoped, public and version-aligned with rep
   assert.equal(cli.bin.agentflow, './bin/agentflow.mjs');
   assert.deepEqual(cli.files, ['bin/', 'src/', 'README.md', 'LICENSE']);
 });
+
+test('master release request dispatches only explicit versioned release intent', async () => {
+  const workflow = await read('.github/workflows/request-release.yml');
+  const request = JSON.parse(await read('.github/release-request.json'));
+  const pkg = JSON.parse(await read('package.json'));
+  assert.equal(request.package, '@howlil/agentflow-cli');
+  assert.equal(request.version, pkg.version);
+  assert.match(workflow, /branches: \[master\]/);
+  assert.match(workflow, /'\.github\/release-request\.json'/);
+  assert.match(workflow, /actions: write/);
+  assert.match(workflow, /release: request v\$VERSION/);
+  assert.match(workflow, /gh workflow run release\.yml/);
+  assert.match(workflow, /--ref master --raw-field "version=\$RELEASE_TAG"/);
+  assert.doesNotMatch(workflow, /secrets\.NPM_KEY/);
+});
