@@ -25,7 +25,9 @@ Cloudflare Pages / Workers Static Assets
 ## Responsibilities
 
 - `skills/*/SKILL.md` owns canonical runtime skill behavior and routing descriptions.
-- `scripts/generate-skills.mjs` validates the ten-skill set, enforces directory/frontmatter identity, generates canonical metadata, and projects runtime reference pages.
+- `skills/agentflow/SKILL.md` selects specialists; it does not provide its own runtime.
+- The external `skills` CLI owns file-based global/project installation, update, and removal in M1.
+- `scripts/generate-skills.mjs` validates the eleven-skill set and required Agent Skills flat-scalar metadata limits, enforces directory/frontmatter identity, generates canonical metadata, and projects runtime reference pages.
 - Human Markdown/MDX owns usage guidance, examples, recipes, and product explanation.
 - Astro owns static build and content loading.
 - Starlight owns documentation navigation, layout, accessibility baseline, code rendering, and search integration.
@@ -37,11 +39,13 @@ Cloudflare Pages / Workers Static Assets
 
 - Runtime behavior has one repository source of truth: `skills/<name>/SKILL.md`.
 - A skill directory name must equal its frontmatter `name`.
-- Exactly the intended ten skill packages must exist unless the product/system contract changes deliberately.
+- Exactly the intended eleven skill packages (agentflow router plus ten specialists) must exist unless the product/system contract changes deliberately.
 - Canonical `name` and `description` shown by the homepage are generated.
 - Runtime reference pages are generated from canonical `SKILL.md`; they are not edited by hand.
 - Human guides may teach or summarize a skill but must not silently redefine runtime behavior.
 - There is no mutable runtime application state or database.
+- Distribution uses the canonical `skills/<name>/SKILL.md` layout rather than vendor-specific copies.
+- File installation does not guarantee auto-updates or identical invocation syntax across hosts.
 
 ## Critical Flows
 
@@ -78,6 +82,10 @@ commit to master
 - Cloudflare Pages or Workers Static Assets serves the same static files until a real server-side requirement appears.
 
 ## Decisions
+
+### M1 installer-managed portable distribution
+
+Use the canonical Agent Skills layout with the upstream skills CLI for install/update/remove. Native plugin manifests and an Agentflow-specific CLI are separate milestones.
 
 ### Canonical runtime packages in-repo
 
