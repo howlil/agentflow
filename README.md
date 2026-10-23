@@ -62,7 +62,7 @@ Updates through `skills.sh` are user-initiated. Native Claude/Codex marketplace 
 **Choose one installation route per agent:** native managed plugin **or** editable `skills.sh` files. Native plugins bundle the same eleven canonical skills, with no generated copies.
 
 ```bash
-# Claude Code (after M2 reaches master)
+# Claude Code (public repository marketplace)
 claude plugin marketplace add howlil/agentflow
 claude plugin install agentflow@agentflow
 
@@ -79,13 +79,14 @@ npm run plugins:sync
 npm run plugins:check
 ```
 
-## Agentflow CLI (M3)
+## Agentflow CLI (published on npm)
 
 A thin, separate Node.js executable lives under `packages/cli`. The CLI delegates portable skill lifecycle to pinned `skills@1.7.4`, adds safe project bootstrap and offline diagnosis, and never overwrites steering files.
 
 ```bash
-# From a local checkout of M3; not yet published on npm
-npm install -g ./packages/cli
+# Install the published CLI (Node.js >=22.20.0)
+npm install -g @howlil/agentflow-cli@0.3.0
+agentflow --version
 agentflow init --agent codex
 agentflow doctor
 agentflow install --global --agent codex --skill agentflow
@@ -99,12 +100,12 @@ Bare `agentflow update` is deliberately rejected because the upstream bare updat
 
 ## Release and rollback (M4)
 
-**Automated npm package release:** after a reviewed `master` commit, open **Actions → Publish Agentflow Release → Run workflow**, select `master`, and enter the current version (for example `v0.3.0`). The pipeline validates CI, publishes `@howlil/agentflow-cli` using repository secret `NPM_KEY`, then creates the Git tag and GitHub Release. A pushed matching `v*` tag also triggers publishing. Publishing requires a valid granular npm token with package write/bypass-2FA permissions; the package has **not** been published by these source changes.
+**Automated npm package release:** after a reviewed `master` commit, open **Actions → Publish Agentflow Release → Run workflow**, select `master`, and enter the current version (for example `v0.3.0`). The pipeline validates CI, publishes `@howlil/agentflow-cli` using repository secret `NPM_KEY`, then creates the Git tag and GitHub Release. A pushed matching `v*` tag also triggers publishing. The first public release, [v0.3.0](https://github.com/howlil/agentflow/releases/tag/v0.3.0), is already published on npm. Future versions require a new version bump, reviewed code, and valid npm publishing credentials.
 
 
 The CLI verifies installed skill source ownership before update and uninstall; mutations require explicit global/project scope. Versioned releases check tag ancestry and metadata before creating GitHub release notes. The npm publish job uses the `NPM_KEY` repository secret; if its credentials are invalid or the npm scope is not owned, the release fails without creating a GitHub Release.
 
-Remote install/update/rollback acceptance is a manual post-release workflow. No npm package publication or tag has been executed by these changes. See [release and rollback](src/content/docs/start/release-and-rollback.md).
+Published release acceptance is now an automated post-release workflow and is also available on demand. It checks the real npm CLI, immutable skill content, and source-protected uninstall; rollback verification requires an earlier published tag. See [release and rollback](src/content/docs/start/release-and-rollback.md).
 
 ## Local development
 
