@@ -22,6 +22,24 @@ jobs:
           package-manager-cache: false
       - name: Install npm with staged publishing support
         run: npm install --global npm@11
+      - name: Inspect exact npm version lifecycle status
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NODE_AUTH_TOKEN"
+          OUTPUT="$(mktemp)"
+          trap 'rm -f "$OUTPUT"' EXIT
+          HTTP_CODE="$(curl --silent --show-error --output "$OUTPUT" --write-out '%{http_code}' \
+            --header "Authorization: Bearer $NODE_AUTH_TOKEN" \
+            'https://registry.npmjs.org/-/package/%40howlil%2Fagentflow-cli/version/0.3.0/status')"
+          echo "npm version lifecycle API HTTP: $HTTP_CODE"
+          if test "$HTTP_CODE" = 200; then
+            node -e "const x=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')); console.log('Lifecycle: '+JSON.stringify({packageName:x.packageName,version:x.version,status:x.status}))" "$OUTPUT"
+          else
+            echo "Lifecycle endpoint did not return version metadata. This is not evidence of publication or approval."
+          fi
       - name: Check pending stages with existing NPM_KEY
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
@@ -36,5 +54,5 @@ jobs:
           if npm view '@howlil/agentflow-cli@0.3.0' version --registry=https://registry.npmjs.org; then
             echo "v0.3.0 is publicly available."
           else
-            echo "v0.3.0 is not yet publicly available. Approve it through npm Staged Packages with 2FA."
+            echo "v0.3.0 is not yet publicly available. Check version lifecycle and any pending stage above."
           fi
