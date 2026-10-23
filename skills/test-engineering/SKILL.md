@@ -1,6 +1,6 @@
 ---
 name: test-engineering
-description: Turn a meaningful software behavior, invariant, failure mode, or regression risk into the smallest reliable executable proof at the boundary where correctness actually lives. Use when testing itself requires design: choosing unit vs integration vs contract vs concurrency vs E2E boundaries, reproducing races or async failures, proving transaction or migration behavior, designing failure/recovery tests, fixing flaky or brittle suites, or building a focused regression strategy. Do not invoke for obvious local tests that design-thinking can write directly. Do not maximize coverage, generate one test per function/file, mock the semantics being proven, or require TDD/test-pyramid quotas.
+description: "Turn a meaningful software behavior, invariant, failure mode, or regression risk into the smallest reliable executable proof at the boundary where correctness actually lives. Use when testing itself requires design: choosing unit vs integration vs contract vs concurrency vs E2E boundaries, reproducing races or async failures, proving transaction or migration behavior, designing failure/recovery tests, fixing flaky or brittle suites, or building a focused regression strategy. Do not invoke for obvious local tests that design-thinking can write directly. Do not maximize coverage, generate one test per function/file, mock the semantics being proven, or require TDD/test-pyramid quotas."
 ---
 
 # Test Engineering
