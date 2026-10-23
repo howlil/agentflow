@@ -98,6 +98,9 @@ test('status and scope never rewrite config', async () => {
 test('update without skill is safely rejected, check stays read-only', async () => {
   await sandbox(async cwd => {
     const ctx = { ...capture(), cwd };
+    await writeFile(join(cwd, 'skills-lock.json'), JSON.stringify({
+      version: 1, skills: { agentflow: { source: 'howlil/agentflow', sourceType: 'github', sourceUrl: 'https://github.com/howlil/agentflow' } },
+    }));
     assert.equal(await run(['update'], ctx), 2);
     assert.equal(ctx.calls.length, 0);
     assert.equal(await run(['update', '--check'], ctx), 0);
@@ -110,11 +113,17 @@ test('update without skill is safely rejected, check stays read-only', async () 
 
 test('uninstall defaults to repository source and never uses upstream --all', async () => {
   await sandbox(async cwd => {
+    await writeFile(join(cwd, 'skills-lock.json'), JSON.stringify({
+      version: 1, skills: {
+        agentflow: { source: 'howlil/agentflow' },
+        'code-review': { source: 'other-owner/toolbox' },
+      },
+    }));
     const ctx = { ...capture(), cwd };
-    assert.equal(await run(['uninstall', '-g', '-a', 'codex'], ctx), 0);
+    assert.equal(await run(['uninstall', '-p', '-a', 'codex'], ctx), 0);
     assert.deepEqual(ctx.calls[0].args,
-      ['--yes', 'skills@1.7.4', 'remove', 'howlil/agentflow', '-g', '-a', 'codex']);
-    assert.equal(await run(['uninstall', '-s', 'agentflow', '--dry-run'], ctx), 0);
+      ['--yes', 'skills@1.7.4', 'remove', 'agentflow', '-a', 'codex']);
+    assert.equal(await run(['uninstall', '-p', '-s', 'agentflow', '--dry-run'], ctx), 0);
     assert.equal(ctx.calls.length, 1);
   });
 });
