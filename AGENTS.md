@@ -1,13 +1,15 @@
 # Agentflow — Repository Rules
 
 ## Product
-Agentflow helps engineers route a concrete task to the smallest useful reasoning skill.
+Agentflow helps engineers route a concrete task to the smallest useful reasoning skill. The portable `agentflow` router selects among ten specialist skills.
 The homepage, skill chooser, human guides, and generated runtime references form one user journey.
 A skill is a decision tool, not a mandatory lifecycle stage.
 
 ## Ownership
 - `skills/<name>/SKILL.md`: canonical instructions and runtime metadata.
-- `scripts/generate-skills.mjs`: validate canonical packages and generate metadata/reference docs.
+- `scripts/generate-skills.mjs`: validate canonical packages and required Agent Skills metadata constraints, then generate metadata/reference docs.
+- `src/content/docs/start/install.md`: document installer-managed project/global lifecycle; M1 does not implement an Agentflow-owned CLI.
+- `scripts/distribution.test.mjs`: prove skill-layout, router coverage, and guide/lifecycle documentation contracts.
 - `src/content/docs/skills/`: human-facing usage, examples, and when-not-to-use boundaries.
 - `src/content/docs/start/` and `recipes/`: discovery and composition.
 - `src/components/`: presentation and interaction only.
@@ -26,3 +28,4 @@ Keep new responsibilities in existing boundaries unless a real independent owner
 5. Keep generated `src/generated/` and `src/content/docs/reference/` out of commits.
 
 No backend, state store, new abstraction layer, or agent runtime without a concrete product need.
+Do not claim auto-update or universal invocation syntax from file-based installation. Do not write to other projects' steering files during M1.
