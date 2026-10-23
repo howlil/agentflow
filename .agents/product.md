@@ -42,12 +42,14 @@ In:
 - goal-first homepage
 - quickstart and skill router
 - one human usage page for each skill
-- generated runtime reference for all ten canonical skills
+- generated runtime reference for all eleven canonical skills
 - multi-skill recipes
 - product/system rationale
 - Cloudflare deployment instructions
 - discoverable `agentflow` router and ten specialist packages
 - documented installer-managed global/project install, update, and removal
+- native Claude and Codex plugin manifests and marketplace discovery
+- host-scoped managed updates, with version-change requirements and explicit release workflow
 
 Out:
 - user accounts
@@ -55,7 +57,8 @@ Out:
 - CMS
 - analytics dashboard
 - runtime skill execution service
-- native plugin distribution (M2)
+- automatic host-agnostic updates or auto-enablement without user action
+- publication into third-party official/public plugin directories
 - an Agentflow-owned installer CLI (later milestone)
 
 ## Proof
