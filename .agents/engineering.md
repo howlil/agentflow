@@ -46,8 +46,24 @@ Cloudflare Pages / Workers Static Assets
 - There is no mutable runtime application state or database.
 - Distribution uses the canonical `skills/<name>/SKILL.md` layout rather than vendor-specific copies.
 - File installation does not guarantee auto-updates or identical invocation syntax across hosts.
+- Native marketplace catalogs point at repository root and never embed copied skill text.
+- Both plugin manifests must retain package identity `agentflow` and package version.
 
 ## Critical Flows
+
+### Native plugin release
+
+```text
+npm version patch --no-git-tag-version
+ → npm run plugins:sync
+ → npm run plugins:check
+ → npm test + npm run build
+ → review + merge to master
+ → git tag vX.Y.Z
+ → release workflow verifies version + master ancestry
+ → GitHub Release
+ → host marketplace update depends on client configuration
+```
 
 ### Change a skill
 
@@ -83,13 +99,21 @@ commit to master
 
 ## Decisions
 
+### M2 native plugin adapters and versioning
+
+The canonical `skills/` root is shared by the Claude Code plugin manifest, the portable Agent Plugins manifest, and both marketplace catalogs. Host manifests are metadata adapters, not copied runtime skill sources.
+
+`package.json` owns the semantic version. `scripts/plugin-manifests.mjs --check` enforces version parity with the lockfile and both native manifests, same plugin identity, path containment at root, and exactly eleven canonical skills. `--write` synchronizes manifest versions only. Tag-triggered releases verify `vX.Y.Z` against package version and require an ancestor of `master` before publishing a GitHub Release.
+
+Managed updates depend on host configurations. A public GitHub release does not imply third-party official directory submission or automatic client refresh.
+
 ### M1 installer-managed portable distribution
 
 Use the canonical Agent Skills layout with the upstream skills CLI for install/update/remove. Native plugin manifests and an Agentflow-specific CLI are separate milestones.
 
 ### Canonical runtime packages in-repo
 
-The ten `SKILL.md` files under `skills/` are authoritative for agent behavior.
+The eleven `SKILL.md` files under `skills/` are authoritative for agent behavior.
 
 ### Generated metadata and runtime reference
 
