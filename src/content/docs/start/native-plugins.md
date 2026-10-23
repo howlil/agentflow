@@ -58,14 +58,17 @@ codex plugin list
 
 Alternatively, in a supported Codex or ChatGPT desktop client, open the Plugins Directory and install **agentflow** from the **Agentflow Engineering** source.
 
-To refresh or remove marketplace configuration:
+To uninstall the native plugin and manage the marketplace separately:
 
 ```bash
+codex plugin remove agentflow@agentflow
+codex plugin list  # catalog entry remains visible as "not installed"
+
 codex plugin marketplace upgrade agentflow
 codex plugin marketplace remove agentflow
 ```
 
-Removing a marketplace does **not** automatically mean every previously installed plugin was uninstalled; use the host's plugin management UI to manage the individual plugin. The repository itself cannot force client-side updates or installation policies.
+Removing a marketplace does **not** automatically mean every previously installed plugin was uninstalled. Verify `not installed` in `codex plugin list` before removing the catalog. The repository cannot force client-side updates or installation policies.
 
 ## Editable skills for other coding agents
 
