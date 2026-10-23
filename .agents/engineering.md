@@ -99,6 +99,12 @@ commit to master
 
 ## Decisions
 
+### M3 thin command-line adapter
+
+`packages/cli` is a separate publishable Node.js package with a `bin/agentflow.mjs` entry and no runtime dependencies. `src/main.mjs` owns argument validation, optional `.agentflow.json` bootstrap, offline diagnosis, and version-pinned subprocess delegation to `skills@1.7.4`. `init` uses exclusive create and never rewrites project steering files. No per-agent installation state is reimplemented: `status` and lifecycle are delegated to the upstream installer.
+
+Bare update is rejected because `skills update` without a selector can update unrelated sources. An update-by-name must be reviewed for collisions; `uninstall` with no skill selector uses the exact repository source. `--dry-run` is side-effect-free. CLI binary version must match root/native package version. Registry publication and cross-platform real-host testing remain release gates.
+
 ### M2 native plugin adapters and versioning
 
 The canonical `skills/` root is shared by the Claude Code plugin manifest, the portable Agent Plugins manifest, and both marketplace catalogs. Host manifests are metadata adapters, not copied runtime skill sources.
