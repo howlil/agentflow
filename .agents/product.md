@@ -49,6 +49,7 @@ In:
 - discoverable `agentflow` router and ten specialist packages
 - documented installer-managed global/project install, update, and removal
 - native Claude and Codex plugin manifests and marketplace discovery
+- installable CLI executable with optional project initialization, diagnostics, dry-run and delegated lifecycle
 - host-scoped managed updates, with version-change requirements and explicit release workflow
 
 Out:
@@ -59,7 +60,7 @@ Out:
 - runtime skill execution service
 - automatic host-agnostic updates or auto-enablement without user action
 - publication into third-party official/public plugin directories
-- an Agentflow-owned installer CLI (later milestone)
+- a second proprietary skill downloader or mutable agent runtime
 
 ## Proof
 
