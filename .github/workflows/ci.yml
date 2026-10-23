@@ -82,3 +82,4 @@ jobs:
       - run: agentflow init --agent codex --dry-run
       - run: agentflow install --global --agent codex --skill agentflow --dry-run
       - run: agentflow doctor
+      - run: agentflow status --project
