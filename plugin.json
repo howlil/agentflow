@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agentflow",
+  "version": "0.2.0",
+  "description": "Graph-first engineering decision routing with eleven portable agent skills.",
+  "author": {
+    "name": "howlil",
+    "url": "https://github.com/howlil"
+  },
+  "homepage": "https://github.com/howlil/agentflow",
+  "repository": "https://github.com/howlil/agentflow",
+  "license": "MIT",
+  "keywords": [
+    "software-engineering",
+    "agent-skills",
+    "routing",
+    "code-review",
+    "architecture"
+  ]
+}

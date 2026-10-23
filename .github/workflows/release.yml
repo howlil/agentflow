@@ -1,0 +1,37 @@
+name: Publish Agentflow Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Confirm tag corresponds to a commit on master
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin master
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/master
+          VERSION="$(node -p "require('./package.json').version")"
+          test "$GITHUB_REF_NAME" = "v$VERSION"
+      - run: npm ci
+      - run: npm run plugins:check
+      - run: npm test
+      - run: npm run build
+      - name: Publish GitHub release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$GITHUB_REF_NAME" --title "Agentflow $GITHUB_REF_NAME" --generate-notes --verify-tag

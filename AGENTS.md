@@ -8,7 +8,11 @@ A skill is a decision tool, not a mandatory lifecycle stage.
 ## Ownership
 - `skills/<name>/SKILL.md`: canonical instructions and runtime metadata.
 - `scripts/generate-skills.mjs`: validate canonical packages and required Agent Skills metadata constraints, then generate metadata/reference docs.
-- `src/content/docs/start/install.md`: document installer-managed project/global lifecycle; M1 does not implement an Agentflow-owned CLI.
+- `src/content/docs/start/install.md`: document installer-managed project/global lifecycle.
+- `src/content/docs/start/native-plugins.md`: native marketplace commands and host-specific update behavior.
+- `plugin.json` and `.claude-plugin/plugin.json`: two native metadata adapters with identical package identity/version, not competing skill sources.
+- `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`: native marketplace catalog adapters pointing to the repository root.
+- `scripts/plugin-manifests.mjs`: validate manifest versions and native plugin roots; `package.json` owns the version.
 - `scripts/distribution.test.mjs`: prove skill-layout, router coverage, and guide/lifecycle documentation contracts.
 - `src/content/docs/skills/`: human-facing usage, examples, and when-not-to-use boundaries.
 - `src/content/docs/start/` and `recipes/`: discovery and composition.
@@ -28,4 +32,5 @@ Keep new responsibilities in existing boundaries unless a real independent owner
 5. Keep generated `src/generated/` and `src/content/docs/reference/` out of commits.
 
 No backend, state store, new abstraction layer, or agent runtime without a concrete product need.
+Never duplicate canonical `skills/` into vendor-specific plugin directories. When bumping the version, update `package.json` and lockfile, run `npm run plugins:sync`, and verify `npm run plugins:check`. Native publication is independent from Cloudflare docs deployment.
 Do not claim auto-update or universal invocation syntax from file-based installation. Do not write to other projects' steering files during M1.

@@ -1,0 +1,15 @@
+{
+  "name": "agentflow",
+  "description": "Portable software-engineering decision skills by howlil.",
+  "owner": {
+    "name": "howlil",
+    "url": "https://github.com/howlil"
+  },
+  "plugins": [
+    {
+      "name": "agentflow",
+      "source": "./",
+      "description": "Eleven graph-first skills for engineering decisions."
+    }
+  ]
+}

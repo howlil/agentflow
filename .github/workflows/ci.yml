@@ -18,8 +18,24 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
+      - run: npm run plugins:check
       - run: npm test
       - run: npm run build
+      - name: Validate native Claude plugin and marketplace
+        run: npx --yes @anthropic-ai/claude-code@latest plugin validate . --strict
+      - name: Smoke-test Codex marketplace registration
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @openai/codex@latest plugin marketplace add .
+          npx --yes @openai/codex@latest plugin marketplace list | tee codex-marketplaces.log
+          grep -q 'agentflow' codex-marketplaces.log
+          npx --yes @openai/codex@latest plugin add agentflow@agentflow
+          npx --yes @openai/codex@latest plugin list | tee codex-plugins.log
+          grep -q 'agentflow' codex-plugins.log
+          npx --yes @openai/codex@latest plugin remove agentflow@agentflow
+          npx --yes @openai/codex@latest plugin list | tee codex-removed.log
+          grep -Eq '^agentflow@agentflow[[:space:]]+not installed' codex-removed.log
       - name: Smoke-test portable skill discovery and install/remove
         shell: bash
         run: |

@@ -1,13 +1,15 @@
 {
   "name": "agentflow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "plugins:sync": "node scripts/plugin-manifests.mjs --write",
+    "plugins:check": "node scripts/plugin-manifests.mjs --check",
     "skills:generate": "node scripts/generate-skills.mjs",
     "predev": "npm run skills:generate",
     "dev": "astro dev",
-    "prebuild": "npm run skills:generate",
+    "prebuild": "npm run skills:generate && npm run plugins:check",
     "build": "astro build",
     "preview": "astro preview",
     "test": "node --test scripts/*.test.mjs"
