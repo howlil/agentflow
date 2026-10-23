@@ -55,7 +55,29 @@ npx skills@latest update -g
 npx skills@latest remove -g howlil/agentflow
 ```
 
-Updates are user-initiated. This is not a native plugin; each AI agent controls actual invocation syntax. See the [complete installation guide](src/content/docs/start/install.md), including specific skills, project removal, and compatibility limitations.
+Updates through `skills.sh` are user-initiated. Native Claude/Codex marketplace distribution is also available; each host controls plugin refresh and invocation semantics. See the [complete installation guide](src/content/docs/start/install.md), including specific skills, project removal, and compatibility limitations.
+
+## Native plugins (Claude Code and Codex)
+
+**Choose one installation route per agent:** native managed plugin **or** editable `skills.sh` files. Native plugins bundle the same eleven canonical skills, with no generated copies.
+
+```bash
+# Claude Code (after M2 reaches master)
+claude plugin marketplace add howlil/agentflow
+claude plugin install agentflow@agentflow
+
+# Codex / ChatGPT desktop marketplace
+codex plugin marketplace add howlil/agentflow
+```
+
+On supported Codex/ChatGPT desktop clients, install **Agentflow** from the plugin directory's **Agentflow Engineering** marketplace. Native plugin refreshing depends on host configuration. For versioning and uninstall instructions, see the [native plugin guide](src/content/docs/start/native-plugins.md).
+
+Plugin version source: `package.json`. After a version bump, run:
+
+```bash
+npm run plugins:sync
+npm run plugins:check
+```
 
 ## Local development
 
@@ -69,6 +91,7 @@ npm run dev
 Validate and build:
 
 ```bash
+npm run plugins:check
 npm test
 npm run build
 ```
