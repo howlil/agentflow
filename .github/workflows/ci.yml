@@ -63,3 +63,22 @@ jobs:
             exit 1
           fi
 
+  cli-portability:
+    name: CLI / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: node --test packages/cli/test/main.test.mjs
+      - run: npm pack --dry-run ./packages/cli
+      - run: npm install -g ./packages/cli
+      - run: agentflow --version
+      - run: agentflow init --agent codex --dry-run
+      - run: agentflow install --global --agent codex --skill agentflow --dry-run
+      - run: agentflow doctor
