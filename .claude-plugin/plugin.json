@@ -1,0 +1,17 @@
+{
+  "name": "agentflow",
+  "displayName": "Agentflow",
+  "version": "0.2.0",
+  "description": "Graph-first engineering decisions and specialist skills for Claude Code.",
+  "author": {
+    "name": "howlil",
+    "url": "https://github.com/howlil"
+  },
+  "repository": "https://github.com/howlil/agentflow",
+  "license": "MIT",
+  "keywords": [
+    "engineering",
+    "skill-router",
+    "agent-skills"
+  ]
+}
