@@ -7,7 +7,9 @@ export const CANONICAL_SOURCE = 'howlil/agentflow';
 export function isAgentflowSource(entry) {
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
   const values = [entry.source, entry.sourceUrl].filter(value => typeof value === 'string');
-  return values.some(value => {
+  // A contradictory source/sourceUrl pair must never be accepted: an
+  // apparent canonical name cannot override a different actual remote.
+  return values.length > 0 && values.every(value => {
     if (value === CANONICAL_SOURCE) return true;
     try {
       const url = new URL(value);
