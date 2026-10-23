@@ -56,3 +56,14 @@ jobs:
           else
             echo "v0.3.0 is not yet publicly available. Check version lifecycle and any pending stage above."
           fi
+
+      - name: Verify public package installs an executable agentflow binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm view '@howlil/agentflow-cli@0.3.0' bin --json
+          TARGET="$(mktemp -d)"
+          trap 'rm -rf "$TARGET"' EXIT
+          npm install --prefix "$TARGET" --no-audit --no-fund '@howlil/agentflow-cli@0.3.0'
+          test -x "$TARGET/node_modules/.bin/agentflow"
+          "$TARGET/node_modules/.bin/agentflow" --version
