@@ -1,0 +1,40 @@
+name: Inspect Agentflow npm Stage
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/npm-stage-status.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+      - name: Install npm with staged publishing support
+        run: npm install --global npm@11
+      - name: Check pending stages with existing NPM_KEY
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NODE_AUTH_TOKEN"
+          npm stage list '@howlil/agentflow-cli' --registry=https://registry.npmjs.org
+      - name: Check public registry availability
+        shell: bash
+        run: |
+          if npm view '@howlil/agentflow-cli@0.3.0' version --registry=https://registry.npmjs.org; then
+            echo "v0.3.0 is publicly available."
+          else
+            echo "v0.3.0 is not yet publicly available. Approve it through npm Staged Packages with 2FA."
+          fi
