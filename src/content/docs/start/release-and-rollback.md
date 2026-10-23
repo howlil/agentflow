@@ -59,6 +59,25 @@ The `NPM_KEY` token is used **only by the npm publish step** through the `NODE_A
 
 Current npm policy requires a suitable granular token with bypass 2FA for CI direct publication. npm has announced a planned end to direct publication with bypass-2FA tokens in **January 2027**. Plan to migrate this job to **npm Trusted Publishing / OIDC**, which avoids static registry secrets. Under OIDC configure owner `howlil`, repo `agentflow`, workflow `release.yml`, with `id-token: write`; do not simultaneously rely on `NPM_KEY`. The initial npm package may need registry-owner setup to claim the desired name/scope.
 
+## Pending npm Staged Packages (approval required)
+
+npm may return a successful upload message while leaving the package in a **staged** queue rather than publishing it. The public registry may return E404 and another attempt to publish the same version returns **E409**: `Cannot publish over previously staged version`. This is not a token failure and must not be fixed by repeating `npm publish`.
+
+From the npm account that owns the package, open [npmjs.com](https://www.npmjs.com/) and select the **Staged Packages** tab. Find `@howlil/agentflow-cli@0.3.0`, review its package name, version, source, and tarball contents, then click **Approve**. npm requires a human 2FA challenge; neither GitHub Actions `NPM_KEY` nor this assistant can supply it. See the [official npm staged publishing documentation](https://docs.npmjs.com/staged-publishing/).
+
+To use the CLI instead, login interactively with an authorized account on a trusted workstation (npm CLI 11.15.0+):
+
+```bash
+npm stage list '@howlil/agentflow-cli'
+npm stage view <stage-id>
+npm stage approve <stage-id>
+npm view '@howlil/agentflow-cli@0.3.0' version
+```
+
+After npm reports that the version is public, rerun **Publish Agentflow Release** through the GitHub Actions tab, using branch `master` and `v0.3.0`. The release workflow verifies the published tarball integrity instead of attempting to publish that version again. Only then can it create the GitHub Release/tag. If integrity differs, stop and investigate the package artifact instead of overriding an immutable npm version.
+
+A separate **Inspect Agentflow npm Stage** workflow displays the pending versions using the repository's existing `NPM_KEY`. It never performs approvals or exposes the token value.
+
 ## Manual remote acceptance
 
 `remote-acceptance.yml` is an **on-demand** workflow on GitHub Actions; it cannot run until the workflow is on the default branch and a release tag exists.
