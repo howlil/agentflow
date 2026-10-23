@@ -3,9 +3,18 @@ title: Quickstart
 description: Learn the three ways Agentflow skills are selected and composed.
 ---
 
-Agentflow is designed so you do **not** need to memorize ten skills before doing useful work.
+Agentflow provides a router and ten specialist skills so you do **not** need to memorize their names before doing useful work. [Install Agentflow](/start/install/) first.
 
-## 1. Describe the task
+## 1. Ask the router when the owning decision is unclear
+
+```text
+Use agentflow to select the smallest relevant set of engineering skills
+for this task, based on the unresolved decisions.
+```
+
+Each AI agent controls its own invocation syntax. Installing the router alone does not install its specialists.
+
+## 2. Describe the task
 
 Default mode:
 
@@ -29,7 +38,7 @@ test-engineering
 
 The second skill appears only because verification became its own design problem.
 
-## 2. Request a skill explicitly
+## 3. Request a skill explicitly
 
 ```text
 Use $design-graph to redesign the editor flow.
@@ -37,7 +46,7 @@ Use $design-graph to redesign the editor flow.
 
 An explicit request selects that lens, but the skill must still respect its boundary.
 
-## 3. Compose skills explicitly
+## 4. Compose skills explicitly
 
 ```text
 Use $product-design to define recurring-task behavior,
