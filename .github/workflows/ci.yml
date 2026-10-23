@@ -27,7 +27,7 @@ jobs:
           SOURCE="$PWD"
           TARGET="$(mktemp -d)"
           trap 'rm -rf "$TARGET"' EXIT
-          node --input-type=module -e 'import { EXPECTED } from "./scripts/generate-skills.mjs"; process.stdout.write(EXPECTED.join("\\n") + "\\n")' > "$TARGET/expected.txt"
+          node --input-type=module -e 'import { EXPECTED } from "./scripts/generate-skills.mjs"; process.stdout.write(EXPECTED.join(String.fromCharCode(10)) + String.fromCharCode(10))' > "$TARGET/expected.txt"
           cd "$TARGET"
           npx --yes skills@1.7.4 add "$SOURCE" --list 2>&1 | tee discovery.log
           if grep -Eq 'Skipped .*SKILL.md|YAML parse error' discovery.log; then
