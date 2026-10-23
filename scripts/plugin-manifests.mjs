@@ -31,6 +31,19 @@ export async function syncPluginVersions({ root = process.cwd(), write = false }
       await writeFile(join(root, path), JSON.stringify(content, null, 2) + '\n');
     }
   }
+  const cliPath = 'packages/cli/package.json';
+  const cli = await readJson(root, cliPath);
+  if (cli.name !== '@howlil/agentflow-cli' || cli.bin?.agentflow !== './bin/agentflow.mjs') {
+    throw new Error('CLI package identity/bin must match the Agentflow distribution contract');
+  }
+  if (cli.version !== pkg.version) {
+    if (!write) {
+      throw new Error('CLI package version ' + cli.version + ' differs from package.json ' + pkg.version +
+        '; run npm run plugins:sync');
+    }
+    cli.version = pkg.version;
+    await writeFile(join(root, cliPath), JSON.stringify(cli, null, 2) + '\n');
+  }
   return pkg.version;
 }
 
