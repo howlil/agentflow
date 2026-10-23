@@ -35,7 +35,7 @@ jobs:
           set -euo pipefail
           for ref in "$RELEASE_REF" "$PREVIOUS_REF"; do
             test -z "$ref" && continue
-            [[ "$ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+            [[ "$ref" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]] || exit 1
             git show-ref --verify --quiet "refs/tags/$ref" || exit 1
           done
           git fetch origin master
