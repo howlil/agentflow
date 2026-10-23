@@ -39,6 +39,10 @@ test('source identity accepts canonical github repo only, never lookalike hosts'
     'https://github.com/howlil/agentflow',
     'https://github.com/howlil/agentflow.git',
   ]) assert.equal(isAgentflowSource({ source }), true, source);
+  assert.equal(isAgentflowSource({
+    source: 'howlil/agentflow',
+    sourceUrl: 'https://github.com/another/engineering-skills',
+  }), false, 'conflicting source metadata must fail closed');
   for (const source of [
     'other/agentflow',
     'howlil/agentflow-other',
