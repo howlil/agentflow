@@ -1,0 +1,98 @@
+---
+title: Agentflow CLI
+description: Initialize, diagnose, inspect and manage portable Agentflow skills from one command.
+---
+
+M3 introduces a small, dependency-free Node.js CLI in `packages/cli`. It is intentionally **not** a second package manager: installer actions delegate to the upstream `skills@1.7.4` command. Node.js **22.20.0 or later** and `npx` are required. `doctor` is offline. Other operations can download the pinned upstream CLI.
+
+## Install the CLI itself
+
+This package has not yet been published to npm. For now, from a local checkout of the M3 branch:
+
+```bash
+git clone https://github.com/howlil/agentflow.git
+cd agentflow
+git checkout feat/m3-agentflow-cli
+npm install -g ./packages/cli
+agentflow --version
+```
+
+Alternatively, execute it without global installation using `node packages/cli/bin/agentflow.mjs` from the checkout.
+
+The intended package name for a later publish is `@howlil/agentflow-cli`. Do not confuse it with other npm packages named `agentflow`.
+
+## Initialize a project safely
+
+```bash
+cd my-project
+agentflow init --agent codex
+agentflow init --agent codex  # idempotent
+agentflow init --agent claude-code  # refuses to overwrite existing config
+```
+
+The only file written is `.agentflow.json`, e.g.:
+
+```json
+{
+  "schemaVersion": 1,
+  "source": "howlil/agentflow",
+  "agent": "codex"
+}
+```
+
+`init` never writes `AGENTS.md`, existing `.agents/product.md`, `.agents/engineering.md`, or any installed skill; it does **not** implicitly install skills. The file is created exclusively. On conflicts, manually reconcile the file rather than losing existing settings.
+
+## Diagnose and inspect
+
+```bash
+agentflow doctor
+agentflow status --project
+agentflow status --global
+```
+
+`doctor` checks Node version, the presence of `npx`, optional Git/known AI binaries and local config, with no network or filesystem mutations. `status` delegates to the upstream `skills list`, which may fetch the pinned CLI on first invocation. The default agent comes from project config unless overridden explicitly.
+
+## Install
+
+```bash
+agentflow install --agent codex --skill agentflow
+agentflow install --global --agent claude-code --skill design-thinking
+agentflow install --global --agent codex --skill code-review --copy
+agentflow install --global --agent codex --skill agentflow --yes
+```
+
+If no skill selector is given, upstream `skills add howlil/agentflow` offers its native interactive selection. `--yes` must be explicit to suppress confirmation. Native Claude/Codex plugin installs and file-based installations should not be mixed for the same agent and skill.
+
+## Update
+
+```bash
+agentflow update --check
+agentflow update --skill agentflow --global
+agentflow update --skill code-review --project --yes
+```
+
+`agentflow update` with **no skill name is intentionally rejected**. The upstream bare command updates skills from unrelated sources too, which is outside Agentflow's ownership. `--check` calls the read-only upstream `skills check` and can show updates from multiple sources. An update by skill name still follows upstream name matching; review the selected installation/source if other repositories use the same name.
+
+## Uninstall
+
+```bash
+agentflow uninstall --global --agent codex
+agentflow uninstall --skill agentflow --project
+agentflow uninstall --global --agent codex --skill design-thinking --yes
+```
+
+Without a `--skill` selector, removal is scoped to the exact `howlil/agentflow` source as understood by the upstream CLI. With a `--skill` selector, the underlying installer matches by skill name, so review the selection if multiple repositories expose the same skill name. No `--all` option is available from the Agentflow wrapper.
+
+## Dry run
+
+```bash
+agentflow install --global --skill agentflow --dry-run
+agentflow uninstall --global --skill agentflow --dry-run
+agentflow init --agent codex --dry-run
+```
+
+Dry-run displays what would be executed or written and makes no change. Paths and selectors are arguments, never arbitrary shell expressions.
+
+## Release boundaries
+
+Until M3 reaches `master` and the package is explicitly published, a registry install such as `npm install -g @howlil/agentflow-cli` must not be presented as available. Node test and packaging acceptance run in GitHub Actions. Cross-OS integration acceptance and real remote update behavior are separate release gates.
