@@ -96,6 +96,10 @@ test('missing, corrupted or unsupported locks cannot authorize mutating updates'
     assert.equal(await run(['uninstall', '-p', '-s', 'agentflow', '--yes'], ctx), 1);
     await writeFile(join(cwd, 'skills-lock.json'), JSON.stringify({ skills: [] }));
     assert.equal(await run(['update', '-p', '-s', 'agentflow', '--yes'], ctx), 1);
+    await writeFile(join(cwd, 'skills-lock.json'), JSON.stringify({
+      version: 0, skills: { agentflow: owned },
+    }));
+    assert.equal(await run(['update', '-p', '-s', 'agentflow', '--yes'], ctx), 1);
     assert.equal(ctx.calls.length, 0);
   });
 });
