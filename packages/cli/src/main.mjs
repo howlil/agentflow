@@ -170,7 +170,8 @@ export async function run(argv, deps = {}) {
     return 0;
   }
   if (argv.length === 1 && argv[0] === '--version') {
-    out('agentflow-cli 0.3.0');
+    const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+    out('agentflow-cli ' + pkg.version);
     return 0;
   }
   let opts;
