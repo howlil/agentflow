@@ -3,7 +3,9 @@ title: Install Agentflow
 description: Discover, install, update, and remove Agentflow skills in project or global scope.
 ---
 
-Agentflow publishes portable [Agent Skills](https://agentskills.io/specification) at `skills/<name>/SKILL.md`. Install them with the independent [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md), which requires Node.js 22.20 or later.
+For editable, file-based installations, Agentflow publishes portable [Agent Skills](https://agentskills.io/specification) at `skills/<name>/SKILL.md`. Install them with the independent [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md), which requires Node.js 22.20 or later.
+
+For native managed Claude and Codex plugins, see [Native plugins](/start/native-plugins/). **Choose only one distribution route for each agent** to avoid duplicate skills.
 
 ## Discover available skills
 
@@ -61,7 +63,7 @@ Choose the correct project or global scope and confirm the removal selection. Do
 
 ## Compatibility boundaries
 
-- `skills.sh` provides file-based installation; M1 does not include a native Claude, Codex, or Copilot plugin marketplace.
+- `skills.sh` provides file-based installation and user-initiated updates. Claude and Codex now have separate native marketplace paths documented on the native plugins page.
 - Skill activation syntax, symlink support, and automatic discovery vary by AI agent. `$agentflow` is not guaranteed to be a native command on every platform.
 - The router does not modify the target repository's `AGENTS.md` or other steering files.
 - Verify the installed skill with `npx skills@latest list` or `list -g`, then test invocation in the target agent. Cross-agent runtime acceptance must be tested per host.
