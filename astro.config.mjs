@@ -28,6 +28,7 @@ export default defineConfig({
             'start/install',
             'start/native-plugins',
             'start/cli',
+            'start/release-and-rollback',
             'start/choose-a-skill',
             'start/deploy-cloudflare',
           ],

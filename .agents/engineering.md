@@ -99,6 +99,12 @@ commit to master
 
 ## Decisions
 
+### M4 release acceptance and source ownership
+
+`packages/cli/src/ownership.mjs` validates installed source identity from official project `skills-lock.json` or global `$XDG_STATE_HOME/skills/.skill-lock.json` / `~/.agents/.skill-lock.json` before mutations. Unknown owners fail closed, and source-scoped uninstall expands to concrete owned names. Update/uninstall require explicit scope. Dry-run invokes no installer and makes no filesystem writes.
+
+The release workflow validates `vX.Y.Z` tag version and `master` ancestry, creates GitHub Release, and optionally publishes the CLI through npm OIDC. npm publication is gated by the explicit `AGENTFLOW_NPM_PUBLISH_ENABLED` variable and npm trusted publisher setup. Remote tagged installation, upgrade, and rollback acceptance remains manual until the public tags exist. Never claim it passed before execution.
+
 ### M3 thin command-line adapter
 
 `packages/cli` is a separate publishable Node.js package with a `bin/agentflow.mjs` entry and no runtime dependencies. `src/main.mjs` owns argument validation, optional `.agentflow.json` bootstrap, offline diagnosis, and version-pinned subprocess delegation to `skills@1.7.4`. `init` uses exclusive create and never rewrites project steering files. No per-agent installation state is reimplemented: `status` and lifecycle are delegated to the upstream installer.

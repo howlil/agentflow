@@ -97,6 +97,12 @@ agentflow uninstall --global --agent codex
 
 Bare `agentflow update` is deliberately rejected because the upstream bare update is not restricted to this source. Read the [CLI documentation](src/content/docs/start/cli.md) for supported flags, dry runs, and configuration safety.
 
+## Release and rollback (M4)
+
+The CLI verifies installed skill source ownership before update and uninstall; mutations require explicit global/project scope. Versioned releases check tag ancestry and metadata before creating GitHub release notes. An optional npm OIDC publish job is disabled until npm registry ownership and trusted publisher permissions are configured.
+
+Remote install/update/rollback acceptance is a manual post-release workflow. No npm package publication or tag has been executed by these changes. See [release and rollback](src/content/docs/start/release-and-rollback.md).
+
 ## Local development
 
 ```bash

@@ -71,7 +71,7 @@ agentflow update --skill agentflow --global
 agentflow update --skill code-review --project --yes
 ```
 
-`agentflow update` with **no skill name is intentionally rejected**. The upstream bare command updates skills from unrelated sources too, which is outside Agentflow's ownership. `--check` calls the read-only upstream `skills check` and can show updates from multiple sources. An update by skill name still follows upstream name matching; review the selected installation/source if other repositories use the same name.
+`agentflow update` without a skill name is intentionally rejected. Updates and uninstalls now require explicit `--global` or `--project`, and Agentflow verifies source ownership against the upstream lockfile before executing. `--check` remains read-only and can show updates from other sources.
 
 ## Uninstall
 
@@ -81,7 +81,7 @@ agentflow uninstall --skill agentflow --project
 agentflow uninstall --global --agent codex --skill design-thinking --yes
 ```
 
-Without a `--skill` selector, removal is scoped to the exact `howlil/agentflow` source as understood by the upstream CLI. With a `--skill` selector, the underlying installer matches by skill name, so review the selection if multiple repositories expose the same skill name. No `--all` option is available from the Agentflow wrapper.
+Before destructive actions, Agentflow reads the upstream project/global lockfile and verifies each selected skill belongs to `howlil/agentflow`. Without `--skill`, it chooses only names owned by Agentflow. A collision, invalid lock, or missing ownership record fails closed. No `--all` option is available.
 
 ## Dry run
 
@@ -95,4 +95,4 @@ Dry-run displays what would be executed or written and makes no change. Paths an
 
 ## Release boundaries
 
-Until M3 reaches `master` and the package is explicitly published, a registry install such as `npm install -g @howlil/agentflow-cli` must not be presented as available. Node test and packaging acceptance run in GitHub Actions. Cross-OS integration acceptance and real remote update behavior are separate release gates.
+Until the CLI package is explicitly published, a registry install such as `npm install -g @howlil/agentflow-cli` must not be presented as available. Node tests and packaging acceptance run in GitHub Actions. Remote tagged update/rollback is a separate release gate. See [release and rollback](/start/release-and-rollback/).

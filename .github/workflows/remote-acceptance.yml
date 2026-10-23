@@ -1,0 +1,82 @@
+name: Remote Skill Release Acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_ref:
+        description: "Published tag to install (e.g. v0.3.0)"
+        required: true
+        type: string
+      previous_ref:
+        description: "Optional previous tag for upgrade/rollback acceptance"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  remote-acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate published tags before touching installer state
+        shell: bash
+        env:
+          RELEASE_REF: ${{ inputs.release_ref }}
+          PREVIOUS_REF: ${{ inputs.previous_ref }}
+        run: |
+          set -euo pipefail
+          for ref in "$RELEASE_REF" "$PREVIOUS_REF"; do
+            test -z "$ref" && continue
+            [[ "$ref" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]] || exit 1
+            git show-ref --verify --quiet "refs/tags/$ref" || exit 1
+          done
+          git fetch origin master
+          git merge-base --is-ancestor "refs/tags/$RELEASE_REF" origin/master
+      - name: Install release and optionally verify rollback
+        shell: bash
+        env:
+          RELEASE_REF: ${{ inputs.release_ref }}
+          PREVIOUS_REF: ${{ inputs.previous_ref }}
+          DISABLE_TELEMETRY: '1'
+        run: |
+          set -euo pipefail
+          TARGET="$(mktemp -d)"
+          trap 'rm -rf "$TARGET"' EXIT
+          ROOT="$PWD"
+          cd "$TARGET"
+
+          verify() {
+            local tag="$1"
+            test -f .agents/skills/agentflow/SKILL.md
+            git -C "$ROOT" show "$tag:skills/agentflow/SKILL.md" > expected-skill.md
+            cmp expected-skill.md .agents/skills/agentflow/SKILL.md
+            npx --yes skills@1.7.4 list -a codex | grep -q agentflow
+          }
+
+          if test -n "$PREVIOUS_REF"; then
+            npx --yes skills@1.7.4 add "howlil/agentflow#$PREVIOUS_REF" --skill agentflow -a codex --copy --yes
+            verify "$PREVIOUS_REF"
+            npx --yes skills@1.7.4 remove agentflow -a codex --yes
+          fi
+
+          npx --yes skills@1.7.4 add "howlil/agentflow#$RELEASE_REF" --skill agentflow -a codex --copy --yes
+          verify "$RELEASE_REF"
+
+          if test -n "$PREVIOUS_REF"; then
+            npx --yes skills@1.7.4 remove agentflow -a codex --yes
+            npx --yes skills@1.7.4 add "howlil/agentflow#$PREVIOUS_REF" --skill agentflow -a codex --copy --yes
+            verify "$PREVIOUS_REF"
+          fi
+          npx --yes skills@1.7.4 remove agentflow -a codex --yes
+          if test -e .agents/skills/agentflow/SKILL.md; then
+            echo "Installer did not remove the skill" >&2
+            exit 1
+          fi

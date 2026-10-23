@@ -6,20 +6,20 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  publish:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version-file: .node-version
-          cache: npm
-      - name: Confirm tag corresponds to a commit on master
+          node-version: '24'
+          package-manager-cache: false
+      - name: Verify tag belongs to reviewed master history
         shell: bash
         run: |
           set -euo pipefail
@@ -31,6 +31,44 @@ jobs:
       - run: npm run plugins:check
       - run: npm test
       - run: npm run build
+      - name: Validate standalone npm tarball
+        run: npm pack --dry-run ./packages/cli
+
+  publish-npm:
+    needs: verify
+    if: ${{ vars.AGENTFLOW_NPM_PUBLISH_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+      - name: Require npm with trusted-publishing support
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --version
+          npm install -g npm@11
+          node -e "const v=require('child_process').execFileSync('npm',['--version'],{encoding:'utf8'}).trim().split('.').map(Number); if(v[0]<11 || (v[0]===11 && v[1]<5)) process.exit(1)"
+      - name: Publish scoped CLI using npm OIDC
+        working-directory: packages/cli
+        run: npm publish --access public
+        # Requires @howlil/agentflow-cli already claimed on npm, and a
+        # trusted publisher configured for howlil/agentflow + release.yml.
+        # No npm auth tokens are stored in GitHub Actions.
+
+  github-release:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
       - name: Publish GitHub release notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

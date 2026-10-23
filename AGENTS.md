@@ -34,6 +34,8 @@ Keep new responsibilities in existing boundaries unless a real independent owner
 5. Keep generated `src/generated/` and `src/content/docs/reference/` out of commits.
 
 No backend, state store, new abstraction layer, or agent runtime without a concrete product need.
-CLI `init` may exclusively create `.agentflow.json` but must not mutate target project `AGENTS.md` or `.agents/`. Scope is always explicit when needed; bare `agentflow update` must never update unrelated repositories. Keep the nested CLI package version synchronized with root `package.json` and native plugin manifests.
+CLI `init` may exclusively create `.agentflow.json` but must not mutate target project `AGENTS.md` or `.agents/`. Update/uninstall require an explicit scope and verified Agentflow source ownership in the official project/global lockfile; missing or mismatched records fail closed. Bare `agentflow update` must never update unrelated repositories.
+- `packages/cli/src/ownership.mjs` owns read-only source-identity checks; never implement an independent lockfile writer.
+- `.github/workflows/release.yml` owns tag checks and optionally enabled OIDC npm publishing; remote acceptance remains a separate manual workflow. Keep the nested CLI package version synchronized with root `package.json` and native plugin manifests.
 Never duplicate canonical `skills/` into vendor-specific plugin directories. When bumping the version, update `package.json` and lockfile, run `npm run plugins:sync`, and verify `npm run plugins:check`. Native publication is independent from Cloudflare docs deployment.
 Do not claim auto-update or universal invocation syntax from file-based installation. Do not write to other projects' steering files during M1.
