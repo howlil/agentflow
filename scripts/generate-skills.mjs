@@ -32,6 +32,11 @@ export function parseFrontmatter(source, file) {
     const [, key, raw] = property;
     if (Object.hasOwn(fields, key)) throw new Error(`Duplicate frontmatter key "${key}": ${file}`);
 
+    // A bare colon-space or whitespace-comment marker changes the YAML scalar.
+    // Reject them rather than generating docs from text that real installers skip.
+    if (!raw.startsWith('"') && !raw.startsWith("'") && /:\\s|(?:^|\\s)#/.test(raw)) {
+      throw new Error(`Quote YAML-special frontmatter scalar "${key}" in ${file}`);
+    }
     let value = raw;
     if (raw.startsWith('"')) {
       try {
