@@ -99,6 +99,9 @@ Bare `agentflow update` is deliberately rejected because the upstream bare updat
 
 ## Release and rollback (M4)
 
+**Automated npm package release:** after a reviewed `master` commit, open **Actions → Publish Agentflow Release → Run workflow**, select `master`, and enter the current version (for example `v0.3.0`). The pipeline validates CI, publishes `@howlil/agentflow-cli` using repository secret `NPM_KEY`, then creates the Git tag and GitHub Release. A pushed matching `v*` tag also triggers publishing. Publishing requires a valid granular npm token with package write/bypass-2FA permissions; the package has **not** been published by these source changes.
+
+
 The CLI verifies installed skill source ownership before update and uninstall; mutations require explicit global/project scope. Versioned releases check tag ancestry and metadata before creating GitHub release notes. An optional npm OIDC publish job is disabled until npm registry ownership and trusted publisher permissions are configured.
 
 Remote install/update/rollback acceptance is a manual post-release workflow. No npm package publication or tag has been executed by these changes. See [release and rollback](src/content/docs/start/release-and-rollback.md).
