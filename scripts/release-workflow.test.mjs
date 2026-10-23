@@ -19,7 +19,7 @@ test('release workflow supports matching version tags and manual master releases
 
 test('npm publish uses the supplied NPM_KEY secret only in publish job', async () => {
   const workflow = await read('.github/workflows/release.yml');
-  assert.equal(workflow.match(/secrets\.NPM_KEY/g)?.length, 1);
+  assert.equal(workflow.match(/secrets\.NPM_KEY/g)?.length, 2);
   assert.match(workflow, /NODE_AUTH_TOKEN:\s*\$\{\{ secrets\.NPM_KEY \}\}/);
   assert.match(workflow, /npm publish --access public/);
   assert.doesNotMatch(workflow, /AGENTFLOW_NPM_PUBLISH_ENABLED/);
@@ -35,6 +35,14 @@ test('npm registry preflight and dependent GitHub release refuse mismatched rele
   assert.match(workflow, /Version exists on npm, but package contents differ/);
   assert.match(workflow, /needs: \[verify, publish-npm\]/);
   assert.match(workflow, /gh release create/);
+});
+
+test('accepted npm stage is detected before any duplicate publish attempt', async () => {
+  const workflow = await read('.github/workflows/release.yml');
+  assert.match(workflow, /npm stage list '@howlil\/agentflow-cli'/);
+  assert.match(workflow, /Version \$PACKAGE_VERSION is STAGED/);
+  assert.match(workflow, /refusing to republish blindly/);
+  assert.match(workflow, /A maintainer must approve it with 2FA/);
 });
 
 test('standalone CLI distribution is scoped, public and version-aligned with repository', async () => {

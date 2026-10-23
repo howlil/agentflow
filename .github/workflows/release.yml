@@ -110,6 +110,7 @@ jobs:
         shell: bash
         env:
           PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
         run: |
           set -euo pipefail
           PACK_DIR="$(mktemp -d)"
@@ -125,7 +126,23 @@ jobs:
             echo "Package version already published with identical integrity."
             echo "result=already-published" >> "$GITHUB_OUTPUT"
           elif grep -Eq 'E404|404 Not Found' "$PACK_DIR/npm-view.err"; then
-            echo "Package version not yet published; publishing is required."
+            # npm can accept uploads into an approval-only stage and still return
+            # a 404 for the public package version. Never publish a staged
+            # semver again: npm will reject it with E409.
+            if [ -z "$NODE_AUTH_TOKEN" ]; then
+              echo "NPM_KEY missing; cannot determine whether this version is staged." >&2
+              exit 1
+            fi
+            if ! npm stage list '@howlil/agentflow-cli' --json --registry=https://registry.npmjs.org > "$PACK_DIR/stages.json"; then
+              echo "Unable to inspect npm stage queue; refusing to republish blindly." >&2
+              exit 1
+            fi
+            if grep -Fq "$PACKAGE_VERSION" "$PACK_DIR/stages.json"; then
+              echo "Version $PACKAGE_VERSION is STAGED, not publicly released. A maintainer must approve it with 2FA on npmjs.com." >&2
+              cat "$PACK_DIR/stages.json"
+              exit 1
+            fi
+            echo "Version is neither public nor pending in npm stage queue; publishing is required."
             echo "result=publish" >> "$GITHUB_OUTPUT"
           else
             cat "$PACK_DIR/npm-view.err" >&2
