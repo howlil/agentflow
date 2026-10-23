@@ -1,0 +1,26 @@
+{
+  "name": "@howlil/agentflow-cli",
+  "version": "0.3.0",
+  "description": "Portable command-line manager for Agentflow engineering skills",
+  "type": "module",
+  "bin": {
+    "agentflow": "./bin/agentflow.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "README.md"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/howlil/agentflow.git",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  }
+}

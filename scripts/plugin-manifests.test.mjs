@@ -10,12 +10,12 @@ const repo = fileURLToPath(new URL('..', import.meta.url));
 
 async function fixture(run) {
   const root = await mkdtemp(join(tmpdir(), 'agentflow-plugin-test-'));
-  for (const folder of ['.claude-plugin', '.agents/plugins', 'skills']) {
+  for (const folder of ['.claude-plugin', '.agents/plugins', 'skills', 'packages/cli']) {
     await mkdir(join(root, folder), { recursive: true });
   }
   const paths = ['package.json', 'package-lock.json', 'plugin.json',
     '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
-    '.agents/plugins/marketplace.json'];
+    '.agents/plugins/marketplace.json', 'packages/cli/package.json'];
   for (const path of paths) {
     await writeFile(join(root, path), await readFile(join(repo, path)));
   }
@@ -31,7 +31,7 @@ async function fixture(run) {
 test('current manifests have one plugin identity and canonical skill source', async () => {
   const result = await validatePluginDistribution({ root: repo });
   assert.equal(result.count, 11);
-  assert.equal(result.version, '0.2.0');
+  assert.equal(result.version, '0.3.0');
 });
 
 test('version drift is detected and can be synchronized without modifying other fields', async () => {
@@ -43,7 +43,7 @@ test('version drift is detected and can be synchronized without modifying other 
     await assert.rejects(syncPluginVersions({ root }), /version .* differs/);
     await syncPluginVersions({ root, write: true });
     assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), original);
-    assert.deepEqual(await validatePluginDistribution({ root }), { version: '0.2.0', count: 11 });
+    assert.deepEqual(await validatePluginDistribution({ root }), { version: '0.3.0', count: 11 });
   });
 });
 
@@ -74,5 +74,16 @@ test('reject a Claude marketplace whose entry name diverges from the plugin iden
     manifest.plugins[0].name = 'something-else';
     await writeFile(path, JSON.stringify(manifest));
     await assert.rejects(validatePluginDistribution({ root }), /Claude marketplace must reference/);
+  });
+});
+
+test('CLI manifest version drift is checked and synchronized from root package', async () => {
+  await fixture(async root => {
+    const path = join(root, 'packages/cli/package.json');
+    const original = JSON.parse(await readFile(path, 'utf8'));
+    await writeFile(path, JSON.stringify({ ...original, version: '0.2.0' }));
+    await assert.rejects(validatePluginDistribution({ root }), /CLI package version .* differs/);
+    await syncPluginVersions({ root, write: true });
+    assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), original);
   });
 });

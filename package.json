@@ -1,6 +1,6 @@
 {
   "name": "agentflow",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,8 @@
     "prebuild": "npm run skills:generate && npm run plugins:check",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --test scripts/*.test.mjs"
+    "test": "node --test scripts/*.test.mjs && node --test packages/cli/test/*.test.mjs",
+    "cli:test": "node --test packages/cli/test/*.test.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "0.42.2",
