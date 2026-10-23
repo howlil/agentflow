@@ -86,3 +86,27 @@ test('requires each human guide to link to its canonical reference', async () =>
     await assert.rejects(generateSkills({ root, expected: ['example'] }), /lacks runtime reference link/);
   });
 });
+
+test('enforces Agent Skills name, description, and compatibility constraints', () => {
+  for (const name of ['Bad', '-bad', 'bad-', 'bad--name', 'bad_name', 'a'.repeat(65)]) {
+    assert.throws(() => parseFrontmatter(source(name), 'invalid.md'), /Invalid Agent Skills name/);
+  }
+  assert.doesNotThrow(() => parseFrontmatter(source('a'.repeat(64)), 'valid.md'));
+  assert.throws(
+    () => parseFrontmatter(source('valid', 'x'.repeat(1025)), 'invalid.md'),
+    /description exceeds 1024/,
+  );
+  assert.doesNotThrow(() => parseFrontmatter(source('valid', 'x'.repeat(1024)), 'valid.md'));
+  assert.throws(
+    () => parseFrontmatter('---\nname: valid\ndescription: hi\ncompatibility: ' +
+      'x'.repeat(501) + '\n---\nRuntime behavior.', 'invalid.md'),
+    /compatibility exceeds 500/,
+  );
+});
+
+test('rejects empty instructions instead of publishing blank skill packages', () => {
+  assert.throws(
+    () => parseFrontmatter('---\nname: valid\ndescription: hi\n---\n  ', 'invalid.md'),
+    /Missing skill instructions/,
+  );
+});
