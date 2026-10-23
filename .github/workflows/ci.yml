@@ -27,9 +27,16 @@ jobs:
           SOURCE="$PWD"
           TARGET="$(mktemp -d)"
           trap 'rm -rf "$TARGET"' EXIT
+          node --input-type=module -e 'import { EXPECTED } from "./scripts/generate-skills.mjs"; process.stdout.write(EXPECTED.join("\\n") + "\\n")' > "$TARGET/expected.txt"
           cd "$TARGET"
-          npx --yes skills@1.7.4 add "$SOURCE" --list | tee discovery.log
-          grep -q 'agentflow' discovery.log
+          npx --yes skills@1.7.4 add "$SOURCE" --list 2>&1 | tee discovery.log
+          if grep -Eq 'Skipped .*SKILL.md|YAML parse error' discovery.log; then
+            echo "Installer skipped a canonical skill" >&2
+            exit 1
+          fi
+          while IFS= read -r skill; do
+            grep -Fq "$skill" discovery.log || { echo "Missing installed-discovery skill: $skill" >&2; exit 1; }
+          done < expected.txt
           npx --yes skills@1.7.4 add "$SOURCE" --skill agentflow --agent codex --copy --yes
           npx --yes skills@1.7.4 list -a codex | tee installed.log
           grep -q 'agentflow' installed.log
