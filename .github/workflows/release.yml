@@ -3,73 +3,186 @@ name: Publish Agentflow Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v[0-9]*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version matching the package (e.g. v0.3.0)"
+        required: true
+        type: string
 
 permissions:
   contents: read
 
+concurrency:
+  group: npm-release-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   verify:
+    name: Verify release source
+    if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Verify tag belongs to reviewed master history
+      - name: Validate version and commit against master
+        id: version
         shell: bash
+        env:
+          REQUESTED_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+          RUN_EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          [[ "$REQUESTED_TAG" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]] || {
+            echo "Release tag must be vMAJOR.MINOR.PATCH" >&2
+            exit 1
+          }
+          ROOT_VERSION="$(node -p "require('./package.json').version")"
+          CLI_VERSION="$(node -p "require('./packages/cli/package.json').version")"
+          test "$REQUESTED_TAG" = "v$ROOT_VERSION"
+          test "$ROOT_VERSION" = "$CLI_VERSION"
           git fetch origin master
           git merge-base --is-ancestor "$GITHUB_SHA" origin/master
-          VERSION="$(node -p "require('./package.json').version")"
-          test "$GITHUB_REF_NAME" = "v$VERSION"
+          if [ "$RUN_EVENT" = workflow_dispatch ]; then
+            test "$GITHUB_REF" = refs/heads/master
+            test "$GITHUB_SHA" = "$(git rev-parse origin/master)"
+            if git ls-remote --exit-code --tags origin "refs/tags/$REQUESTED_TAG" >/dev/null 2>&1; then
+              echo "This version tag already exists; use its tag-triggered release workflow." >&2
+              exit 1
+            fi
+          else
+            test "$GITHUB_REF" = "refs/tags/$REQUESTED_TAG"
+            test "$(git rev-parse "refs/tags/$REQUESTED_TAG^{commit}")" = "$GITHUB_SHA"
+          fi
+          echo "tag=$REQUESTED_TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$ROOT_VERSION" >> "$GITHUB_OUTPUT"
       - run: npm ci
       - run: npm run plugins:check
       - run: npm test
       - run: npm run build
-      - name: Validate standalone npm tarball
+      - name: Inspect distributable npm package
         run: npm pack --dry-run ./packages/cli
-
-  publish-npm:
-    needs: verify
-    if: ${{ vars.AGENTFLOW_NPM_PUBLISH_ENABLED == 'true' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-          package-manager-cache: false
-      - name: Require npm with trusted-publishing support
+      - name: Check CLI tarball can be installed as a global executable
         shell: bash
         run: |
           set -euo pipefail
+          TMP="$(mktemp -d)"
+          trap 'rm -rf "$TMP"' EXIT
+          npm pack ./packages/cli --pack-destination "$TMP" --silent
+          npm install --prefix "$TMP" "$TMP"/howlil-agentflow-cli-*.tgz
+          node "$TMP/node_modules/@howlil/agentflow-cli/bin/agentflow.mjs" --version
+
+  publish-npm:
+    name: Publish npm package
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.preflight.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Prepare npm 11
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global npm@11
           npm --version
-          npm install -g npm@11
-          node -e "const v=require('child_process').execFileSync('npm',['--version'],{encoding:'utf8'}).trim().split('.').map(Number); if(v[0]<11 || (v[0]===11 && v[1]<5)) process.exit(1)"
-      - name: Publish scoped CLI using npm OIDC
+      - name: Check registry version and tarball integrity
+        id: preflight
+        shell: bash
+        env:
+          PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          PACK_DIR="$(mktemp -d)"
+          PACKAGE_SPEC="@howlil/agentflow-cli@$PACKAGE_VERSION"
+          npm pack ./packages/cli --pack-destination "$PACK_DIR" --silent >/dev/null
+          LOCAL_INTEGRITY="$(npm pack ./packages/cli --json --dry-run | node -e "let s='';process.stdin.on('data',b=>s+=b);process.stdin.on('end',()=>process.stdout.write(JSON.parse(s)[0].integrity))")"
+          if npm view "$PACKAGE_SPEC" dist.integrity --json > "$PACK_DIR/registered.json" 2> "$PACK_DIR/npm-view.err"; then
+            REGISTERED_INTEGRITY="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))" "$PACK_DIR/registered.json")"
+            if [ "$REGISTERED_INTEGRITY" != "$LOCAL_INTEGRITY" ]; then
+              echo "Version exists on npm, but package contents differ. Refusing to overwrite." >&2
+              exit 1
+            fi
+            echo "Package version already published with identical integrity."
+            echo "result=already-published" >> "$GITHUB_OUTPUT"
+          elif grep -Eq 'E404|404 Not Found' "$PACK_DIR/npm-view.err"; then
+            echo "Package version not yet published; publishing is required."
+            echo "result=publish" >> "$GITHUB_OUTPUT"
+          else
+            cat "$PACK_DIR/npm-view.err" >&2
+            echo "Unable to verify npm package version; aborting." >&2
+            exit 1
+          fi
+      - name: Publish using NPM_KEY
+        if: ${{ steps.preflight.outputs.result == 'publish' }}
         working-directory: packages/cli
-        run: npm publish --access public
-        # Requires @howlil/agentflow-cli already claimed on npm, and a
-        # trusted publisher configured for howlil/agentflow + release.yml.
-        # No npm auth tokens are stored in GitHub Actions.
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "NPM_KEY repository secret is missing or unavailable to this workflow." >&2
+            exit 1
+          fi
+          npm whoami --registry=https://registry.npmjs.org >/dev/null
+          npm publish --access public --registry=https://registry.npmjs.org
+      - name: Verify published package is available
+        if: ${{ steps.preflight.outputs.result == 'publish' }}
+        shell: bash
+        env:
+          PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          for _ in 1 2 3 4 5 6; do
+            if npm view "@howlil/agentflow-cli@$PACKAGE_VERSION" version --json | grep -Fxq "\"$PACKAGE_VERSION\""; then
+              echo "npm package @$PACKAGE_VERSION is available."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "npm publish returned success but registry verification failed." >&2
+          exit 1
 
   github-release:
-    needs: verify
+    name: Publish GitHub Release
+    needs: [verify, publish-npm]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Publish GitHub release notes
+        with:
+          persist-credentials: false
+      - name: Create immutable release tag and release notes
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "$GITHUB_REF_NAME" --title "Agentflow $GITHUB_REF_NAME" --generate-notes --verify-tag
+          RELEASE_TAG: ${{ needs.verify.outputs.tag }}
+          RUN_EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [ "$RUN_EVENT" = workflow_dispatch ]; then
+            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --title "Agentflow $RELEASE_TAG" --generate-notes
+          else
+            gh release create "$RELEASE_TAG" --title "Agentflow $RELEASE_TAG" --generate-notes --verify-tag
+          fi

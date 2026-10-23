@@ -99,11 +99,15 @@ commit to master
 
 ## Decisions
 
+### Release automation (NPM_KEY)
+
+`.github/workflows/release.yml` verifies a tag or manual version against the current `master` and root/CLI/native package parity, tests/builds/packs, and checks public npm registry tarball integrity before publishing. Only `publish-npm` receives `secrets.NPM_KEY` as `NODE_AUTH_TOKEN`; only after npm success can `github-release` generate the release/tag. Registry versions with mismatched tarball integrity cause hard failures; reruns with identical content are idempotent. Tag creation on workflow_dispatch via GitHub token does not retrigger tag events. Keep token authentication isolated, and prioritize moving to OIDC before npm retires direct publishing via bypass-2FA tokens in January 2027.
+
 ### M4 release acceptance and source ownership
 
 `packages/cli/src/ownership.mjs` validates installed source identity from official project `skills-lock.json` or global `$XDG_STATE_HOME/skills/.skill-lock.json` / `~/.agents/.skill-lock.json` before mutations. Unknown owners fail closed, and source-scoped uninstall expands to concrete owned names. Update/uninstall require explicit scope. Dry-run invokes no installer and makes no filesystem writes.
 
-The release workflow validates `vX.Y.Z` tag version and `master` ancestry, creates GitHub Release, and optionally publishes the CLI through npm OIDC. npm publication is gated by the explicit `AGENTFLOW_NPM_PUBLISH_ENABLED` variable and npm trusted publisher setup. Remote tagged installation, upgrade, and rollback acceptance remains manual until the public tags exist. Never claim it passed before execution.
+The release workflow validates `vX.Y.Z` tag version and `master` ancestry, creates GitHub Release, and optionally publishes the CLI through npm OIDC. npm publication is gated by matching release version and a valid scoped `NPM_KEY` secret, with token exposure limited to the publish step. Preferred future transition is token-free OIDC trusted publishing. Remote tagged installation, upgrade, and rollback acceptance remains manual until the public tags exist. Never claim it passed before execution.
 
 ### M3 thin command-line adapter
 

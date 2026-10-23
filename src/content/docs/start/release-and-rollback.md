@@ -35,19 +35,29 @@ git push origin v0.3.0
 
 `release.yml` rejects a tag that is not reachable from `master` or does not equal `package.json` version. GitHub release notes are created only after verification.
 
-## npm trusted publishing
+## Automated npm publication with GitHub secret NPM_KEY
 
-The CLI package is `@howlil/agentflow-cli`, independent of the documentation application and the upstream `skills` package. It is **not yet published to npm**.
+The CLI package is `@howlil/agentflow-cli`. GitHub Actions will publish it automatically when a reviewed version tag is pushed, or when the operator starts **Publish Agentflow Release** from the Actions tab using the matching version. There is no separate `AGENTFLOW_NPM_PUBLISH_ENABLED` variable.
 
-The npm release job is **opt-in and disabled by default**. To enable it:
+Configure an npm **granular access token** in the repository Actions secret named exactly `NPM_KEY`. It must be authorized for the `@howlil` scope/package and have **Read and write (publish and stage)** access, **Bypass 2FA** for unattended direct publishing, and must not have expired. npm user identity must own the `@howlil` namespace. When package-level policy forbids access tokens, use npm trusted publishing (OIDC) instead; this token-based workflow cannot override npm security policies.
 
-1. Claim and bootstrap the package using an authorized, interactive npm account if it does not yet exist on npm. Trusted publisher configuration requires an existing package.
-2. Under the package's npm settings, configure a **GitHub Actions trusted publisher** for owner `howlil`, repository `agentflow`, filename `release.yml`. Allow `npm publish`; enable 2FA as required.
-3. Confirm the scope, package name, repository URL and workflow identity match. npm requires modern npm CLI and GitHub-hosted Actions for OIDC.
-4. Set the GitHub Actions repository variable `AGENTFLOW_NPM_PUBLISH_ENABLED` to the literal string `true` **before a subsequent reviewed release tag**. Without it, the publish job is skipped. This variable is not a credential.
-5. Verify the published npm package and provenance after the release. Never store a general-purpose `NPM_TOKEN` in the workflow. Do not force-release `v0.3.0` again after bootstrapping that version.
+### One-click release (no terminal tag required)
 
-The first npm publication and initial trusted publisher setup require account-level authorization and are not done by these source changes. GitHub Release and npm publishing are separate jobs.
+1. Merge and verify reviewed code on `master`; update all manifests consistently with `npm run plugins:sync`.
+2. In GitHub: **Actions → Publish Agentflow Release → Run workflow**. Select **master** and enter the matching version, e.g. `v0.3.0`.
+3. The workflow verifies the commit is the latest `master`, validates root/CLI/plugin version parity, runs full tests and build, packs the CLI and checks the executable.
+4. The workflow compares the package tarball integrity with any existing npm version. It publishes only if that version does not exist. It **refuses** to accept an existing version containing different bytes.
+5. A successful npm publish is checked against the public registry. **Only then** the workflow creates a GitHub Release and version tag pointing at the verified commit.
+
+You can still create and push the matching tag manually; the `push.tags` workflow path performs the same release validation and npm publication, then creates GitHub Release notes. Do not use both triggers for the same version concurrently. A `workflow_dispatch` tag created with `GITHUB_TOKEN` does not trigger a second workflow run.
+
+The npm package is public (`--access public`) and includes only the standalone CLI. The root Astro site is private in npm terms and never published.
+
+### Authentication limitations and future upgrade
+
+The `NPM_KEY` token is used **only by the npm publish step** through the `NODE_AUTH_TOKEN` environment variable. No secret value is committed or displayed. The build/test jobs do not receive it. A missing/invalid token causes the npm publish step to fail without creating a GitHub Release.
+
+Current npm policy requires a suitable granular token with bypass 2FA for CI direct publication. npm has announced a planned end to direct publication with bypass-2FA tokens in **January 2027**. Plan to migrate this job to **npm Trusted Publishing / OIDC**, which avoids static registry secrets. Under OIDC configure owner `howlil`, repo `agentflow`, workflow `release.yml`, with `id-token: write`; do not simultaneously rely on `NPM_KEY`. The initial npm package may need registry-owner setup to claim the desired name/scope.
 
 ## Manual remote acceptance
 
@@ -82,4 +92,4 @@ The version shown here is an *illustrative previous tag*, not a claim that `v0.2
 - `agentflow update` or `uninstall` with unknown/foreign sources fails closed. These mutations require an explicit project/global scope. Ownership is read from the upstream `skills-lock.json` / global `.skill-lock.json`, and isn't asserted for manually copied skill folders lacking lock metadata.
 - This check prevents known cross-source name collisions, but does not create transactional locking against other concurrent package managers.
 - CLI packaging/unit/diagnostic tests run on Linux, Windows, macOS. Remote tagged installation and real desktop host activation remain post-merge release checks.
-- npm publishing requires registry-owner action and is intentionally disabled until separately authorized.
+- npm publishing is enabled on version-tag and explicit release dispatch events, but requires a valid NPM_KEY and a released package version; initial namespace ownership and token privileges cannot be verified from repository source alone.

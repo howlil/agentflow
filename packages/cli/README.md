@@ -2,7 +2,7 @@
 
 A dependency-free Node CLI front end to portable Agentflow skills.
 
-This package is prepared for a future npm publish, but has **not** been published yet. Install from a cloned repository:
+This CLI package is distributed through the automated versioned release pipeline. The repository must have an authorized `NPM_KEY` Actions secret; public npm installation is available **only after** its first successful publish. Install from a cloned repository:
 
 ```bash
 npm install -g ./packages/cli
