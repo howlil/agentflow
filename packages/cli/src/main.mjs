@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
+import { verifySkillOwnership } from './ownership.mjs';
 
 export const SKILLS_VERSION = '1.7.4';
 export const SOURCE = 'howlil/agentflow';
@@ -23,7 +24,7 @@ export const HELP = [
   'agentflow --version',
   '',
   'Uses the pinned skills@' + SKILLS_VERSION + ' upstream CLI.',
-  'Bare update is intentionally disallowed: upstream would also update unrelated repositories.',
+  'Mutating update/uninstall require --global or --project and verified source ownership.',
 ].join('\n');
 
 export class UsageError extends Error {}
@@ -82,6 +83,13 @@ export function parseArgs(argv) {
   }
   if (result.command === 'update' && result.check && (result.skills.length || result.global || result.project || result.yes || result.dryRun)) {
     throw new UsageError('update --check is a read-only upstream check and takes no other options.');
+  }
+  if (result.command === 'install' && result.yes && !result.skills.length) {
+    throw new UsageError('Non-interactive install requires --skill to avoid overwriting other sources.');
+  }
+  if (['update', 'uninstall'].includes(result.command) &&
+      !result.check && !result.global && !result.project) {
+    throw new UsageError('Explicit --global or --project scope is required for mutating installed skills.');
   }
   if (result.command === 'update' && !result.check && !result.skills.length) {
     throw new UsageError('Specify --skill <name> to avoid updating skills from unrelated repositories. Use update --check to inspect.');
@@ -227,6 +235,17 @@ export async function run(argv, deps = {}) {
     if (opts.dryRun) {
       out('Dry run (not executed): ' + [delegation.program, ...delegation.args].join(' '));
       return 0;
+    }
+    if (['install', 'update', 'uninstall'].includes(opts.command) && !opts.check) {
+      const owned = await verifySkillOwnership({
+        cwd, global: opts.global, command: opts.command, skills: opts.skills,
+        env: deps.env || process.env, home: deps.home, io: fsApi,
+      });
+      if (opts.command === 'uninstall' && !opts.skills.length) {
+        // Unlike source-name fallback, concrete verified names cannot match a
+        // different repository whose source is unknown to this lock.
+        delegation.args = buildDelegation({ ...opts, skills: owned }, config).args;
+      }
     }
     return await runner(delegation.program, delegation.args, { cwd });
   } catch (error) {
