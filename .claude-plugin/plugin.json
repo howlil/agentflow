@@ -1,7 +1,7 @@
 {
   "name": "agentflow",
   "displayName": "Agentflow",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Graph-first engineering decisions and specialist skills for Claude Code.",
   "author": {
     "name": "howlil",
