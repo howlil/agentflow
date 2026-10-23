@@ -3,6 +3,7 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const EXPECTED = [
+  'agentflow',
   'product-design',
   'engineering-design',
   'design-graph',
@@ -53,11 +54,24 @@ export function parseFrontmatter(source, file) {
   if (!fields.name || !fields.description) {
     throw new Error(`Skill must define name and description: ${file}`);
   }
+  // M1 deliberately supports the repository's flat-scalar YAML subset.
+  // Enforce Agent Skills required metadata bounds before generating outputs.
+  if (fields.name.length > 64 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(fields.name)) {
+    throw new Error(`Invalid Agent Skills name in ${file}: ${fields.name}`);
+  }
+  if (fields.description.length > 1024) {
+    throw new Error(`Agent Skills description exceeds 1024 characters: ${file}`);
+  }
+  if (fields.compatibility && fields.compatibility.length > 500) {
+    throw new Error(`Agent Skills compatibility exceeds 500 characters: ${file}`);
+  }
+  const body = source.slice(match[0].length);
+  if (!body.trim()) throw new Error(`Missing skill instructions: ${file}`);
 
   return {
     name: fields.name,
     description: fields.description,
-    body: source.slice(match[0].length),
+    body,
   };
 }
 
