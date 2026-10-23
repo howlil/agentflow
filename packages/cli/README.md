@@ -2,7 +2,7 @@
 
 A dependency-free Node CLI front end to portable Agentflow skills.
 
-This CLI package is distributed through the automated versioned release pipeline. The repository must have an authorized `NPM_KEY` Actions secret; public npm installation is available **only after** its first successful publish. Install from a cloned repository:
+Published as [`@howlil/agentflow-cli`](https://www.npmjs.com/package/@howlil/agentflow-cli). To use public version `0.3.0`, run `npm install -g @howlil/agentflow-cli@0.3.0`. For local development, install from a cloned repository:
 
 ```bash
 npm install -g ./packages/cli
@@ -19,4 +19,4 @@ The CLI delegates installation, update and removal to pinned upstream `skills@1.
 
 `--dry-run` is available on every mutating command. `--yes` must be explicitly requested to disable prompts. Do not install both native plugins and the same skills.sh package for a given AI host.
 
-`agentflow status` delegates to `skills list`, and `doctor` runs without network access. See the [release and rollback runbook](../../src/content/docs/start/release-and-rollback.md) for tagged recovery and opt-in npm OIDC publication.
+`agentflow status` delegates to `skills list`, and `doctor` runs without network access. See the [release and rollback runbook](../../src/content/docs/start/release-and-rollback.md) for public release verification, tagged recovery, and future npm authentication migration.
