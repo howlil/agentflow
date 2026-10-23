@@ -14,6 +14,8 @@ A skill is a decision tool, not a mandatory lifecycle stage.
 - `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`: native marketplace catalog adapters pointing to the repository root.
 - `scripts/plugin-manifests.mjs`: validate manifest versions and native plugin roots; `package.json` owns the version.
 - `scripts/distribution.test.mjs`: prove skill-layout, router coverage, and guide/lifecycle documentation contracts.
+- `packages/cli/`: standalone, zero-runtime-dependency CLI. Only project bootstrap, offline diagnosis, and pinned delegation to external skills CLI are owned here; never implement another skill installer.
+- `src/content/docs/start/cli.md`: CLI configuration, safety and lifecycle documentation.
 - `src/content/docs/skills/`: human-facing usage, examples, and when-not-to-use boundaries.
 - `src/content/docs/start/` and `recipes/`: discovery and composition.
 - `src/components/`: presentation and interaction only.
@@ -32,5 +34,6 @@ Keep new responsibilities in existing boundaries unless a real independent owner
 5. Keep generated `src/generated/` and `src/content/docs/reference/` out of commits.
 
 No backend, state store, new abstraction layer, or agent runtime without a concrete product need.
+CLI `init` may exclusively create `.agentflow.json` but must not mutate target project `AGENTS.md` or `.agents/`. Scope is always explicit when needed; bare `agentflow update` must never update unrelated repositories. Keep the nested CLI package version synchronized with root `package.json` and native plugin manifests.
 Never duplicate canonical `skills/` into vendor-specific plugin directories. When bumping the version, update `package.json` and lockfile, run `npm run plugins:sync`, and verify `npm run plugins:check`. Native publication is independent from Cloudflare docs deployment.
 Do not claim auto-update or universal invocation syntax from file-based installation. Do not write to other projects' steering files during M1.
