@@ -2,7 +2,7 @@
 
 ## Problem
 
-Actor: software engineer using a small library of reusable agent skills.
+Actor: software engineer using a small library of reusable agent skills installed locally or globally.
 
 Trigger: they have a concrete engineering task but are unsure which skill is relevant, whether a skill is needed at all, or how multiple skills should compose.
 
@@ -46,6 +46,8 @@ In:
 - multi-skill recipes
 - product/system rationale
 - Cloudflare deployment instructions
+- discoverable `agentflow` router and ten specialist packages
+- documented installer-managed global/project install, update, and removal
 
 Out:
 - user accounts
@@ -53,6 +55,8 @@ Out:
 - CMS
 - analytics dashboard
 - runtime skill execution service
+- native plugin distribution (M2)
+- an Agentflow-owned installer CLI (later milestone)
 
 ## Proof
 

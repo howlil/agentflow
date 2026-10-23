@@ -3,6 +3,8 @@ title: Choose a skill
 description: Route from the decision that is unclear, not from a memorized skill name.
 ---
 
+Start with the [agentflow router](/skills/agentflow/) when you want help selecting skills. The router does not impose a mandatory workflow. If the relevant decision is already known, use the specialist table directly.
+
 Start with one question:
 
 > **What decision is blocking correct progress right now?**

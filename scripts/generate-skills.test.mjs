@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { generateSkills, parseFrontmatter } from './generate-skills.mjs';
 
 const source = (name, description = 'A skill: with a colon.') =>
-  `---\nname: ${name}\ndescription: ${description}\n---\n\n# Title\n\nRuntime behavior.\n`;
+  `---\nname: ${name}\ndescription: ${JSON.stringify(description)}\n---\n\n# Title\n\nRuntime behavior.\n`;
 
 test('parses canonical scalar metadata without losing colons', () => {
   const parsed = parseFrontmatter(source('example'), 'example');
@@ -85,4 +85,39 @@ test('requires each human guide to link to its canonical reference', async () =>
     await writeFile(join(root, 'src/content/docs/skills/example.md'), '---\\ntitle: Example\\n---\\n');
     await assert.rejects(generateSkills({ root, expected: ['example'] }), /lacks runtime reference link/);
   });
+});
+
+test('enforces Agent Skills name, description, and compatibility constraints', () => {
+  for (const name of ['Bad', '-bad', 'bad-', 'bad--name', 'bad_name', 'a'.repeat(65)]) {
+    assert.throws(() => parseFrontmatter(source(name), 'invalid.md'), /Invalid Agent Skills name/);
+  }
+  assert.doesNotThrow(() => parseFrontmatter(source('a'.repeat(64)), 'valid.md'));
+  assert.throws(
+    () => parseFrontmatter(source('valid', 'x'.repeat(1025)), 'invalid.md'),
+    /description exceeds 1024/,
+  );
+  assert.doesNotThrow(() => parseFrontmatter(source('valid', 'x'.repeat(1024)), 'valid.md'));
+  assert.throws(
+    () => parseFrontmatter('---\nname: valid\ndescription: hi\ncompatibility: ' +
+      'x'.repeat(501) + '\n---\nRuntime behavior.', 'invalid.md'),
+    /compatibility exceeds 500/,
+  );
+});
+
+test('rejects empty instructions instead of publishing blank skill packages', () => {
+  assert.throws(
+    () => parseFrontmatter('---\nname: valid\ndescription: hi\n---\n  ', 'invalid.md'),
+    /Missing skill instructions/,
+  );
+});
+
+test('rejects unquoted YAML special scalars before external installers silently skip skills', () => {
+  assert.throws(
+    () => parseFrontmatter('---\nname: example\ndescription: Choose tests: unit or E2E\n---\nBody', 'bad.md'),
+    /Quote YAML-special/,
+  );
+  assert.throws(
+    () => parseFrontmatter('---\nname: example\ndescription: Use tests # opinion\n---\nBody', 'bad.md'),
+    /Quote YAML-special/,
+  );
 });

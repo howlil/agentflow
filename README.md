@@ -1,6 +1,6 @@
 # Agentflow
 
-Human-facing discovery guides and canonical runtime packages for ten reusable software-engineering agent skills.
+Human-facing discovery guides and canonical runtime packages for eleven reusable software-engineering agent skills (the Agentflow router and ten specialists).
 
 The system is designed around one question:
 
@@ -34,6 +34,28 @@ Homepage → Choose a skill → Human usage guide → Generated runtime referenc
 ```
 
 A task can require zero, one, or several skills. Routing is based on the unresolved engineering decision, not a required pipeline.
+
+## Install, update, and remove Agentflow
+
+Use the external [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md) (Node.js 22.20+). It discovers the portable `skills/<name>/SKILL.md` packages. Choose an agent and scope when prompted.
+
+```bash
+# Preview available skills (no install)
+npx skills@latest add howlil/agentflow --list
+
+# Interactive project or global installation
+npx skills@latest add howlil/agentflow
+npx skills@latest add howlil/agentflow -g
+
+# Check and update installed skills
+npx skills@latest check
+npx skills@latest update -g
+
+# Remove this repository's global skills
+npx skills@latest remove -g howlil/agentflow
+```
+
+Updates are user-initiated. This is not a native plugin; each AI agent controls actual invocation syntax. See the [complete installation guide](src/content/docs/start/install.md), including specific skills, project removal, and compatibility limitations.
 
 ## Local development
 
@@ -69,4 +91,4 @@ The site is fully pre-rendered. Astro/Starlight generates `dist/` (including the
 
 ## Repository
 
-`master` is the production branch.
+`master` is the production branch. Portable distribution is validated with tests and builds in CI. Licensed under [MIT](LICENSE).

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Smoke-test portable skill discovery and install/remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE="$PWD"
+          TARGET="$(mktemp -d)"
+          trap 'rm -rf "$TARGET"' EXIT
+          node --input-type=module -e 'import { EXPECTED } from "./scripts/generate-skills.mjs"; process.stdout.write(EXPECTED.join(String.fromCharCode(10)) + String.fromCharCode(10))' > "$TARGET/expected.txt"
+          cd "$TARGET"
+          npx --yes skills@1.7.4 add "$SOURCE" --list 2>&1 | tee discovery.log
+          if grep -Eq 'Skipped .*SKILL.md|YAML parse error' discovery.log; then
+            echo "Installer skipped a canonical skill" >&2
+            exit 1
+          fi
+          while IFS= read -r skill; do
+            grep -Fq "$skill" discovery.log || { echo "Missing installed-discovery skill: $skill" >&2; exit 1; }
+          done < expected.txt
+          npx --yes skills@1.7.4 add "$SOURCE" --skill agentflow --agent codex --copy --yes
+          npx --yes skills@1.7.4 list -a codex | tee installed.log
+          grep -q 'agentflow' installed.log
+          npx --yes skills@1.7.4 remove agentflow --agent codex --yes
+          npx --yes skills@1.7.4 list -a codex | tee removed.log
+          if grep -q 'agentflow' removed.log; then
+            echo "Router was not removed" >&2
+            exit 1
+          fi
+

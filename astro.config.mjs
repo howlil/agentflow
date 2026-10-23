@@ -25,6 +25,7 @@ export default defineConfig({
           label: 'Start',
           items: [
             'start/quickstart',
+            'start/install',
             'start/choose-a-skill',
             'start/deploy-cloudflare',
           ],
