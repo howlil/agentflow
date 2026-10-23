@@ -45,6 +45,7 @@ export async function readInstalledSkills(options, io = { readFile }) {
     throw new Error('Cannot safely mutate skills: invalid JSON in ' + file);
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+      parsed.version !== (options.global ? 3 : 1) ||
       !parsed.skills || typeof parsed.skills !== 'object' || Array.isArray(parsed.skills)) {
     throw new Error('Cannot safely mutate skills: unsupported upstream lock format at ' + file);
   }
