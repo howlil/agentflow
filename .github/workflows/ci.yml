@@ -30,6 +30,9 @@ jobs:
           npx --yes @openai/codex@latest plugin marketplace add .
           npx --yes @openai/codex@latest plugin marketplace list | tee codex-marketplaces.log
           grep -q 'agentflow' codex-marketplaces.log
+          npx --yes @openai/codex@latest plugin add agentflow@agentflow
+          npx --yes @openai/codex@latest plugin list | tee codex-plugins.log
+          grep -q 'agentflow' codex-plugins.log
       - name: Smoke-test portable skill discovery and install/remove
         shell: bash
         run: |
