@@ -1,17 +1,24 @@
 ---
 title: Release and rollback
-description: Safe publishing, compatibility acceptance and downgrade process for Agentflow.
+description: Verified public releases, tagged installer acceptance, and safe rollback.
 ---
 
-## Release topology
+## Published distribution
 
-The source of truth is `skills/<name>/SKILL.md`. M1 adds universal skills; M2 adds Claude/Codex native plugin catalogs; M3 adds the standalone Node.js CLI. M4 validates source ownership before destructive lifecycle commands, release packaging, and remote distribution acceptance.
+**Current published release: [v0.3.0](https://github.com/howlil/agentflow/releases/tag/v0.3.0).** The public npm package is [`@howlil/agentflow-cli`](https://www.npmjs.com/package/@howlil/agentflow-cli).
 
-**Merge order:** [M1 PR #5](https://github.com/howlil/agentflow/pull/5) → [M2 PR #6](https://github.com/howlil/agentflow/pull/6) → [M3 PR #7](https://github.com/howlil/agentflow/pull/7) → M4. Retarget stacked PRs to `master` after each base merges, rerun CI, and review the resulting diffs. Never merge a dependent PR directly onto `master` while its base is still unmerged.
+```bash
+npm install -g @howlil/agentflow-cli@0.3.0
+agentflow --version
+agentflow doctor
+agentflow install --global --agent codex --skill agentflow
+```
 
-## Prepare a release
+The canonical runtime source is `skills/<name>/SKILL.md`; native Claude and Codex plugin manifests point to the same repository skills. npm distributes the thin CLI only, not a separate skills runtime.
 
-The root package and native plugin/CLI manifests must share one version:
+## Before making a new release
+
+The version is owned by root `package.json` and must match `packages/cli/package.json`, the package lockfile, and both native plugin manifests.
 
 ```bash
 npm version patch --no-git-tag-version
@@ -22,93 +29,46 @@ npm run build
 npm pack --dry-run ./packages/cli
 ```
 
-Review the source diff, check that `npm pack` contains only the CLI executable, implementation, readme, license and package manifest, then merge to `master`. M4 uses `0.3.0` as its initial target: do not bump again or publish until merged compatibility acceptance is complete.
+Commit the synchronized version/lockfile changes, submit a PR, and merge **only after CI passes**. Then open **Actions → Publish Agentflow Release → Run workflow**, select `master`, and enter the matching *new* tag (e.g. `v0.3.1` once that version is reviewed). Alternatively push a matching new immutable `vX.Y.Z` tag. **Never reuse `v0.3.0` for new source changes.**
 
-After the final merge commit is on `master` and checks are green, create the *matching* immutable tag:
+`release.yml` checks that the requested tag/version matches the reviewed commit on `master`; it verifies the native metadata, tests and npm tarball, checks public npm artifact integrity, publishes new versions using the scoped `NPM_KEY` secret, and creates GitHub Release only after npm success. A previously published identical package is not republished; differing bytes fail the release.
 
-```bash
-git checkout master
-git pull --ff-only
-git tag v0.3.0
-git push origin v0.3.0
-```
+The initial publish may require npm registry processing before the package appears publicly. A successful `npm publish` followed by public-registry `E404` does **not by itself** establish that owner approval is pending. Check `npm stage list` and the authenticated version lifecycle endpoint before taking any action. Do not retry publishing an already staged version: npm may reject it with `E409`. Never expose `NPM_KEY` in logs.
 
-`release.yml` rejects a tag that is not reachable from `master` or does not equal `package.json` version. GitHub release notes are created only after verification.
+## Post-release acceptance (M5)
 
-## Automated npm publication with GitHub secret NPM_KEY
+[Remote Skill Release Acceptance](https://github.com/howlil/agentflow/actions/workflows/remote-acceptance.yml) now supports two entry points:
 
-The CLI package is `@howlil/agentflow-cli`. GitHub Actions will publish it automatically when a reviewed version tag is pushed, or when the operator starts **Publish Agentflow Release** from the Actions tab using the matching version. There is no separate `AGENTFLOW_NPM_PUBLISH_ENABLED` variable.
+- **Automatic**: a successful `Publish Agentflow Release` workflow triggers the `workflow_run` acceptance job. The job resolves the release tag from the completed workflow commit and checks that the published GitHub tag matches it.
+- **Manual**: in the Actions tab select `Remote Skill Release Acceptance → Run workflow`, enter a published `release_ref` such as `v0.3.0`, and optionally a different, earlier published `previous_ref`.
 
-Configure an npm **granular access token** in the repository Actions secret named exactly `NPM_KEY`. It must be authorized for the `@howlil` scope/package and have **Read and write (publish and stage)** access, **Bypass 2FA** for unattended direct publishing, and must not have expired. npm user identity must own the `@howlil` namespace. When package-level policy forbids access tokens, use npm trusted publishing (OIDC) instead; this token-based workflow cannot override npm security policies.
+The acceptance runs in a disposable workspace and checks:
 
-### One-click release (no terminal tag required)
+1. The exact version exists in the public npm registry; installing that npm package provides the executable `agentflow` command with the expected version.
+2. The requested immutable Git tag exists in `master` history and has a published GitHub Release, never just a branch or draft.
+3. The pinned `skills@1.7.4` installer can install the canonical `agentflow` skill from `howlil/agentflow#<tag>`. Installed `SKILL.md` bytes must match the *tagged* GitHub source.
+4. The published CLI can uninstall the installed project skill with source-ownership checks, leaving no skill file behind.
+5. If `previous_ref` is supplied, it additionally installs that earlier published release, replaces it with the target release, then reinstalls the earlier version to test **tag-to-tag downgrade by reinstall**.
 
-1. Merge and verify reviewed code on `master`; update all manifests consistently with `npm run plugins:sync`.
-2. In GitHub: **Actions → Publish Agentflow Release → Run workflow**. Select **master** and enter the matching version, e.g. `v0.3.0`.
-3. The workflow verifies the commit is the latest `master`, validates root/CLI/plugin version parity, runs full tests and build, packs the CLI and checks the executable.
-4. The workflow compares the package tarball integrity with any existing npm version. It publishes only if that version does not exist. It **refuses** to accept an existing version containing different bytes.
-5. A successful npm publish is checked against the public registry. **Only then** the workflow creates a GitHub Release and version tag pointing at the verified commit.
+The first published release `v0.3.0` has no earlier published Agentflow tag in this repository; skip `previous_ref` until a later release exists. This workflow does **not** establish automated in-place updates in Claude Code, Codex, or any other host; managed client refresh is separately owned by those applications.
 
-You can still create and push the matching tag manually; the `push.tags` workflow path performs the same release validation and npm publication, then creates GitHub Release notes. Do not use both triggers for the same version concurrently. A `workflow_dispatch` tag created with `GITHUB_TOKEN` does not trigger a second workflow run.
+CI also includes a pinned `v0.3.0` public-release smoke test to prove the first npm release and skill installation are functional without a new tag or npm publication.
 
-The npm package is public (`--access public`) and includes only the standalone CLI. The root Astro site is private in npm terms and never published.
+## Recovery
 
-### Authentication limitations and future upgrade
+If a new release is bad, do not rewrite Git tags, unpublish an in-use npm version, or push files into another repository's steering configuration.
 
-The `NPM_KEY` token is used **only by the npm publish step** through the `NODE_AUTH_TOKEN` environment variable. No secret value is committed or displayed. The build/test jobs do not receive it. A missing/invalid token causes the npm publish step to fail without creating a GitHub Release.
-
-Current npm policy requires a suitable granular token with bypass 2FA for CI direct publication. npm has announced a planned end to direct publication with bypass-2FA tokens in **January 2027**. Plan to migrate this job to **npm Trusted Publishing / OIDC**, which avoids static registry secrets. Under OIDC configure owner `howlil`, repo `agentflow`, workflow `release.yml`, with `id-token: write`; do not simultaneously rely on `NPM_KEY`. The initial npm package may need registry-owner setup to claim the desired name/scope.
-
-## Pending npm Staged Packages (approval required)
-
-npm may return a successful upload message while leaving the package in a **staged** queue rather than publishing it. The public registry may return E404 and another attempt to publish the same version returns **E409**: `Cannot publish over previously staged version`. This is not a token failure and must not be fixed by repeating `npm publish`.
-
-From the npm account that owns the package, open [npmjs.com](https://www.npmjs.com/) and select the **Staged Packages** tab. Find `@howlil/agentflow-cli@0.3.0`, review its package name, version, source, and tarball contents, then click **Approve**. npm requires a human 2FA challenge; neither GitHub Actions `NPM_KEY` nor this assistant can supply it. See the [official npm staged publishing documentation](https://docs.npmjs.com/staged-publishing/).
-
-To use the CLI instead, login interactively with an authorized account on a trusted workstation (npm CLI 11.15.0+):
+For portable files, use a known-good immutable tag and select a deliberate agent/scope:
 
 ```bash
-npm stage list '@howlil/agentflow-cli'
-npm stage view <stage-id>
-npm stage approve <stage-id>
-npm view '@howlil/agentflow-cli@0.3.0' version
+npx skills@1.7.4 add 'howlil/agentflow#v0.3.0' --skill agentflow --agent codex --copy
 ```
 
-After npm reports that the version is public, rerun **Publish Agentflow Release** through the GitHub Actions tab, using branch `master` and `v0.3.0`. The release workflow verifies the published tarball integrity instead of attempting to publish that version again. Only then can it create the GitHub Release/tag. If integrity differs, stop and investigate the package artifact instead of overriding an immutable npm version.
+When replacing an installed skill, verify the lockfile source owner before uninstalling; the Agentflow CLI refuses to delete skills owned by other repositories. To recover the npm CLI itself, install an explicitly versioned public package, e.g. `npm install -g @howlil/agentflow-cli@0.3.0`. Native plugin host rollback may require a separate client-specific action or a new reviewed patch release.
 
-A separate **Inspect Agentflow npm Stage** workflow displays the pending versions using the repository's existing `NPM_KEY`. It never performs approvals or exposes the token value.
+## Scope limits
 
-## Manual remote acceptance
-
-`remote-acceptance.yml` is an **on-demand** workflow on GitHub Actions; it cannot run until the workflow is on the default branch and a release tag exists.
-
-From **Actions → Remote Skill Release Acceptance → Run workflow**, supply `release_ref` (e.g. `v0.3.0`). Optionally supply `previous_ref` to exercise older-version install, upgrade, and rollback. The job validates tag existence and master ancestry, then uses the pinned `skills@1.7.4` CLI to:
-
-1. Install the previous version if provided, compare installed `SKILL.md` bytes with the tagged version.
-2. Remove the old version, install the release tag, verify canonical skill file content.
-3. If requested, remove the release and install the previous tagged version, byte-compare again.
-4. Uninstall and verify that the skill file is absent.
-
-This exercises version-specific *file distribution*, not managed plugin auto-update inside Claude or Codex applications. Complete a separate real-client acceptance test before claiming managed host auto-update.
-
-## Recovery and rollback
-
-**Project/global file skills:** install from an immutable, previously verified tag using the external installer:
-
-```bash
-npx skills@1.7.4 remove agentflow -a codex
-npx skills@1.7.4 add 'howlil/agentflow#v0.2.0' --skill agentflow -a codex --copy
-```
-
-The version shown here is an *illustrative previous tag*, not a claim that `v0.2.0` currently exists. Use a tag returned by `git tag -l 'v*'` after release. Check source ownership and the installed `SKILL.md` content before removing any existing skill.
-
-**Native plugins:** do not rewrite release tags or force-push history. Restore known-good skill content in a new reviewed patch release, bump the manifests, publish a new tag and refresh the host's marketplace. Availability of pinning and managed downgrade depends on the individual host.
-
-**npm package:** npm versions are immutable. Recover by publishing a new patch with known-good behavior after review; do not unpublish a version other users might depend on.
-
-## Limits and gates
-
-- `agentflow update` or `uninstall` with unknown/foreign sources fails closed. These mutations require an explicit project/global scope. Ownership is read from the upstream `skills-lock.json` / global `.skill-lock.json`, and isn't asserted for manually copied skill folders lacking lock metadata.
-- This check prevents known cross-source name collisions, but does not create transactional locking against other concurrent package managers.
-- CLI packaging/unit/diagnostic tests run on Linux, Windows, macOS. Remote tagged installation and real desktop host activation remain post-merge release checks.
-- npm publishing is enabled on version-tag and explicit release dispatch events, but requires a valid NPM_KEY and a released package version; initial namespace ownership and token privileges cannot be verified from repository source alone.
+- Tests are run on Linux, macOS, and Windows for CLI portability. Automated tagged release acceptance currently runs on GitHub-hosted Ubuntu.
+- Host-managed background updates, third-party marketplace listing approvals and desktop acceptance remain distinct from this milestone.
+- The root Astro docs app is not an npm package; publishing the CLI does not redeploy a runtime server.
+- Prefer token-free npm Trusted Publishing / OIDC in a future release-hardening milestone. The existing `NPM_KEY` publishing path remains in place for this maintenance-only milestone.
