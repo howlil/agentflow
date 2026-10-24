@@ -21,7 +21,7 @@ test('acceptance isolates HOME and protects unrelated skills and AGENTS.md', asy
   for (const guard of [
     'mktemp -d', 'export HOME=', 'trap ',
     'npm pack', 'skills/agentflow/SKILL.md',
-    'init --agent', 'install --project', 'install --global',
+    'init --agent', '--skill agentflow --agent', '--skill agentflow --global --agent',
     'uninstall --project', 'uninstall --global',
     'cmp ', 'unrelated/SKILL.md', 'AGENTS.md',
   ]) assert.ok(script.includes(guard), 'Missing invariant ' + guard);
