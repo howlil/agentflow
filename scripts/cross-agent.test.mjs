@@ -20,7 +20,7 @@ test('acceptance isolates HOME and protects unrelated skills and AGENTS.md', asy
   const script = await read('.github/scripts/cross-agent-acceptance.sh');
   for (const guard of [
     'mktemp -d', 'export HOME=', 'trap ',
-    '@howlil/agentflow-cli@', 'refs/tags/', 'skills/agentflow/SKILL.md',
+    'npm pack', 'skills/agentflow/SKILL.md',
     'init --agent', 'install --project', 'install --global',
     'uninstall --project', 'uninstall --global',
     'cmp ', 'unrelated/SKILL.md', 'AGENTS.md',
