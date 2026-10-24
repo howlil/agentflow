@@ -7,7 +7,7 @@ A skill is a decision tool, not a mandatory lifecycle stage.
 
 ## Ownership
 - `skills/<name>/SKILL.md`: canonical instructions and runtime metadata.
-- `scripts/generate-skills.mjs`: validate canonical packages and required Agent Skills metadata constraints, then generate metadata/reference docs.
+- `scripts/generate-skills.mjs`: validate canonical packages and required Agent Skills metadata constraints, then generate metadata/reference docs plus the optional static `/llms.txt` discovery index, all from the same `SKILL.md` frontmatter.
 - `src/content/docs/start/install.md`: document installer-managed project/global lifecycle.
 - `src/content/docs/start/native-plugins.md`: native marketplace commands and host-specific update behavior.
 - `plugin.json` and `.claude-plugin/plugin.json`: two native metadata adapters with identical package identity/version, not competing skill sources.

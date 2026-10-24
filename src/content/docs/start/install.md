@@ -3,6 +3,8 @@ title: Install Agentflow
 description: Discover, install, update, and remove Agentflow skills in project or global scope.
 ---
 
+For the fastest decision between portable skill files, a native plugin, and the published npm CLI, see [Distribution & discovery](/start/distribution/).
+
 For editable, file-based installations, Agentflow publishes portable [Agent Skills](https://agentskills.io/specification) at `skills/<name>/SKILL.md`. Install them with the independent [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md), which requires Node.js 22.20 or later.
 
 For native managed Claude and Codex plugins, see [Native plugins](/start/native-plugins/). **Choose only one distribution route for each agent** to avoid duplicate skills.
