@@ -82,7 +82,7 @@ test('brand messaging is consistent without overstating runtime capabilities', a
   for (const copy of [readme, index, brand, config]) {
     assert.ok(copy.includes('Better judgment for AI agents.'), 'Primary tagline drift');
   }
-  assert.match(hero, /Better judgment[\\s\\S]*for AI agents\\./);
+  assert.match(hero, /Better judgment[\s\S]*for AI agents\./);
   assert.ok(readme.includes('The right skill for every engineering decision.'));
   assert.ok(readme.includes('## Install in 60 seconds'));
   assert.ok(readme.includes('## Source-of-truth model'));
