@@ -1,6 +1,6 @@
 {
   "name": "agentflow",
-  "description": "Portable software-engineering decision skills by howlil.",
+  "description": "Better judgment for AI agents. One decision router and ten portable engineering specialist skills.",
   "owner": {
     "name": "howlil",
     "url": "https://github.com/howlil"
@@ -9,7 +9,7 @@
     {
       "name": "agentflow",
       "source": "./",
-      "description": "Eleven graph-first skills for engineering decisions."
+      "description": "Better judgment for AI agents. One decision router and ten portable engineering specialist skills."
     }
   ]
 }

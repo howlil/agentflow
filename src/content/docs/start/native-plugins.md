@@ -3,7 +3,7 @@ title: Native plugins
 description: Install and manage Agentflow through Claude Code and Codex marketplaces.
 ---
 
-Agentflow bundles **one root set of eleven canonical skills** for two native plugin hosts. Native plugins are managed subscriptions: use **either** a native marketplace install **or** the editable [skills.sh installation](/start/install/) for a given agent, not both.
+Agentflow bundles **one router and ten specialist skills** from a single canonical root. Both plugin manifests use the positioning **“Better judgment for AI agents.”** Native plugins are managed subscriptions: use **either** a native marketplace install **or** the editable [skills.sh installation](/start/install/) for a given agent, not both.
 
 The native marketplace manifests are included in the public default branch and immutable versioned GitHub releases. Managed refresh still depends on each client's configuration.
 
@@ -98,3 +98,7 @@ git push origin vX.Y.Z
 The GitHub Release workflow checks that the tag equals the package version, is reachable from `master`, and passes the test/build suite before publishing release notes. Only tag an already-reviewed commit, and never reuse or force-update release tags.
 
 **Publishing a GitHub release is not publication into Anthropic's official plugin directory or OpenAI's public Plugins Directory.** Those require separate review/submission. Managed updates depend on each installed client's marketplace configuration and refresh policy.
+
+## Brand metadata and native releases
+
+The Claude and Codex manifests share one product name and description. Changing these fields in the repository does not itself publish to official directories or refresh installed plugin caches; a native update still requires a reviewed release with a new matching version. The visual assets (logo and social card) belong to the website/GitHub presentation, not to host marketplace API fields unless those schemas explicitly support them.

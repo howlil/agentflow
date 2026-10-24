@@ -55,11 +55,9 @@ Do not imply measured performance, error reduction, cost savings, or security im
 - **Avoid:** autonomous swarm, universal intelligence, zero-error coding, guaranteed outcomes, flow automation.
 - Prefer concrete examples and scoped technical claims over generic AI hype.
 
-## Visual identity (existing website baseline)
+## Visual identity — single source of truth
 
-Current implementation uses a near-black homepage (`#08090a`), off-white text (`#f7f6f2`), Geist for body/interface text, Geist Mono for small technical labels, and Instrument Serif for the large editorial hero. These are the **current implementation tokens**, not an irreversible design mandate.
-
-Use one dominant message, quiet technical decoration, generous whitespace, accessible contrast, and consistent capsule CTAs. A future logo or color redesign should be treated as a separate reviewed design change; do not attach a generic robot, brain or chip symbol to imply functionality not present.
+The active visual identity is defined by the M2 token table below. Do not revive the old blue accents, placeholder letter-A favicon, heavy shadows, or inconsistent card styles. The logo must be sourced from `public/favicon.svg`, including documentation and social sharing use.
 
 ## Brand architecture
 
@@ -116,3 +114,30 @@ Keep a flat, high-contrast composition with quiet technical motion and rounded c
 - `npm run brand:assets`: produces the vectors and PNG; it also runs as part of dev/build.
 
 The website exposes `og:image` and `twitter:image` **only when `PUBLIC_SITE_URL` is configured with the actual canonical production origin**. This avoids publishing incorrect social URLs for temporary deploys. After deployment, verify live metadata, favicon rendering at 16/32 px, and social card appearance in platform debuggers; CI proves file generation, not social crawler ingestion.
+
+## Product consistency — M3
+
+### Documentation components
+
+The homepage and Starlight documentation share the same routed-node mark. The skills catalog shows **one router** distinctly from the **ten specialists**, using guide metadata generated from canonical `SKILL.md` sources. Do not duplicate skill descriptions or manually maintain a parallel list in UI components. Cards use responsive layouts, visible keyboard focus, no drop shadows, and theme-aware neutral/violet tokens.
+
+The mobile landing header keeps **Install** and **Explore skills** visible; the GitHub icon has an accessible label when its visible text is hidden.
+
+### Marketplace identity
+
+Keep all distribution identifiers exactly `agentflow` and maintain identical description across the root Agent Plugin manifest and Claude plugin + marketplace metadata:
+
+> Better judgment for AI agents. One decision router and ten portable engineering specialist skills.
+
+Codex marketplace display name is `Agentflow`. Its category and install policies remain host-owned. A metadata revision on the default branch **is not** an official marketplace listing or released native plugin version. The next release requires a separately reviewed version bump and immutable tag.
+
+### GitHub repository presentation
+
+The README uses the canonical mark and positioning. The repository **About description, topics and social-preview image are GitHub settings**, not files implicitly modified by the PR. After merging, an authorized owner can apply:
+
+- Description: `Portable engineering skills for AI coding agents.`
+- Topics: `agent-skills`, `ai-coding`, `software-engineering`, `code-review`, `developer-tools`
+- Social preview: upload the generated `public/og.png` from a verified build (1200×630)
+- Website: enter only the verified, deployed Agentflow domain.
+
+Check external directory listing descriptions separately; repository metadata and GitHub README do not force third-party registries to re-index.
