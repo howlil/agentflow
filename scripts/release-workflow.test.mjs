@@ -87,6 +87,8 @@ test('OIDC publishing is explicitly selected and completely isolated from legacy
   assert.doesNotMatch(token, /id-token: write/);
   assert.match(token, /AGENTFLOW_NPM_AUTH_MODE == ''/);
   assert.match(token, /NODE_AUTH_TOKEN/);
+  assert.match(workflow, /Validate selected npm authentication mode/);
+  assert.match(workflow, /Unsupported AGENTFLOW_NPM_AUTH_MODE; refusing release/);
 });
 
 test('dependency checks are bounded, read-only and detect high-severity issues', async () => {
