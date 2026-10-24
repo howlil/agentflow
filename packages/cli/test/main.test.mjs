@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import {
   buildDelegation, parseArgs, readConfig, resolveNpxInvocation, run, supportsNode, CONFIG_NAME,
 } from '../src/main.mjs';
@@ -158,8 +158,8 @@ test('delegation never interpolates arbitrary shell commands', () => {
 });
 
 test('Windows launches the pinned installer through node.exe, not npx.cmd or a shell', () => {
-  const nodePath = '/Program Files/fnm/node-v24/node.exe';
-  const npmEntrypoint = '/Program Files/fnm/node-v24/node_modules/npm/bin/npx-cli.js';
+  const nodePath = join(process.cwd(), 'Program Files', 'fnm', 'node-v24', 'node.exe');
+  const npmEntrypoint = join(dirname(nodePath), 'node_modules', 'npm', 'bin', 'npx-cli.js');
   const runtime = {
     platform: 'win32',
     execPath: nodePath,
@@ -180,15 +180,16 @@ test('Windows launches the pinned installer through node.exe, not npx.cmd or a s
 });
 
 test('Windows supports an explicitly identified npm installation outside the Node directory', () => {
+  const execPath = join(process.cwd(), 'fnm', 'node.exe');
+  const npmExecPath = join(process.cwd(), 'Program Files', 'npm', 'bin', 'npm-cli.js');
+  const npxEntrypoint = join(dirname(npmExecPath), 'npx-cli.js');
   const runtime = {
-    platform: 'win32',
-    execPath: '/fnm/node.exe',
-    npmExecPath: '/Program Files/npm/bin/npm-cli.js',
-    exists: path => path === '/Program Files/npm/bin/npx-cli.js',
+    platform: 'win32', execPath, npmExecPath,
+    exists: path => path === npxEntrypoint,
   };
   assert.deepEqual(resolveNpxInvocation(runtime), {
-    program: '/fnm/node.exe',
-    prefixArgs: ['/Program Files/npm/bin/npx-cli.js'],
+    program: execPath,
+    prefixArgs: [npxEntrypoint],
   });
 });
 
@@ -217,7 +218,7 @@ test('Windows global router install and status preserve one-source skill selecto
     assert.equal(await run(['install', '--global', '--agent', 'codex',
       '--skill', 'agentflow', '--copy', '--yes'], ctx), 0);
     assert.equal(await run(['status', '--global', '--agent', 'codex'], ctx), 0);
-    assert.deepEqual(ctx.calls.map(call => call.cmd), ['/node/node.exe', '/node/node.exe']);
+    assert.deepEqual(ctx.calls.map(call => call.cmd), [execPath, execPath]);
     assert.deepEqual(ctx.calls[0].args, [
       npmEntrypoint, '--yes', 'skills@1.7.4', 'add', 'howlil/agentflow',
       '-g', '-a', 'codex', '--skill', 'agentflow', '--copy', '-y',
