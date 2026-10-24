@@ -95,7 +95,7 @@ The acceptance runs in a disposable workspace and checks:
 2. The requested immutable Git tag exists in `master` history and has a published GitHub Release, never just a branch or draft.
 3. The pinned `skills@1.7.4` installer can install the canonical `agentflow` skill from `howlil/agentflow#<tag>`. Installed `SKILL.md` bytes must match the *tagged* GitHub source.
 4. The published CLI can uninstall the installed project skill with source-ownership checks, leaving no skill file behind.
-5. If `previous_ref` is supplied, it additionally installs that earlier published release, replaces it with the target release, then reinstalls the earlier version to test **tag-to-tag downgrade by reinstall**.
+5. If `previous_ref` is supplied, it installs that earlier published release, **replaces it while it is still installed** with the target release, then replaces the active target with the earlier release and verifies the resulting skill bytes on each transition. Removal happens only after these transitions.
 
 The first published release `v0.3.0` has no earlier published Agentflow tag in this repository; skip `previous_ref` until a later release exists. This workflow does **not** establish automated in-place updates in Claude Code, Codex, or any other host; managed client refresh is separately owned by those applications.
 
