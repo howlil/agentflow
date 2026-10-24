@@ -99,6 +99,11 @@ commit to master
 
 ## Decisions
 
+### M7 discovery, install route and source ownership
+
+The landing, README and `src/content/docs/start/distribution.md` show one decision: choose one installation route per host (portable `skills@1.7.4`, npm CLI adapter or native host plugin). Never imply that installing the router also installs specialists, that npm contains a separate skill runtime, or that file installation causes automatic host updates. `scripts/generate-skills.mjs` derives the optional `public/llms.txt` build artifact from exactly the validated 11 canonical `SKILL.md` metadata objects that generate `src/generated/skills.json`. The generated file is ignored in Git and must be present in `dist/llms.txt` in CI; do not maintain a manually copied second catalog. GitHub repository description/topics and external directory submissions are platform-owned changes, not a property of this static site build.
+
+
 ### Release automation (NPM_KEY)
 
 `.github/workflows/release.yml` verifies a tag or manual version against the current `master` and root/CLI/native package parity, tests/builds/packs, and checks public npm registry tarball integrity before publishing. Only `publish-npm` receives `secrets.NPM_KEY` as `NODE_AUTH_TOKEN`; only after npm success can `github-release` generate the release/tag. Registry versions with mismatched tarball integrity cause hard failures; reruns with identical content are idempotent. Tag creation on workflow_dispatch via GitHub token does not retrigger tag events. Keep token authentication isolated, and prioritize moving to OIDC before npm retires direct publishing via bypass-2FA tokens in January 2027.
