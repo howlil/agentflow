@@ -101,9 +101,9 @@ export function formatDiscoveryIndex(skills) {
     '## Canonical Skills',
   ];
   const entries = skills.map(({ name, description, sourcePath }) =>
-    '- [' + name + '](' + raw + sourcePath + '): ' + description.replace(/\\s+/g, ' ').trim());
+    '- [' + name + '](' + raw + sourcePath + '): ' + description.replace(/\s+/g, ' ').trim());
   return [...intro, ...entries, '', '## Optional', '- [Release and rollback](' + base +
-    'src/content/docs/start/release-and-rollback.md): public version and acceptance', ''].join('\\n');
+    'src/content/docs/start/release-and-rollback.md): public version and acceptance', ''].join('\n');
 }
 
 function stripLeadingTitle(body) {
