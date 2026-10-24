@@ -56,7 +56,7 @@ The `$agentflow` syntax is **not guaranteed** to invoke the router in every host
 
 ## What M6 verifies
 
-GitHub Actions runs a five-agent compatibility matrix on Ubuntu using **`@howlil/agentflow-cli@0.3.0` from the public npm registry** and skill files from the immutable **`v0.3.0` Git tag**. Each job uses a fresh temporary home and project, then verifies:
+GitHub Actions runs a five-agent compatibility matrix on Ubuntu against **the current PR/`master` checkout**: it packs the local CLI, installs canonical skills from the same checkout using `skills@1.7.4`, and verifies their content. A **separate stable-release smoke test** installs the public `@howlil/agentflow-cli@0.3.0` and skill from the immutable `v0.3.0` Git tag. The candidate test uses upstream `skills add/remove` directly because the CLI intentionally installs only from its canonical GitHub source; source-ownership checks are covered by CLI unit tests and the published-release smoke. Each job uses a fresh temporary home and project, then verifies:
 
 1. Project-scope install, discovery/list, the expected skill path and byte-for-byte canonical `SKILL.md`.
 2. Source-owned uninstall without deleting an unrelated skill or overwriting `AGENTS.md`.

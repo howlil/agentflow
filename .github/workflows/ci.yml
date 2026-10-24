@@ -120,9 +120,12 @@ jobs:
           EXPECTED_RELEASE_SHA: ''
           DISABLE_TELEMETRY: '1'
         run: bash .github/scripts/remote-acceptance.sh v0.3.0 ""
+      - name: Exercise real upgrade and rollback against distinct local fixtures
+        shell: bash
+        run: bash .github/scripts/lifecycle-transition-smoke.sh
   
   cross-agent-compatibility:
-    name: Portable skills / ${{ matrix.agent }}
+    name: Candidate skills / ${{ matrix.agent }}
     strategy:
       fail-fast: false
       matrix:
@@ -140,9 +143,9 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Exercise public package on isolated project and global scope
+      - name: Exercise packed candidate CLI and checkout skills in isolated scopes
         shell: bash
         env:
           DISABLE_TELEMETRY: '1'
           AGENT_ID: ${{ matrix.agent }}
-        run: bash .github/scripts/cross-agent-acceptance.sh "$AGENT_ID"
+        run: bash .github/scripts/cross-agent-candidate.sh "$AGENT_ID"

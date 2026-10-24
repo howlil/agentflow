@@ -8,21 +8,26 @@ const ids = ['claude-code', 'codex', 'gemini-cli', 'cursor', 'opencode'];
 
 test('matrix covers five agent IDs without requiring host credentials', async () => {
   const workflow = await read('.github/workflows/ci.yml');
-  const script = await read('.github/scripts/cross-agent-acceptance.sh');
+  const script = await read('.github/scripts/cross-agent-candidate.sh');
   assert.match(workflow, /cross-agent-compatibility:/);
   assert.match(workflow, /agent: \[claude-code, codex, gemini-cli, cursor, opencode\]/);
-  assert.match(workflow, /bash \.github\/scripts\/cross-agent-acceptance\.sh/);
-  for (const agent of ids) assert.ok(script.includes(agent + ')'), 'Missing case for ' + agent);
-  assert.doesNotMatch(script, /gh auth login|npm publish|git push|\.npmrc/);
+  assert.match(workflow, /bash \.github\/scripts\/cross-agent-candidate\.sh/);
+  const cases = script.match(/case "\$AGENT" in([\s\S]*?)\n\s*esac/)?.[1] || '';
+  const selectors = cases.split('\n').filter(line => /\)\s/.test(line)).flatMap(line =>
+    line.trim().split(')')[0].split('|').map(value => value.trim()));
+  for (const agent of ids) assert.ok(selectors.includes(agent), 'Missing case for ' + agent);
+  // Inspect executable lines, not comments describing prohibited operations.
+  const commands = script.split('\n').filter(line => !line.trimStart().startsWith('#')).join('\n');
+  assert.doesNotMatch(commands, /gh auth login|npm publish|git push|\.npmrc/);
 });
 
 test('acceptance isolates HOME and protects unrelated skills and AGENTS.md', async () => {
-  const script = await read('.github/scripts/cross-agent-acceptance.sh');
+  const script = await read('.github/scripts/cross-agent-candidate.sh');
   for (const guard of [
     'mktemp -d', 'export HOME=', 'trap ',
-    '@howlil/agentflow-cli@', 'refs/tags/', 'skills/agentflow/SKILL.md',
-    'init --agent', 'install --project', 'install --global',
-    'uninstall --project', 'uninstall --global',
+    'npm pack', 'skills/agentflow/SKILL.md',
+    'init --agent', '--skill agentflow --agent', '--skill agentflow --global --agent',
+    'remove agentflow --agent', 'remove agentflow --global --agent',
     'cmp ', 'unrelated/SKILL.md', 'AGENTS.md',
   ]) assert.ok(script.includes(guard), 'Missing invariant ' + guard);
 });
@@ -38,4 +43,6 @@ test('guide documents five hosts and warns about model-session limitations', asy
   assert.match(guide, /not guaranteed/i);
   const config = await read('astro.config.mjs');
   assert.match(config, /'start\/cross-agent-compatibility'/);
+  assert.doesNotMatch(await read('.github/scripts/cross-agent-candidate.sh'), /RELEASE='v0\.3\.0'|VERSION='0\.3\.0'/);
+  assert.match(await read('.github/workflows/ci.yml'), /published-release-smoke:/);
 });

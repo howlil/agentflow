@@ -93,20 +93,19 @@ uninstall_agentflow() {
 }
 
 if [ -n "$PREVIOUS_REF" ]; then
+  # Keep the older skill installed while upgrading. Replacing the same
+  # installed name must change its actual SKILL.md bytes; a fresh install
+  # after uninstall does not test the compatibility boundary.
   install_tag "$PREVIOUS_REF"
-  uninstall_agentflow
+  install_tag "$RELEASE_REF"
+  # Roll back while the newer installation remains active.
+  install_tag "$PREVIOUS_REF"
+else
+  install_tag "$RELEASE_REF"
 fi
-
-install_tag "$RELEASE_REF"
 uninstall_agentflow
-
-if [ -n "$PREVIOUS_REF" ]; then
-  # Downgrade by reinstall, not an unverified native host auto-update.
-  install_tag "$PREVIOUS_REF"
-  uninstall_agentflow
-fi
 
 echo "PASS: published npm CLI $RELEASE_VERSION, pinned GitHub skill and protected removal"
 if [ -n "$PREVIOUS_REF" ]; then
-  echo "PASS: tag-to-tag replacement and rollback to $PREVIOUS_REF"
+  echo "PASS: in-place tag replacement and rollback to $PREVIOUS_REF"
 fi

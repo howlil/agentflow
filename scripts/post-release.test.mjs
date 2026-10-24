@@ -32,10 +32,23 @@ test('post-release script checks exact tag, published npm command and protected 
   assert.doesNotMatch(script, /npm publish|gh release create|git push|--all/);
 });
 
+test('upgrade and rollback preserve an active installation across version transitions', async () => {
+  const script = await read('.github/scripts/remote-acceptance.sh');
+  const start = script.indexOf('if [ -n "$PREVIOUS_REF" ]; then', script.indexOf('uninstall_agentflow()'));
+  const phase = script.slice(start);
+  assert.match(phase, /install_tag "\$PREVIOUS_REF"[\s\S]*install_tag "\$RELEASE_REF"[\s\S]*install_tag "\$PREVIOUS_REF"/);
+  assert.equal((phase.match(/uninstall_agentflow\b/g) || []).length, 1);
+  assert.ok(phase.indexOf('uninstall_agentflow') > phase.lastIndexOf('install_tag "$PREVIOUS_REF"'));
+  const fixture = await read('.github/scripts/lifecycle-transition-smoke.sh');
+  assert.match(fixture, /install_fixture "\$TEMP\/v1"[\s\S]*install_fixture "\$TEMP\/v2"[\s\S]*install_fixture "\$TEMP\/v1"/);
+  assert.match(fixture, /cmp "\$source\/skills\/agentflow\/SKILL.md"/);
+});
+
 test('CI runs independent public v0.3.0 acceptance on fresh PRs', async () => {
   const workflow = await read('.github/workflows/ci.yml');
   assert.match(workflow, /published-release-smoke:/);
   assert.match(workflow, /remote-acceptance\.sh v0\.3\.0/);
+  assert.match(workflow, /lifecycle-transition-smoke\.sh/);
   assert.match(workflow, /fetch-depth: 0/);
 });
 
