@@ -1,6 +1,31 @@
 # Agentflow
 
-Human-facing discovery guides and canonical runtime packages for eleven reusable software-engineering agent skills (the Agentflow router and ten specialists).
+[![Skills ecosystem](https://skills.sh/b/howlil/agentflow)](https://skills.sh/)
+[![npm](https://img.shields.io/npm/v/@howlil/agentflow-cli)](https://www.npmjs.com/package/@howlil/agentflow-cli)
+[![CI](https://github.com/howlil/agentflow/actions/workflows/ci.yml/badge.svg)](https://github.com/howlil/agentflow/actions/workflows/ci.yml)
+
+**Portable software-engineering skills for AI coding agents.** Use the `agentflow` router to select the smallest useful specialist for an unresolved product, design, implementation, testing, security, or production decision. Eleven canonical skills work through a portable installer; optional native plugin routes exist for Claude Code and Codex.
+
+## Install in 60 seconds
+
+Requires **Node.js 22.20+**. First preview the skill catalog without installing anything:
+
+```bash
+npx skills@1.7.4 add howlil/agentflow --list
+```
+
+Then choose **one installation route per AI host**:
+
+| I want to... | Command |
+| --- | --- |
+| Install the router in this project for Codex | `npx skills@1.7.4 add howlil/agentflow --skill agentflow --agent codex --copy --yes` |
+| Install the published Agentflow CLI | `npm install -g @howlil/agentflow-cli@0.3.0` |
+| Install through Claude Code's native marketplace | `claude plugin marketplace add howlil/agentflow` |
+| Add a Codex native marketplace | `codex plugin marketplace add howlil/agentflow` |
+
+Installing only the router **does not install the ten specialist skills**. The native marketplace commands require their respective host clients, and are not the same as file-based installation. For Gemini CLI, Cursor and OpenCode, use portable installation with the supported `--agent` ID.
+
+**Start here:** [Choose an installation route](src/content/docs/start/distribution.md) · [Find the right skill](src/content/docs/start/choose-a-skill.md) · [Five-agent compatibility](src/content/docs/start/cross-agent-compatibility.md) · [Published v0.3.0](https://github.com/howlil/agentflow/releases/tag/v0.3.0)
 
 The system is designed around one question:
 
@@ -104,7 +129,7 @@ Bare `agentflow update` is deliberately rejected because the upstream bare updat
 
 ## Release and rollback (M4)
 
-**Automated npm package release:** after a reviewed `master` commit, open **Actions → Publish Agentflow Release → Run workflow**, select `master`, and enter the current version (for example `v0.3.0`). The pipeline validates CI, publishes `@howlil/agentflow-cli` using repository secret `NPM_KEY`, then creates the Git tag and GitHub Release. A pushed matching `v*` tag also triggers publishing. The first public release, [v0.3.0](https://github.com/howlil/agentflow/releases/tag/v0.3.0), is already published on npm. Future versions require a new version bump, reviewed code, and valid npm publishing credentials.
+**Automated npm package release:** after a reviewed `master` commit, open **Actions → Publish Agentflow Release → Run workflow**, select `master`, and enter the newly reviewed package version (for example `v0.3.1` after bumping its manifests). The pipeline validates CI, publishes `@howlil/agentflow-cli` using repository secret `NPM_KEY`, then creates the Git tag and GitHub Release. A pushed matching `v*` tag also triggers publishing. The first public release, [v0.3.0](https://github.com/howlil/agentflow/releases/tag/v0.3.0), is already published on npm. Future versions require a new version bump, reviewed code, and valid npm publishing credentials.
 
 
 The CLI verifies installed skill source ownership before update and uninstall; mutations require explicit global/project scope. Versioned releases check tag ancestry and metadata before creating GitHub release notes. The npm publish job uses the `NPM_KEY` repository secret; if its credentials are invalid or the npm scope is not owned, the release fails without creating a GitHub Release.
