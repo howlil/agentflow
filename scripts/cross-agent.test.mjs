@@ -16,7 +16,9 @@ test('matrix covers five agent IDs without requiring host credentials', async ()
   const selectors = cases.split('\n').filter(line => /\)\s/.test(line)).flatMap(line =>
     line.trim().split(')')[0].split('|').map(value => value.trim()));
   for (const agent of ids) assert.ok(selectors.includes(agent), 'Missing case for ' + agent);
-  assert.doesNotMatch(script, /gh auth login|npm publish|git push|\.npmrc/);
+  // Inspect executable lines, not comments describing prohibited operations.
+  const commands = script.split('\n').filter(line => !line.trimStart().startsWith('#')).join('\n');
+  assert.doesNotMatch(commands, /gh auth login|npm publish|git push|\.npmrc/);
 });
 
 test('acceptance isolates HOME and protects unrelated skills and AGENTS.md', async () => {
