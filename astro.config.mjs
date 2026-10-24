@@ -27,6 +27,7 @@ export default defineConfig({
             'start/quickstart',
             'start/install',
             'start/native-plugins',
+            'start/cross-agent-compatibility',
             'start/cli',
             'start/release-and-rollback',
             'start/choose-a-skill',
