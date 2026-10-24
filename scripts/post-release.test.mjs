@@ -48,6 +48,7 @@ test('CI runs independent public v0.3.0 acceptance on fresh PRs', async () => {
   const workflow = await read('.github/workflows/ci.yml');
   assert.match(workflow, /published-release-smoke:/);
   assert.match(workflow, /remote-acceptance\.sh v0\.3\.0/);
+  assert.match(workflow, /lifecycle-transition-smoke\.sh/);
   assert.match(workflow, /fetch-depth: 0/);
 });
 
