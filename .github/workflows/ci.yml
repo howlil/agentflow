@@ -120,6 +120,9 @@ jobs:
           EXPECTED_RELEASE_SHA: ''
           DISABLE_TELEMETRY: '1'
         run: bash .github/scripts/remote-acceptance.sh v0.3.0 ""
+      - name: Exercise real upgrade and rollback against distinct local fixtures
+        shell: bash
+        run: bash .github/scripts/lifecycle-transition-smoke.sh
   
   cross-agent-compatibility:
     name: Candidate skills / ${{ matrix.agent }}
