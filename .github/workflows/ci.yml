@@ -99,6 +99,22 @@ jobs:
       - run: agentflow install --global --agent codex --skill agentflow --dry-run
       - run: agentflow doctor
       - run: agentflow status --project
+      - name: Windows router install/status/uninstall must run without DEP0190
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        env:
+          NODE_OPTIONS: --throw-deprecation
+          DISABLE_TELEMETRY: '1'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          agentflow install --global --agent codex --skill agentflow --copy --yes
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $status = agentflow status --global --agent codex 2>&1 | Out-String
+          if ($LASTEXITCODE -ne 0) { throw "Agentflow status failed: $status" }
+          Write-Output $status
+          if ($status -notmatch '(?m)^agentflow\\s') { throw 'Router not detected in global skills' }
+          agentflow uninstall --global --agent codex --skill agentflow --yes
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
   published-release-smoke:
     name: Public v0.3.0 npm and GitHub acceptance
