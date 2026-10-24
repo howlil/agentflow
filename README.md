@@ -19,7 +19,7 @@ Then choose **one installation route per AI host**:
 | I want to... | Command |
 | --- | --- |
 | Install the router in this project for Codex | `npx skills@1.7.4 add howlil/agentflow --skill agentflow --agent codex --copy --yes` |
-| Install the published Agentflow CLI | `npm install -g @howlil/agentflow-cli@0.3.0` |
+| Install the published Agentflow CLI | `npm install -g @howlil/agentflow-cli@0.3.1` |
 | Install through Claude Code's native marketplace | `claude plugin marketplace add howlil/agentflow` |
 | Add a Codex native marketplace | `codex plugin marketplace add howlil/agentflow` |
 
@@ -114,7 +114,7 @@ A thin, separate Node.js executable lives under `packages/cli`. The CLI delegate
 
 ```bash
 # Install the published CLI (Node.js >=22.20.0)
-npm install -g @howlil/agentflow-cli@0.3.0
+npm install -g @howlil/agentflow-cli@0.3.1
 agentflow --version
 agentflow init --agent codex
 agentflow doctor
