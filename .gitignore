@@ -3,5 +3,6 @@ dist/
 .astro/
 .wrangler/
 src/generated/
+public/llms.txt
 src/content/docs/reference/
 .DS_Store
