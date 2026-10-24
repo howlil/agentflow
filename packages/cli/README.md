@@ -2,7 +2,7 @@
 
 A dependency-free Node CLI front end to portable Agentflow skills.
 
-Published as [`@howlil/agentflow-cli`](https://www.npmjs.com/package/@howlil/agentflow-cli). To use public version `0.3.0`, run `npm install -g @howlil/agentflow-cli@0.3.0`. For local development, install from a cloned repository:
+Published as [`@howlil/agentflow-cli`](https://www.npmjs.com/package/@howlil/agentflow-cli). To use public version `0.3.1`, run `npm install -g @howlil/agentflow-cli@0.3.1`. For local development, install from a cloned repository:
 
 ```bash
 npm install -g ./packages/cli
