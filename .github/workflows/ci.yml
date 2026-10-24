@@ -122,7 +122,7 @@ jobs:
         run: bash .github/scripts/remote-acceptance.sh v0.3.0 ""
   
   cross-agent-compatibility:
-    name: Portable skills / ${{ matrix.agent }}
+    name: Candidate skills / ${{ matrix.agent }}
     strategy:
       fail-fast: false
       matrix:
@@ -145,4 +145,4 @@ jobs:
         env:
           DISABLE_TELEMETRY: '1'
           AGENT_ID: ${{ matrix.agent }}
-        run: bash .github/scripts/cross-agent-acceptance.sh "$AGENT_ID"
+        run: bash .github/scripts/cross-agent-candidate.sh "$AGENT_ID"
