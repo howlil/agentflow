@@ -1,6 +1,5 @@
 {
   "package": "@howlil/agentflow-cli",
-  "version": "0.3.0",
-  "releasePhase": "finalize-after-registry-publication",
-  "registryVerificationRun": "40037936516"
+  "version": "0.3.1",
+  "releasePhase": "publish-reviewed-cli-patch"
 }

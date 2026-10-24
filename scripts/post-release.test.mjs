@@ -64,5 +64,5 @@ test('published CLI docs have no stale unpublished or branch-only instructions',
     assert.doesNotMatch(doc, /not yet published|not been published|has not yet been published|after M2 merges|checkout feat\/m3-agentflow-cli/i, path);
   }
   const cli = await read('src/content/docs/start/cli.md');
-  assert.match(cli, /npm install -g @howlil\/agentflow-cli@0\.3\.0/);
+  assert.match(cli, /npm install -g @howlil\/agentflow-cli@0\.3\.1/);
 });
