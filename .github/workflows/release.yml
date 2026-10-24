@@ -244,8 +244,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Never pass NODE_AUTH_TOKEN to this step. The npm CLI will request
-          # an ephemeral OIDC identity scoped to this exact workflow.
+          # npm requests an ephemeral identity scoped to this workflow.
+          # No static registry credentials are supplied to this job.
           test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
           test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
           npm publish --access public --registry=https://registry.npmjs.org
