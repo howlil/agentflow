@@ -103,3 +103,21 @@ test('dependency checks are bounded, read-only and detect high-severity issues',
   assert.match(audit, /npm audit --omit=dev --audit-level=high/);
   assert.doesNotMatch(audit, /NPM_KEY|id-token: write|contents: write|npm publish/);
 });
+
+test('legacy registry verification tolerates npm processing without republishing', async () => {
+  const workflow = await read('.github/workflows/release.yml');
+  const legacy = workflow.slice(workflow.indexOf('  publish-npm:'), workflow.indexOf('  publish-npm-oidc:'));
+  assert.match(legacy, /for _ in \{1\.\.18\}; do/);
+  assert.match(legacy, /sleep 10/);
+  assert.match(legacy, /never retry npm publish here/);
+});
+
+test('npm stage inspector dynamically inspects the current version without changing registry state', async () => {
+  const status = await read('.github/workflows/npm-stage-status.yml');
+  assert.match(status, /Resolve current package version/);
+  assert.match(status, /steps\.target\.outputs\.version/);
+  assert.match(status, /version\/\$PACKAGE_VERSION\/status/);
+  assert.match(status, /npm stage list '@howlil\/agentflow-cli'/);
+  assert.match(status, /is_public=true/);
+  assert.doesNotMatch(status, /npm publish|npm stage publish|contents: write|id-token: write/);
+});
