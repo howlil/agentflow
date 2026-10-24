@@ -5,7 +5,7 @@ import { Code2 } from '@lucide/astro';
 <div class="agentflow-home-header">
   <div class="inner">
     <a class="brand" href="/" aria-label="Agentflow home">
-      <span class="mark" aria-hidden="true">A</span>
+      <img class="mark" src="/favicon.svg" width="27" height="27" alt="" decoding="async" />
       <span>Agentflow</span>
     </a>
 
@@ -27,7 +27,7 @@ import { Code2 } from '@lucide/astro';
     width: 100vw;
     height: 100%;
     transform: translateX(-50%);
-    background: #08090a;
+    background: var(--af-ink, #0C0D10);
     color: var(--landing-fg);
   }
 
@@ -53,12 +53,9 @@ import { Code2 } from '@lucide/astro';
   .mark {
     width: 27px;
     height: 27px;
-    display: grid;
-    place-items: center;
+    display: block;
+    flex: none;
     border-radius: 7px;
-    background: #f5f4ef;
-    color: #111214;
-    font: 600 10px/1 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
   nav {
@@ -82,7 +79,7 @@ import { Code2 } from '@lucide/astro';
   }
 
   :global(body:has(.agentflow-home-header)) {
-    --sl-color-bg-nav: #08090a;
+    --sl-color-bg-nav: var(--af-ink, #0C0D10);
     --sl-color-hairline-light: rgba(255, 255, 255, 0.08);
   }
 

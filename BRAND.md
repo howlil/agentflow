@@ -83,3 +83,36 @@ Keep the specialist names unchanged in the UI, source folders, installation inst
 ## Release and distribution language
 
 The public GitHub repository is the canonical skill source. The skills.sh ecosystem and external `skills` CLI are the default distribution path. Claude Code and Codex native plugins are optional **alternatives**; they do not need to be installed alongside portable skills. Do not describe skills.sh as a private immutable Agentflow registry or describe npm website build tooling as an Agentflow CLI.
+
+## Visual identity — M2
+
+### Mark: one input, two routes, one chosen path
+
+The canonical mark lives in [`public/favicon.svg`](public/favicon.svg), a flat 64×64 rounded-square glyph. The left node is an incoming engineering decision; the two curved routes represent eligible specialist paths. The upper route uses warm white for the active choice, while the lower route is muted violet. It is **not** a workflow engine or literal `A` logotype.
+
+This small-scale SVG is also used for the landing header and is copied into Starlight's logo asset at build time. The same geometry is embedded into the social card using `scripts/build-brand-assets.mjs`. Do not manually duplicate the glyph or embed external fonts inside it.
+
+### Design tokens
+
+| Token | Value | Usage |
+| --- | --- | --- |
+| `--af-ink` | `#0C0D10` | Dark hero and glyph background |
+| `--af-surface` | `#16171D` | Secondary dark surfaces |
+| `--af-ivory` | `#F6F4EF` | Primary text and bright route |
+| `--af-muted` | `#B9BAC7` | Secondary descriptions |
+| `--af-accent` | `#9B8BDE` | Secondary route / scarce emphasis |
+| `--af-font-ui` | Geist → system sans | Body and navigation |
+| `--af-font-mono` | Geist Mono → system mono | Commands and metadata |
+| `--af-font-display` | Instrument Serif → Georgia | Editorial hero headline |
+
+Keep a flat, high-contrast composition with quiet technical motion and rounded controls. **Do not add gradients, shadows or glowing robot artwork to the logo.** The neutral palette should dominate; violet is a signal rather than a background color.
+
+### Assets and social sharing
+
+- `public/favicon.svg`: canonical icon source, hand-editable.
+- `src/assets/brand-mark.svg`: generated Starlight logo copy. Never edit manually.
+- `public/social-card.template.svg`: source for 1200×630 social design. Placeholder is filled from the canonical SVG.
+- `public/social-preview.svg`, `public/og.png`: generated outputs. Do not commit or hand-edit.
+- `npm run brand:assets`: produces the vectors and PNG; it also runs as part of dev/build.
+
+The website exposes `og:image` and `twitter:image` **only when `PUBLIC_SITE_URL` is configured with the actual canonical production origin**. This avoids publishing incorrect social URLs for temporary deploys. After deployment, verify live metadata, favicon rendering at 16/32 px, and social card appearance in platform debuggers; CI proves file generation, not social crawler ingestion.

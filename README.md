@@ -1,5 +1,7 @@
 # Agentflow
 
+<img src="public/favicon.svg" width="56" height="56" alt="Agentflow routing mark" />
+
 **Better judgment for AI agents.**
 
 Portable engineering skills for AI coding agents. Agentflow helps an agent choose the right reasoning for the decision at hand—without forcing every task through a rigid workflow.
@@ -110,7 +112,7 @@ Guides and examples explain how to use the skills; they do not replace the canon
 - [Quickstart](src/content/docs/start/quickstart.md)
 - [Cross-agent compatibility](src/content/docs/start/cross-agent-compatibility.md)
 - [Releases and rollback](src/content/docs/start/release-and-rollback.md)
-- [Brand voice and messaging](BRAND.md)
+- [Brand voice and visual system](BRAND.md)
 
 ## Development
 
