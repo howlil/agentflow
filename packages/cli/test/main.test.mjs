@@ -210,9 +210,10 @@ test('Windows fails closed when npm entrypoint is missing or environment path is
 
 test('Windows global router install and status preserve one-source skill selector', async () => {
   await sandbox(async cwd => {
-    const npmEntrypoint = '/node/node_modules/npm/bin/npx-cli.js';
+    const execPath = join(cwd, 'node', 'node.exe');
+    const npmEntrypoint = join(dirname(execPath), 'node_modules', 'npm', 'bin', 'npx-cli.js');
     const ctx = {
-      ...capture(), cwd, platform: 'win32', execPath: '/node/node.exe',
+      ...capture(), cwd, platform: 'win32', execPath,
       exists: path => path === npmEntrypoint,
     };
     assert.equal(await run(['install', '--global', '--agent', 'codex',
