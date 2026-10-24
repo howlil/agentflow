@@ -24,6 +24,7 @@ export default defineConfig({
         {
           label: 'Start',
           items: [
+            'start/distribution',
             'start/quickstart',
             'start/install',
             'start/native-plugins',
