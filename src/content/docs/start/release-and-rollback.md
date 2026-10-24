@@ -5,10 +5,10 @@ description: Verified public releases, tagged installer acceptance, and safe rol
 
 ## Published distribution
 
-**Current published release: [v0.3.0](https://github.com/howlil/agentflow/releases/tag/v0.3.0).** The public npm package is [`@howlil/agentflow-cli`](https://www.npmjs.com/package/@howlil/agentflow-cli).
+**Current published release: [v0.3.1](https://github.com/howlil/agentflow/releases/tag/v0.3.1).** The public npm package is [`@howlil/agentflow-cli`](https://www.npmjs.com/package/@howlil/agentflow-cli).
 
 ```bash
-npm install -g @howlil/agentflow-cli@0.3.0
+npm install -g @howlil/agentflow-cli@0.3.1
 agentflow --version
 agentflow doctor
 agentflow install --global --agent codex --skill agentflow
