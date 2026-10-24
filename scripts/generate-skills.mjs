@@ -80,6 +80,32 @@ export function parseFrontmatter(source, file) {
   };
 }
 
+// Lightweight agent-readable index, derived exclusively from canonical metadata.
+// This is a discovery aid, not a competing skill manifest or an auto-install API.
+export function formatDiscoveryIndex(skills) {
+  const base = 'https://github.com/howlil/agentflow/blob/master/';
+  const raw = 'https://raw.githubusercontent.com/howlil/agentflow/master/';
+  const intro = [
+    '# Agentflow',
+    '',
+    '> Portable software-engineering decision skills: one routing skill and ten specialists. Canonical instructions live in skills/<name>/SKILL.md.',
+    '',
+    'File-based installation is delegated to skills@1.7.4; native Claude and Codex plugins are optional alternate installation routes. Installing the router alone does not install all specialists. Host activation syntax varies.',
+    '',
+    '## Get Started',
+    '- [README](' + base + 'README.md): installation options and constraints',
+    '- [Quickstart](' + base + 'src/content/docs/start/quickstart.md): how to route a task',
+    '- [Distribution guide](' + base + 'src/content/docs/start/distribution.md): choose one installation route',
+    '- [Compatibility](' + base + 'src/content/docs/start/cross-agent-compatibility.md): tested file-based host targets',
+    '',
+    '## Canonical Skills',
+  ];
+  const entries = skills.map(({ name, description, sourcePath }) =>
+    '- [' + name + '](' + raw + sourcePath + '): ' + description.replace(/\\s+/g, ' ').trim());
+  return [...intro, ...entries, '', '## Optional', '- [Release and rollback](' + base +
+    'src/content/docs/start/release-and-rollback.md): public version and acceptance', ''].join('\\n');
+}
+
 function stripLeadingTitle(body) {
   return body.replace(/^\s*#\s+[^\n]+\r?\n+/, '\n');
 }
@@ -89,6 +115,7 @@ export async function generateSkills({ root = process.cwd(), expected = EXPECTED
   const generatedDir = join(root, 'src', 'generated');
   const referenceDir = join(root, 'src', 'content', 'docs', 'reference');
   const guidesDir = join(root, 'src', 'content', 'docs', 'skills');
+  const publicDir = join(root, 'public');
 
   const directories = (await readdir(skillsDir, { withFileTypes: true }))
     .filter((entry) => entry.isDirectory())
@@ -147,6 +174,11 @@ ${stripLeadingTitle(skill.body)}
   await writeFile(
     join(generatedDir, 'skills.json'),
     JSON.stringify(outputs.map(({ metadata }) => metadata), null, 2) + '\n',
+  );
+  await mkdir(publicDir, { recursive: true });
+  await writeFile(
+    join(publicDir, 'llms.txt'),
+    formatDiscoveryIndex(outputs.map(({ metadata }) => metadata)),
   );
 
   return outputs.length;
