@@ -58,7 +58,7 @@ test('README, hero, documentation and sidebar prioritize installation routes', a
   assert.ok(readme.indexOf('## Install in 60 seconds') < readme.indexOf('## Source-of-truth model'));
   assert.ok(readme.includes('npx skills@1.7.4 add howlil/agentflow --list'));
   assert.ok(readme.includes('skills.sh/b/howlil/agentflow'));
-  assert.ok(readme.includes('@howlil/agentflow-cli@0.3.1'));
+  assert.doesNotMatch(readme, /npm install -g @howlil\/agentflow-cli/);
   assert.ok(guide.includes('Choose an installation route'));
   assert.ok(guide.includes('does not install'));
   assert.ok(guide.includes('one installation route per AI host'));
