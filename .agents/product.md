@@ -53,6 +53,7 @@ In:
 - source-ownership protection for name collisions during update/uninstall
 - release runbook, gated npm publishing and tag-pinned remote install/rollback acceptance
 - host-scoped managed updates, with version-change requirements and explicit release workflow
+- cross-agent file distribution matrix for Claude Code, Codex, Gemini CLI, Cursor and OpenCode; isolated project/global lifecycle and explicit host-invocation limitations
 
 Out:
 - user accounts
