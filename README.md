@@ -136,6 +136,10 @@ The CLI verifies installed skill source ownership before update and uninstall; m
 
 Published release acceptance is now an automated post-release workflow and is also available on demand. It checks the real npm CLI, immutable skill content, and source-protected uninstall; rollback verification requires an earlier published tag. See [release and rollback](src/content/docs/start/release-and-rollback.md).
 
+## Supply-chain security (M8)
+
+Release publication has an opt-in **npm Trusted Publishing / OIDC** path. The established `NPM_KEY` method remains active until the package maintainer explicitly configures the trusted publisher on npm and switches the GitHub Actions repository variable `AGENTFLOW_NPM_AUTH_MODE` to `oidc`. No new release or provenance attestation is created by this source change. Weekly Dependabot PRs and a scheduled read-only `npm audit` surface dependency issues without auto-merging changes. See the [M8 migration checklist](src/content/docs/start/release-and-rollback.md#trusted-publishing--oidc-migration-m8).
+
 ## Local development
 
 ```bash
