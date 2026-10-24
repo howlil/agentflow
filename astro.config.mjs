@@ -6,7 +6,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Agentflow',
-      description: 'A practical guide to choosing and composing reusable software-engineering agent skills.',
+      description: 'Better judgment for AI agents. Portable engineering skills selected by the decision at hand.',
       social: [
         {
           icon: 'github',

@@ -72,3 +72,22 @@ test('canonical runtime count is unchanged and generated discovery output is ign
   assert.ok((await read('.gitignore')).includes('public/llms.txt'));
   assert.ok((await read('scripts/generate-skills.mjs')).includes('formatDiscoveryIndex(outputs.map'));
 });
+
+test('brand messaging is consistent without overstating runtime capabilities', async () => {
+  const readme = await read('README.md');
+  const brand = await read('BRAND.md');
+  const index = await read('src/content/docs/index.mdx');
+  const hero = await read('src/components/landing/LandingHero.astro');
+  const config = await read('astro.config.mjs');
+  for (const copy of [readme, index, brand, config]) {
+    assert.ok(copy.includes('Better judgment for AI agents.'), 'Primary tagline drift');
+  }
+  assert.match(hero, /Better judgment[\\s\\S]*for AI agents\\./);
+  assert.ok(readme.includes('The right skill for every engineering decision.'));
+  assert.ok(readme.includes('## Install in 60 seconds'));
+  assert.ok(readme.includes('## Source-of-truth model'));
+  assert.ok(readme.includes('npx skills@1.7.4 add howlil/agentflow'));
+  assert.ok(index.includes('<SkillGrid />'));
+  assert.ok(hero.includes('href="/start/distribution/"'));
+  assert.doesNotMatch(hero, /workflow automation|swarm/);
+});

@@ -1,23 +1,47 @@
 ---
 title: Agentflow
-description: Focused engineering skills that help software agents use the right reasoning for the decision in front of them.
+description: Better judgment for AI agents. Portable engineering skills, selected by decision rather than ceremony.
 template: splash
 editUrl: false
 lastUpdated: false
 tableOfContents: false
 hero:
   title: Agentflow
-  tagline: Focused engineering skills for software agents.
+  tagline: Better judgment for AI agents.
 ---
 
 import SkillGrid from '../../components/SkillGrid.astro';
 
-## Start with the decision, not a skill name
+## Start with the decision, not the skill name
 
-[Install Agentflow in one minute](/start/distribution/) by choosing portable skills or a native plugin. Already know what you need? [Choose a skill](/start/choose-a-skill/) by the engineering decision blocking your work, or read the [quickstart](/start/quickstart/) to see how to compose skills without a mandatory lifecycle.
+Every engineering task contains decisions. Some need product clarity, some need architecture, a test strategy, or a code review. Invoking every skill for every task adds unnecessary work.
 
-## Explore the skill guides
+**Agentflow helps coding agents choose the smallest relevant set of skills for the decision in front of them.** If the solution is already clear, skip the ceremony.
+
+```text
+Your task
+   ↓
+What decision is unresolved?
+   ├─ none → act directly
+   └─ yes  → select the relevant specialist
+                 ↓
+           apply its guidance
+                 ↓
+             verify results
+```
+
+## One router. Ten specialists.
+
+The `agentflow` skill is the entry point when you need help deciding which engineering lens to use. Each specialist owns a distinct problem: product behavior, architecture, interface, implementation, verification, security, production, code review, delegation, or visual graph output.
 
 <SkillGrid />
 
-Each guide explains when to use the skill, when **not** to use it, and how to invoke it. Each guide links directly to its canonical runtime reference.
+[Choose a skill](/start/choose-a-skill/) by its engineering responsibility, or read the [quickstart](/start/quickstart/) to see how skills compose.
+
+## Portable by design
+
+Agentflow is a set of versioned `SKILL.md` instructions, not a standalone AI model, hosted orchestration platform, or another package manager. Install selected skills through the [skills ecosystem](/start/distribution/), or use the [native Claude Code and Codex plugins](/start/native-plugins/) where available.
+
+**Install the router and specialists together** if you want the router to consult their full instructions. Installing the router alone does not install the ten specialists. Activation and invocation syntax depend on your coding agent.
+
+[Install Agentflow](/start/install/) · [View the source on GitHub](https://github.com/howlil/agentflow)
