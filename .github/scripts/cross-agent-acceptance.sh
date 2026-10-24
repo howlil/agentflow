@@ -7,10 +7,10 @@ if [ "$#" -ne 1 ]; then echo 'Usage: cross-agent-acceptance.sh <agent-id>' >&2; 
 AGENT="$1"
 case "$AGENT" in
   claude-code) PROJECT_DIR='.claude/skills' ; GLOBAL_DIR='.claude/skills' ;;
-  codex) PROJECT_DIR='.agents/skills' ; GLOBAL_DIR='.codex/skills' ;;
-  gemini-cli) PROJECT_DIR='.agents/skills' ; GLOBAL_DIR='.gemini/skills' ;;
-  cursor) PROJECT_DIR='.agents/skills' ; GLOBAL_DIR='.cursor/skills' ;;
-  opencode) PROJECT_DIR='.agents/skills' ; GLOBAL_DIR='.config/opencode/skills' ;;
+  codex) PROJECT_DIR='.agents/skills' ; GLOBAL_DIR='.agents/skills' ;;
+  gemini-cli) PROJECT_DIR='.agents/skills' ; GLOBAL_DIR='.agents/skills' ;;
+  cursor) PROJECT_DIR='.agents/skills' ; GLOBAL_DIR='.agents/skills' ;;
+  opencode) PROJECT_DIR='.agents/skills' ; GLOBAL_DIR='.agents/skills' ;;
   *) echo "Unsupported agent identifier: $AGENT" >&2; exit 2 ;;
 esac
 
