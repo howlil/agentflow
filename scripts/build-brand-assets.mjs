@@ -1,6 +1,6 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import sharp from 'sharp';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -13,8 +13,10 @@ export function composeSocialCard(template, mark) {
   if (!/^<svg[\s>]/.test(mark.trim()) || !mark.includes('viewBox="0 0 64 64"')) {
     throw new Error('Favicon must be the 64×64 canonical SVG mark.');
   }
-  const inset = mark.trim().replace(/^<svg\b[^>]*>/,
-    '<svg x="80" y="80" width="80" height="80" viewBox="0 0 64 64">');
+  const inset = mark.trim()
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>/, '')
+    .replace(/^<svg\b[^>]*>/,
+      '<svg x="80" y="80" width="80" height="80" viewBox="0 0 64 64" aria-hidden="true">');
   return template.replace(placeholder, inset);
 }
 
