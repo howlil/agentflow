@@ -10,12 +10,12 @@ const repo = fileURLToPath(new URL('..', import.meta.url));
 
 async function fixture(run) {
   const root = await mkdtemp(join(tmpdir(), 'agentflow-plugin-test-'));
-  for (const folder of ['.claude-plugin', '.agents/plugins', 'skills', 'packages/cli']) {
+  for (const folder of ['.claude-plugin', '.agents/plugins', 'skills']) {
     await mkdir(join(root, folder), { recursive: true });
   }
   const paths = ['package.json', 'package-lock.json', 'plugin.json',
     '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
-    '.agents/plugins/marketplace.json', 'packages/cli/package.json'];
+    '.agents/plugins/marketplace.json'];
   for (const path of paths) {
     await writeFile(join(root, path), await readFile(join(repo, path)));
   }
@@ -77,13 +77,3 @@ test('reject a Claude marketplace whose entry name diverges from the plugin iden
   });
 });
 
-test('CLI manifest version drift is checked and synchronized from root package', async () => {
-  await fixture(async root => {
-    const path = join(root, 'packages/cli/package.json');
-    const original = JSON.parse(await readFile(path, 'utf8'));
-    await writeFile(path, JSON.stringify({ ...original, version: '0.2.0' }));
-    await assert.rejects(validatePluginDistribution({ root }), /CLI package version .* differs/);
-    await syncPluginVersions({ root, write: true });
-    assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), original);
-  });
-});

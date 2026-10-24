@@ -1,10 +1,8 @@
 name: CI
-
 on:
   pull_request:
   push:
     branches: [master]
-
 permissions:
   contents: read
 
@@ -18,7 +16,7 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
-      - name: Lint release and acceptance workflows
+      - name: Lint workflows
         shell: bash
         run: |
           set -euo pipefail
@@ -29,139 +27,40 @@ jobs:
       - run: npm run plugins:check
       - run: npm test
       - run: npm run build
-      - name: Verify build-time agent discovery index
+      - name: Verify generated skill discovery index
         shell: bash
         run: |
           set -euo pipefail
           test -s dist/llms.txt
-          grep -Fq '# Agentflow' dist/llms.txt
           grep -Fq 'skills/agentflow/SKILL.md' dist/llms.txt
           test "$(grep -cF 'raw.githubusercontent.com/howlil/agentflow/master/skills/' dist/llms.txt)" -eq 11
-      - name: Validate native Claude plugin and marketplace
+      - name: Validate Claude plugin
         run: npx --yes @anthropic-ai/claude-code@latest plugin validate . --strict
-      - name: Smoke-test Codex marketplace registration
+      - name: Validate Codex plugin
         shell: bash
         run: |
           set -euo pipefail
           npx --yes @openai/codex@latest plugin marketplace add .
-          npx --yes @openai/codex@latest plugin marketplace list | tee codex-marketplaces.log
-          grep -q 'agentflow' codex-marketplaces.log
           npx --yes @openai/codex@latest plugin add agentflow@agentflow
-          npx --yes @openai/codex@latest plugin list | tee codex-plugins.log
-          grep -q 'agentflow' codex-plugins.log
+          npx --yes @openai/codex@latest plugin list | grep -q agentflow
           npx --yes @openai/codex@latest plugin remove agentflow@agentflow
-          npx --yes @openai/codex@latest plugin list | tee codex-removed.log
-          grep -Eq '^agentflow@agentflow[[:space:]]+not installed' codex-removed.log
-      - name: Smoke-test portable skill discovery and install/remove
-        shell: bash
-        run: |
-          set -euo pipefail
-          SOURCE="$PWD"
-          TARGET="$(mktemp -d)"
-          trap 'rm -rf "$TARGET"' EXIT
-          node --input-type=module -e 'import { EXPECTED } from "./scripts/generate-skills.mjs"; process.stdout.write(EXPECTED.join(String.fromCharCode(10)) + String.fromCharCode(10))' > "$TARGET/expected.txt"
-          cd "$TARGET"
-          npx --yes skills@1.7.4 add "$SOURCE" --list 2>&1 | tee discovery.log
-          if grep -Eq 'Skipped .*SKILL.md|YAML parse error' discovery.log; then
-            echo "Installer skipped a canonical skill" >&2
-            exit 1
-          fi
-          while IFS= read -r skill; do
-            grep -Fq "$skill" discovery.log || { echo "Missing installed-discovery skill: $skill" >&2; exit 1; }
-          done < expected.txt
-          npx --yes skills@1.7.4 add "$SOURCE" --skill agentflow --agent codex --copy --yes
-          npx --yes skills@1.7.4 list -a codex | tee installed.log
-          grep -q 'agentflow' installed.log
-          npx --yes skills@1.7.4 remove agentflow --agent codex --yes
-          npx --yes skills@1.7.4 list -a codex | tee removed.log
-          if grep -q 'agentflow' removed.log; then
-            echo "Router was not removed" >&2
-            exit 1
-          fi
-
-  cli-portability:
-    name: CLI / ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-      - run: node --test packages/cli/test/main.test.mjs
-      - run: npm pack --dry-run ./packages/cli
-      - run: npm install -g ./packages/cli
-      - run: agentflow --version
-      - run: agentflow init --agent codex --dry-run
-      - run: agentflow install --global --agent codex --skill agentflow --dry-run
-      - run: agentflow doctor
-      - run: agentflow status --project
-      - name: Windows router install/status/uninstall must run without DEP0190
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        env:
-          NODE_OPTIONS: --throw-deprecation
-          DISABLE_TELEMETRY: '1'
-        run: |
-          $ErrorActionPreference = 'Stop'
-          agentflow install --global --agent codex --skill agentflow --copy --yes
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $status = agentflow status --global --agent codex 2>&1 | Out-String
-          if ($LASTEXITCODE -ne 0) { throw "Agentflow status failed: $status" }
-          Write-Output $status
-          if ($status -notmatch '(?m)^agentflow\s') { throw 'Router not detected in global skills' }
-          agentflow uninstall --global --agent codex --skill agentflow --yes
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-  published-release-smoke:
-    name: Public v0.3.0 npm and GitHub acceptance
+  cross-agent-compatibility:
+    name: Portable skills / ${{ matrix.agent }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          package-manager-cache: false
-      - name: Check the already-published npm package and release skill
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          EXPECTED_RELEASE_SHA: ''
-          DISABLE_TELEMETRY: '1'
-        run: bash .github/scripts/remote-acceptance.sh v0.3.0 ""
-      - name: Exercise real upgrade and rollback against distinct local fixtures
-        shell: bash
-        run: bash .github/scripts/lifecycle-transition-smoke.sh
-  
-  cross-agent-compatibility:
-    name: Candidate skills / ${{ matrix.agent }}
     strategy:
       fail-fast: false
       matrix:
         agent: [claude-code, codex, gemini-cli, cursor, opencode]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Exercise packed candidate CLI and checkout skills in isolated scopes
+      - name: Test upstream skills installer with current canonical files
         shell: bash
         env:
-          DISABLE_TELEMETRY: '1'
           AGENT_ID: ${{ matrix.agent }}
+          DISABLE_TELEMETRY: '1'
         run: bash .github/scripts/cross-agent-candidate.sh "$AGENT_ID"

@@ -1,5 +1,4 @@
 name: Publish Agentflow Release
-
 on:
   push:
     tags:
@@ -7,25 +6,21 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version matching the package (e.g. v0.3.0)"
+        description: 'Existing or new vMAJOR.MINOR.PATCH version on master'
         required: true
         type: string
-
 permissions:
   contents: read
-
 concurrency:
-  group: npm-release-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+  group: skill-release-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
   cancel-in-progress: false
-
 jobs:
   verify:
-    name: Verify release source
+    name: Verify immutable skill release
     if: ${{ github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.version.outputs.tag }}
-      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,254 +30,34 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Validate version and commit against master
-        id: version
+      - name: Match version and reviewed master ancestry
+        id: release
         shell: bash
         env:
           REQUESTED_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
           RUN_EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          [[ "$REQUESTED_TAG" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]] || {
-            echo "Release tag must be vMAJOR.MINOR.PATCH" >&2
-            exit 1
-          }
+          [[ "$REQUESTED_TAG" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]] || exit 1
           ROOT_VERSION="$(node -p "require('./package.json').version")"
-          CLI_VERSION="$(node -p "require('./packages/cli/package.json').version")"
           test "$REQUESTED_TAG" = "v$ROOT_VERSION"
-          test "$ROOT_VERSION" = "$CLI_VERSION"
           git fetch origin master
           git merge-base --is-ancestor "$GITHUB_SHA" origin/master
           if [ "$RUN_EVENT" = workflow_dispatch ]; then
             test "$GITHUB_REF" = refs/heads/master
             test "$GITHUB_SHA" = "$(git rev-parse origin/master)"
-            if git ls-remote --exit-code --tags origin "refs/tags/$REQUESTED_TAG" >/dev/null 2>&1; then
-              echo "This version tag already exists; use its tag-triggered release workflow." >&2
-              exit 1
-            fi
           else
             test "$GITHUB_REF" = "refs/tags/$REQUESTED_TAG"
             test "$(git rev-parse "refs/tags/$REQUESTED_TAG^{commit}")" = "$GITHUB_SHA"
           fi
           echo "tag=$REQUESTED_TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$ROOT_VERSION" >> "$GITHUB_OUTPUT"
-      - name: Validate selected npm authentication mode
-        shell: bash
-        env:
-          AUTH_MODE: ${{ vars.AGENTFLOW_NPM_AUTH_MODE }}
-        run: |
-          set -euo pipefail
-          case "$AUTH_MODE" in
-            ''|token|oidc) ;;
-            *) echo "Unsupported AGENTFLOW_NPM_AUTH_MODE; refusing release." >&2; exit 1 ;;
-          esac
       - run: npm ci
       - run: npm run plugins:check
       - run: npm test
       - run: npm run build
-      - name: Inspect distributable npm package
-        run: npm pack --dry-run ./packages/cli
-      - name: Check CLI tarball can be installed as a global executable
-        shell: bash
-        run: |
-          set -euo pipefail
-          TMP="$(mktemp -d)"
-          trap 'rm -rf "$TMP"' EXIT
-          npm pack ./packages/cli --pack-destination "$TMP" --silent
-          npm install --prefix "$TMP" "$TMP"/howlil-agentflow-cli-*.tgz
-          node "$TMP/node_modules/@howlil/agentflow-cli/bin/agentflow.mjs" --version
-
-  publish-npm:
-    name: Publish npm package (legacy token)
-    # Default remains token-based until the npm package owner configures trust.
-    # An unknown auth mode must fail closed rather than silently publishing.
-    if: ${{ vars.AGENTFLOW_NPM_AUTH_MODE == '' || vars.AGENTFLOW_NPM_AUTH_MODE == 'token' }}
-    needs: verify
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      result: ${{ steps.preflight.outputs.result }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          registry-url: https://registry.npmjs.org
-          package-manager-cache: false
-      - name: Prepare npm 11
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm install --global npm@11
-          npm --version
-      - name: Check registry version and tarball integrity
-        id: preflight
-        shell: bash
-        env:
-          PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
-        run: |
-          set -euo pipefail
-          PACK_DIR="$(mktemp -d)"
-          PACKAGE_SPEC="@howlil/agentflow-cli@$PACKAGE_VERSION"
-          npm pack ./packages/cli --pack-destination "$PACK_DIR" --silent >/dev/null
-          LOCAL_INTEGRITY="$(npm pack ./packages/cli --json --dry-run | node -e "let s='';process.stdin.on('data',b=>s+=b);process.stdin.on('end',()=>process.stdout.write(JSON.parse(s)[0].integrity))")"
-          if npm view "$PACKAGE_SPEC" dist.integrity --json > "$PACK_DIR/registered.json" 2> "$PACK_DIR/npm-view.err"; then
-            REGISTERED_INTEGRITY="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))" "$PACK_DIR/registered.json")"
-            if [ "$REGISTERED_INTEGRITY" != "$LOCAL_INTEGRITY" ]; then
-              echo "Version exists on npm, but package contents differ. Refusing to overwrite." >&2
-              exit 1
-            fi
-            echo "Package version already published with identical integrity."
-            echo "result=already-published" >> "$GITHUB_OUTPUT"
-          elif grep -Eq 'E404|404 Not Found' "$PACK_DIR/npm-view.err"; then
-            # npm can accept uploads into an approval-only stage and still return
-            # a 404 for the public package version. Never publish a staged
-            # semver again: npm will reject it with E409.
-            if [ -z "$NODE_AUTH_TOKEN" ]; then
-              echo "NPM_KEY missing; cannot determine whether this version is staged." >&2
-              exit 1
-            fi
-            if ! npm stage list '@howlil/agentflow-cli' --json --registry=https://registry.npmjs.org > "$PACK_DIR/stages.json"; then
-              echo "Unable to inspect npm stage queue; refusing to republish blindly." >&2
-              exit 1
-            fi
-            if grep -Fq "$PACKAGE_VERSION" "$PACK_DIR/stages.json"; then
-              echo "Version $PACKAGE_VERSION is STAGED, not publicly released. A maintainer must approve it with 2FA on npmjs.com." >&2
-              cat "$PACK_DIR/stages.json"
-              exit 1
-            fi
-            echo "Version is neither public nor pending in npm stage queue; publishing is required."
-            echo "result=publish" >> "$GITHUB_OUTPUT"
-          else
-            cat "$PACK_DIR/npm-view.err" >&2
-            echo "Unable to verify npm package version; aborting." >&2
-            exit 1
-          fi
-      - name: Publish using NPM_KEY
-        if: ${{ steps.preflight.outputs.result == 'publish' }}
-        working-directory: packages/cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "NPM_KEY repository secret is missing or unavailable to this workflow." >&2
-            exit 1
-          fi
-          npm whoami --registry=https://registry.npmjs.org >/dev/null
-          npm publish --access public --registry=https://registry.npmjs.org
-      - name: Verify published package is available
-        if: ${{ steps.preflight.outputs.result == 'publish' }}
-        shell: bash
-        env:
-          PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
-        run: |
-          set -euo pipefail
-          # npm can acknowledge a publish before the version becomes public.
-          # Allow processing/registry propagation; never retry npm publish here.
-          for _ in {1..18}; do
-            if npm view "@howlil/agentflow-cli@$PACKAGE_VERSION" version --json | grep -Fxq "\"$PACKAGE_VERSION\""; then
-              echo "npm package @$PACKAGE_VERSION is available."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "npm publish returned success but registry verification failed." >&2
-          exit 1
-
-  publish-npm-oidc:
-    name: Publish npm package (Trusted Publishing OIDC)
-    # Explicitly opt in only after configuring npmjs.com package trust for
-    # owner howlil / repository agentflow / workflow release.yml / npm publish.
-    if: ${{ vars.AGENTFLOW_NPM_AUTH_MODE == 'oidc' }}
-    needs: verify
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          registry-url: https://registry.npmjs.org
-          package-manager-cache: false
-      - name: Prepare OIDC-capable npm
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm install --global npm@11
-          node --version
-          npm --version
-      - name: Verify registry status and immutable artifact integrity
-        id: preflight
-        shell: bash
-        env:
-          PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
-        run: |
-          set -euo pipefail
-          PACK_DIR="$(mktemp -d)"
-          trap 'rm -rf "$PACK_DIR"' EXIT
-          PACKAGE_SPEC="@howlil/agentflow-cli@$PACKAGE_VERSION"
-          LOCAL_INTEGRITY="$(npm pack ./packages/cli --json --dry-run | node -e "let s='';process.stdin.on('data',b=>s+=b);process.stdin.on('end',()=>process.stdout.write(JSON.parse(s)[0].integrity))")"
-          if npm view "$PACKAGE_SPEC" dist.integrity --json > "$PACK_DIR/registered.json" 2> "$PACK_DIR/npm-view.err"; then
-            REGISTERED_INTEGRITY="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))" "$PACK_DIR/registered.json")"
-            if [ "$REGISTERED_INTEGRITY" != "$LOCAL_INTEGRITY" ]; then
-              echo "Existing npm version has different bytes. Refusing to replace." >&2
-              exit 1
-            fi
-            echo "Identical version is already published; no new registry write needed."
-            echo "result=already-published" >> "$GITHUB_OUTPUT"
-          elif grep -Eq 'E404|404 Not Found' "$PACK_DIR/npm-view.err"; then
-            # OIDC cannot query/approve pending stages. The publish attempt is
-            # immutable; an already staged version must be investigated, not retried.
-            echo "Package absent from public npm registry. Checking trusted publisher on publish."
-            echo "result=publish" >> "$GITHUB_OUTPUT"
-          else
-            cat "$PACK_DIR/npm-view.err" >&2
-            echo "Registry status unknown; refusing to publish." >&2
-            exit 1
-          fi
-      - name: Publish via GitHub OIDC with automatic provenance
-        if: ${{ steps.preflight.outputs.result == 'publish' }}
-        working-directory: packages/cli
-        shell: bash
-        run: |
-          set -euo pipefail
-          # npm requests an ephemeral identity scoped to this workflow.
-          # No static registry credentials are supplied to this job.
-          test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
-          test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
-          npm publish --access public --registry=https://registry.npmjs.org
-      - name: Confirm public registry propagation
-        if: ${{ steps.preflight.outputs.result == 'publish' }}
-        shell: bash
-        env:
-          PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
-        run: |
-          set -euo pipefail
-          for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18; do
-            if npm view "@howlil/agentflow-cli@$PACKAGE_VERSION" version --json | grep -Fxq "\"$PACKAGE_VERSION\""; then
-              echo "npm package @$PACKAGE_VERSION is publicly available."
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Upload accepted but version is not public; inspect the npm lifecycle before attempting a retry." >&2
-          exit 1
-
   github-release:
-    name: Publish GitHub Release
-    needs: [verify, publish-npm, publish-npm-oidc]
-    # Exactly one publisher must succeed; the unused publisher is skipped.
-    if: ${{ !cancelled() && needs.verify.result == 'success' && (needs.publish-npm.result == 'success' || needs.publish-npm-oidc.result == 'success') }}
+    needs: verify
+    if: ${{ needs.verify.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -290,16 +65,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Create immutable release tag and release notes
+      - name: Publish GitHub release, never an npm package
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.verify.outputs.tag }}
-          RUN_EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          if [ "$RUN_EVENT" = workflow_dispatch ]; then
-            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --title "Agentflow $RELEASE_TAG" --generate-notes
-          else
-            gh release create "$RELEASE_TAG" --title "Agentflow $RELEASE_TAG" --generate-notes --verify-tag
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release already exists: $RELEASE_TAG"
+            exit 0
           fi
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --generate-notes --title "Agentflow $RELEASE_TAG"

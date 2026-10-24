@@ -12,8 +12,7 @@
     "prebuild": "npm run skills:generate && npm run plugins:check",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --test scripts/*.test.mjs && node --test packages/cli/test/*.test.mjs",
-    "cli:test": "node --test packages/cli/test/*.test.mjs"
+    "test": "node --test scripts/*.test.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "0.42.2",

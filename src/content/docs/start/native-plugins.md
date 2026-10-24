@@ -5,7 +5,7 @@ description: Install and manage Agentflow through Claude Code and Codex marketpl
 
 Agentflow bundles **one root set of eleven canonical skills** for two native plugin hosts. Native plugins are managed subscriptions: use **either** a native marketplace install **or** the editable [skills.sh installation](/start/install/) for a given agent, not both.
 
-The native marketplace manifests are included in the public default branch and the immutable `v0.3.0` release. Managed refresh still depends on each client's configuration.
+The native marketplace manifests are included in the public default branch and immutable versioned GitHub releases. Managed refresh still depends on each client's configuration.
 
 ## Claude Code
 
@@ -76,7 +76,7 @@ Keep using [skills.sh](/start/install/), e.g. `npx skills@latest add howlil/agen
 
 ## Versioning and publishing
 
-`package.json` owns the released version; native metadata is checked against it. Update the source package version and its lockfile, then synchronize native manifests:
+The private root `package.json` owns native plugin release metadata and website versioning; it does not publish a CLI. Native metadata is checked against it. Update the source package version and its lockfile, then synchronize native manifests:
 
 ```bash
 npm version patch --no-git-tag-version

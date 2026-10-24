@@ -1,178 +1,73 @@
 # Agentflow
 
-[![Skills ecosystem](https://skills.sh/b/howlil/agentflow)](https://skills.sh/)
-[![npm](https://img.shields.io/npm/v/@howlil/agentflow-cli)](https://www.npmjs.com/package/@howlil/agentflow-cli)
+[![Skills ecosystem](https://skills.sh/b/howlil/agentflow)](https://skills.sh/howlil/agentflow)
 [![CI](https://github.com/howlil/agentflow/actions/workflows/ci.yml/badge.svg)](https://github.com/howlil/agentflow/actions/workflows/ci.yml)
 
-**Portable software-engineering skills for AI coding agents.** Use the `agentflow` router to select the smallest useful specialist for an unresolved product, design, implementation, testing, security, or production decision. Eleven canonical skills work through a portable installer; optional native plugin routes exist for Claude Code and Codex.
+**Portable engineering decision skills for AI coding agents.** One router and ten specialists. No custom installer or required SDLC pipeline.
 
 ## Install in 60 seconds
 
-Requires **Node.js 22.20+**. First preview the skill catalog without installing anything:
+Install through the independent [skills CLI](https://github.com/vercel-labs/skills) (Node.js 22.20+). It may temporarily fetch the whole GitHub source, but only selected skill directories are installed.
 
 ```bash
+# Preview eleven skills
 npx skills@1.7.4 add howlil/agentflow --list
+
+# Install globally for Codex; interactively select all eleven skills
+npx skills@1.7.4 add howlil/agentflow -g -a codex
+
+# Or install only the router into the current project
+npx skills@1.7.4 add howlil/agentflow --skill agentflow -a codex --copy --yes
+
+# Inspect, update and remove installed skills
+npx skills@1.7.4 check
+npx skills@1.7.4 update -g
+npx skills@1.7.4 remove -g howlil/agentflow
 ```
 
-Then choose **one installation route per AI host**:
+**Installing only the router does not install its ten specialists.** Select all eleven for complete routing. File-based updates are user-initiated, not automatic. Invocation syntax varies by host.
 
-| I want to... | Command |
-| --- | --- |
-| Install the router in this project for Codex | `npx skills@1.7.4 add howlil/agentflow --skill agentflow --agent codex --copy --yes` |
-| Install the published Agentflow CLI | `npm install -g @howlil/agentflow-cli@0.3.1` |
-| Install through Claude Code's native marketplace | `claude plugin marketplace add howlil/agentflow` |
-| Add a Codex native marketplace | `codex plugin marketplace add howlil/agentflow` |
-
-Installing only the router **does not install the ten specialist skills**. The native marketplace commands require their respective host clients, and are not the same as file-based installation. For Gemini CLI, Cursor and OpenCode, use portable installation with the supported `--agent` ID.
-
-**Start here:** [Choose an installation route](src/content/docs/start/distribution.md) · [Find the right skill](src/content/docs/start/choose-a-skill.md) · [Five-agent compatibility](src/content/docs/start/cross-agent-compatibility.md) · [Published v0.3.0](https://github.com/howlil/agentflow/releases/tag/v0.3.0)
-
-The system is designed around one question:
-
-> What decision is unclear in the task I am doing now?
+Native Claude Code and Codex marketplace plugins are an alternative. Choose **one route per host**: native plugin or portable skills. See [distribution](src/content/docs/start/distribution.md) and [native plugins](src/content/docs/start/native-plugins.md).
 
 ## Source-of-truth model
 
 ```text
 skills/*/SKILL.md
-      ↓ canonical runtime behavior
-build-time generator
-      ├→ canonical skill metadata
-      └→ full runtime reference pages
-
-human guides
-      ↓ discovery / examples / composition
-
-all content
-      ↓
-Astro + Starlight + Tailwind
-      ↓
-static Cloudflare deployment
+    ├─ skills CLI → agent's selected skill directories
+    ├─ Claude/Codex plugin marketplaces → host-managed skills
+    └─ build-time generator → guides, metadata and llms.txt
 ```
 
-Do not manually copy runtime descriptions or full skill instructions into human docs. Edit the relevant `skills/<name>/SKILL.md`, then run the build.
+The `agentflow` router selects the smallest relevant specialist set for an unresolved engineering decision. It is a skill, **not an executable agent runtime**.
 
-## User journey
+## Distribution and lifecycle
 
-```text
-Homepage → Choose a skill → Human usage guide → Generated runtime reference
-```
+- [Install and update](src/content/docs/start/install.md)
+- [Cross-agent compatibility](src/content/docs/start/cross-agent-compatibility.md)
+- [Choose a skill](src/content/docs/start/choose-a-skill.md)
+- [Release and rollback](src/content/docs/start/release-and-rollback.md)
 
-A task can require zero, one, or several skills. Routing is based on the unresolved engineering decision, not a required pipeline.
+GitHub is the canonical source. [skills.sh](https://skills.sh/) provides ecosystem discovery and installer entry points, not immutable npm packages.
 
-## Install, update, and remove Agentflow
+### Migrating from the retired npm CLI
 
-Use the external [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md) (Node.js 22.20+). It discovers the portable `skills/<name>/SKILL.md` packages. Choose an agent and scope when prompted.
+The `@howlil/agentflow-cli` npm wrapper is discontinued. Existing skill installations are still managed with the independent `skills` CLI. Remove the old globally installed wrapper using:
 
 ```bash
-# Preview available skills (no install)
-npx skills@latest add howlil/agentflow --list
-
-# Interactive project or global installation
-npx skills@latest add howlil/agentflow
-npx skills@latest add howlil/agentflow -g
-
-# Check and update installed skills
-npx skills@latest check
-npx skills@latest update -g
-
-# Remove this repository's global skills
-npx skills@latest remove -g howlil/agentflow
+npm uninstall -g @howlil/agentflow-cli
 ```
 
-Updates through `skills.sh` are user-initiated. Native Claude/Codex marketplace distribution is also available; each host controls plugin refresh and invocation semantics. See the [complete installation guide](src/content/docs/start/install.md), including specific skills, project removal, and compatibility limitations.
+This removes only the wrapper executable, **not** installed skill files. It does not remove previously published package versions from the npm registry.
 
-## Native plugins (Claude Code and Codex)
-
-**Choose one installation route per agent:** native managed plugin **or** editable `skills.sh` files. Native plugins bundle the same eleven canonical skills, with no generated copies.
-
-```bash
-# Claude Code (public repository marketplace)
-claude plugin marketplace add howlil/agentflow
-claude plugin install agentflow@agentflow
-
-# Codex / ChatGPT desktop marketplace
-codex plugin marketplace add howlil/agentflow
-```
-
-On supported Codex/ChatGPT desktop clients, install **Agentflow** from the plugin directory's **Agentflow Engineering** marketplace. Native plugin refreshing depends on host configuration. For versioning and uninstall instructions, see the [native plugin guide](src/content/docs/start/native-plugins.md).
-
-Plugin version source: `package.json`. After a version bump, run:
-
-```bash
-npm run plugins:sync
-npm run plugins:check
-```
-
-## Cross-agent distribution
-
-Project and global file-based Agent Skills installation is tested with `claude-code`, `codex`, `gemini-cli`, `cursor`, and `opencode` using a pinned upstream installer and the public v0.3.0 npm CLI. Each agent's host discovery and native invocation remain separate capabilities. See the [cross-agent compatibility matrix](src/content/docs/start/cross-agent-compatibility.md).
-
-## Agentflow CLI (published on npm)
-
-A thin, separate Node.js executable lives under `packages/cli`. The CLI delegates portable skill lifecycle to pinned `skills@1.7.4`, adds safe project bootstrap and offline diagnosis, and never overwrites steering files.
-
-```bash
-# Install the published CLI (Node.js >=22.20.0)
-npm install -g @howlil/agentflow-cli@0.3.1
-agentflow --version
-agentflow init --agent codex
-agentflow doctor
-agentflow install --global --agent codex --skill agentflow
-agentflow status --global
-agentflow update --check
-agentflow update --skill agentflow --global
-agentflow uninstall --global --agent codex
-```
-
-Bare `agentflow update` is deliberately rejected because the upstream bare update is not restricted to this source. Read the [CLI documentation](src/content/docs/start/cli.md) for supported flags, dry runs, and configuration safety.
-
-## Release and rollback (M4)
-
-**Automated npm package release:** after a reviewed `master` commit, open **Actions → Publish Agentflow Release → Run workflow**, select `master`, and enter the newly reviewed package version (for example `v0.3.1` after bumping its manifests). The pipeline validates CI, publishes `@howlil/agentflow-cli` using repository secret `NPM_KEY`, then creates the Git tag and GitHub Release. A pushed matching `v*` tag also triggers publishing. The first public release, [v0.3.0](https://github.com/howlil/agentflow/releases/tag/v0.3.0), is already published on npm. Future versions require a new version bump, reviewed code, and valid npm publishing credentials.
-
-
-The CLI verifies installed skill source ownership before update and uninstall; mutations require explicit global/project scope. Versioned releases check tag ancestry and metadata before creating GitHub release notes. The npm publish job uses the `NPM_KEY` repository secret; if its credentials are invalid or the npm scope is not owned, the release fails without creating a GitHub Release.
-
-Published release acceptance is now an automated post-release workflow and is also available on demand. It checks the real npm CLI, immutable skill content, and source-protected uninstall; rollback verification requires an earlier published tag. See [release and rollback](src/content/docs/start/release-and-rollback.md).
-
-## Supply-chain security (M8)
-
-Release publication has an opt-in **npm Trusted Publishing / OIDC** path. The established `NPM_KEY` method remains active until the package maintainer explicitly configures the trusted publisher on npm and switches the GitHub Actions repository variable `AGENTFLOW_NPM_AUTH_MODE` to `oidc`. No new release or provenance attestation is created by this source change. Weekly Dependabot PRs and a scheduled read-only `npm audit` surface dependency issues without auto-merging changes. See the [M8 migration checklist](src/content/docs/start/release-and-rollback.md#trusted-publishing--oidc-migration-m8).
-
-## Local development
+## Development
 
 ```bash
 npm ci
-npm run dev
-```
-
-`predev` generates the canonical manifest and runtime reference pages.
-
-Validate and build:
-
-```bash
 npm run plugins:check
 npm test
 npm run build
 ```
 
-## Deploy to Cloudflare
+The root `package.json` is private: npm is used to build and validate the Astro/Starlight **website**, not to publish an Agentflow CLI. The static website deploys to Cloudflare Pages or Workers Static Assets.
 
-Connect [howlil/agentflow](https://github.com/howlil/agentflow) to **Cloudflare Pages** using its native GitHub integration.
-
-- Production branch: `master`
-- Framework preset: **Astro**
-- Build command: `npm run build`
-- Build output directory: `dist`
-- Root directory: repository root
-
-Cloudflare Pages can install, build, and publish the site on each push without custom CI/CD. If your Cloudflare project runs `npx wrangler deploy`, it is **Workers Builds**, not Pages. The checked-in `wrangler.jsonc` supports that existing Worker as static assets without adding the Astro SSR adapter. See the [deployment guide](src/content/docs/start/deploy-cloudflare.md).
-
-## Hosting
-
-The site is fully pre-rendered. Astro/Starlight generates `dist/` (including the search index); Cloudflare Pages (or Workers Static Assets) serves the static output. No database, CMS, API server, or SSR runtime is required.
-
-## Repository
-
-`master` is the production branch. Portable distribution is validated with tests and builds in CI. Licensed under [MIT](LICENSE).
+MIT license. [Repository](https://github.com/howlil/agentflow).
