@@ -183,12 +183,14 @@ jobs:
           PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
         run: |
           set -euo pipefail
-          for _ in 1 2 3 4 5 6; do
+          # npm can acknowledge a publish before the version becomes public.
+          # Allow processing/registry propagation; never retry npm publish here.
+          for _ in {1..18}; do
             if npm view "@howlil/agentflow-cli@$PACKAGE_VERSION" version --json | grep -Fxq "\"$PACKAGE_VERSION\""; then
               echo "npm package @$PACKAGE_VERSION is available."
               exit 0
             fi
-            sleep 5
+            sleep 10
           done
           echo "npm publish returned success but registry verification failed." >&2
           exit 1
