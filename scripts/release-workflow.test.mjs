@@ -55,6 +55,7 @@ test('standalone CLI distribution is scoped, public and version-aligned with rep
   assert.equal(cli.publishConfig.access, 'public');
   assert.equal(cli.version, rootPkg.version);
   assert.equal(cli.bin.agentflow, './bin/agentflow.mjs');
+  assert.equal(cli.repository.url, 'https://github.com/howlil/agentflow');
   assert.deepEqual(cli.files, ['bin/', 'src/', 'README.md', 'LICENSE']);
 });
 
