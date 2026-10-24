@@ -10,10 +10,11 @@ import { Code2 } from '@lucide/astro';
     </a>
 
     <nav aria-label="Landing navigation">
+      <a class="install-link" href="/start/distribution/">Install</a>
       <a class="explore-link" href="/start/choose-a-skill/">Explore skills</a>
-      <a href="https://github.com/howlil/agentflow" target="_blank" rel="noreferrer">
-        <Code2 size={13} strokeWidth={1.8} />
-        <span>GitHub</span>
+      <a class="github-link" href="https://github.com/howlil/agentflow" target="_blank" rel="noopener noreferrer" aria-label="Agentflow GitHub repository (opens in a new tab)">
+        <Code2 size={15} strokeWidth={1.8} aria-hidden="true" />
+        <span class="github-label">GitHub</span>
       </a>
     </nav>
   </div>
@@ -21,7 +22,7 @@ import { Code2 } from '@lucide/astro';
 
 <style>
   .agentflow-home-header {
-    --landing-fg: #f7f6f2;
+    --landing-fg: var(--af-ivory, #F6F4EF);
     position: relative;
     left: 50%;
     width: 100vw;
@@ -61,7 +62,7 @@ import { Code2 } from '@lucide/astro';
   nav {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 22px;
   }
 
   nav a {
@@ -78,6 +79,12 @@ import { Code2 } from '@lucide/astro';
     color: #fff;
   }
 
+  nav a:focus-visible, .brand:focus-visible {
+    outline: 2px solid var(--af-accent, #9B8BDE);
+    outline-offset: 5px;
+    border-radius: 4px;
+  }
+
   :global(body:has(.agentflow-home-header)) {
     --sl-color-bg-nav: var(--af-ink, #0C0D10);
     --sl-color-hairline-light: rgba(255, 255, 255, 0.08);
@@ -88,11 +95,12 @@ import { Code2 } from '@lucide/astro';
       width: min(100% - 28px, 1180px);
     }
 
-    nav a span {
+    nav .github-label {
       display: none;
     }
 
-    nav { gap: 16px; }
+    nav { gap: 13px; }
+    nav a { font-size: 11px; }
 
     nav :global(svg) {
       width: 15px;
