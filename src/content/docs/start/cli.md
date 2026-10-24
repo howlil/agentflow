@@ -7,10 +7,10 @@ Agentflow publishes a small, dependency-free Node.js CLI in `packages/cli`. It i
 
 ## Install the CLI itself
 
-Version `0.3.0` is available in the public npm registry. Install it with Node.js 22.20+:
+Version `0.3.1` is available in the public npm registry. Install it with Node.js 22.20+:
 
 ```bash
-npm install -g @howlil/agentflow-cli@0.3.0
+npm install -g @howlil/agentflow-cli@0.3.1
 agentflow --version
 ```
 
@@ -109,4 +109,4 @@ Dry-run displays what would be executed or written and makes no change. Paths an
 
 ## Release boundaries
 
-The npm package and [GitHub v0.3.0 release](https://github.com/howlil/agentflow/releases/tag/v0.3.0) are public. CI verifies command execution on Windows, macOS and Linux. The dedicated post-release acceptance workflow additionally checks version-pinned GitHub skill files, the public npm executable and protected uninstall. Reinstall-based rollback requires a previous published tag; native host auto-updates remain outside this test. See [release and rollback](/start/release-and-rollback/).
+The npm package and [GitHub v0.3.1 release](https://github.com/howlil/agentflow/releases/tag/v0.3.1) are public. CI verifies command execution on Windows, macOS and Linux. The dedicated post-release acceptance workflow additionally checks version-pinned GitHub skill files, the public npm executable and protected uninstall. Reinstall-based rollback requires a previous published tag; native host auto-updates remain outside this test. See [release and rollback](/start/release-and-rollback/).
