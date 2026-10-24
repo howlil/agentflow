@@ -66,6 +66,16 @@ jobs:
           fi
           echo "tag=$REQUESTED_TAG" >> "$GITHUB_OUTPUT"
           echo "version=$ROOT_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Validate selected npm authentication mode
+        shell: bash
+        env:
+          AUTH_MODE: ${{ vars.AGENTFLOW_NPM_AUTH_MODE }}
+        run: |
+          set -euo pipefail
+          case "$AUTH_MODE" in
+            ''|token|oidc) ;;
+            *) echo "Unsupported AGENTFLOW_NPM_AUTH_MODE; refusing release." >&2; exit 1 ;;
+          esac
       - run: npm ci
       - run: npm run plugins:check
       - run: npm test
