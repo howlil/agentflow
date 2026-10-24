@@ -61,6 +61,10 @@ npx skills@latest remove -g agentflow
 
 Choose the correct project or global scope and confirm the removal selection. Do not use `--all` unless you also intend to delete unrelated installed skills.
 
+## Cross-agent compatibility
+
+For verified agent identifiers, project/global installation paths, and the five-host CI matrix, see [Cross-agent compatibility](/start/cross-agent-compatibility/). The pinned installer uses a shared `~/.agents/skills/` global store for several agents even when those hosts also support their own private skill directories. Use the documented host ID and scope; do not assume native-plugin update behavior for file-based skills.
+
 ## Compatibility boundaries
 
 - `skills.sh` provides file-based installation and user-initiated updates. Claude and Codex now have separate native marketplace paths documented on the native plugins page.
