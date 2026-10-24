@@ -38,6 +38,9 @@ handoff only if another decision becomes non-trivial
 
 ## Scope
 
+M7 entry point: a new visitor should see installation instructions before internal architecture, select a single route for their host, preview the 11 skills, and find the decision-to-skill guide. Native plugins and the thin npm adapter are alternatives to portable file-based installation, not parallel prerequisites. A generated `/llms.txt` links to canonical source but does not guarantee search indexing or marketplace acceptance.
+
+
 In:
 - goal-first homepage
 - quickstart and skill router
