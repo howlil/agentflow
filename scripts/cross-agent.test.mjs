@@ -11,7 +11,7 @@ test('matrix covers five agent IDs without requiring host credentials', async ()
   const script = await read('.github/scripts/cross-agent-acceptance.sh');
   assert.match(workflow, /cross-agent-compatibility:/);
   assert.match(workflow, /agent: \[claude-code, codex, gemini-cli, cursor, opencode\]/);
-  assert.match(workflow, /bash \.github\/scripts\/cross-agent-acceptance\.sh/);
+  assert.match(workflow, /bash \.github\/scripts\/cross-agent-candidate\.sh/);
   for (const agent of ids) assert.ok(script.includes(agent + ')'), 'Missing case for ' + agent);
   assert.doesNotMatch(script, /gh auth login|npm publish|git push|\.npmrc/);
 });
