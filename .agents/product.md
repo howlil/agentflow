@@ -1,77 +1,20 @@
-# Product
+# Agentflow — Product direction
 
 ## Problem
+Engineers should solve concrete engineering decisions without memorizing ten skill names or installing a redundant CLI. A reusable skill router should narrow uncertainty, not impose a mandatory SDLC pipeline.
 
-Actor: software engineer using a small library of reusable agent skills installed locally or globally.
+## Journey
+Task → identify unresolved decision → choose router or specialist → install via portable `skills` CLI (or native host marketplace) → use skill → check/update when needed.
 
-Trigger: they have a concrete engineering task but are unsure which skill is relevant, whether a skill is needed at all, or how multiple skills should compose.
+## Distribution behavior
+1. Homepage presents one standard portable installation route using `npx skills`.
+2. User may select all eleven canonical skills (router + specialists) or only named specialists.
+3. Native Claude/Codex plugins are a clear alternative, not a second required installation.
+4. Portable copies do not auto-update. Native plugin behavior depends on host settings.
+5. `@howlil/agentflow-cli` is retired and must not appear as a recommended installation prerequisite.
 
-Problem: a flat skill catalog forces users to memorize internal taxonomy. Copying runtime skill instructions into human docs creates duplication and drift.
+## Non-goals
+No custom npm installer, second skill registry, backend, persistent orchestration agent, universal activation syntax, duplicated skill instructions, or automatic update guarantees.
 
-Desired outcome: move from a real task to the smallest useful skill, understand how to invoke it, see the expected output, and inspect the canonical runtime reference when needed.
-
-## Behavior
-
-```text
-real task
-  ↓
-identify the unresolved decision
-  ↓
-route to the smallest useful skill
-  ↓
-show use / don't-use boundary
-  ↓
-show example invocation + expected outcome
-  ↓
-offer generated canonical runtime reference
-  ↓
-handoff only if another decision becomes non-trivial
-```
-
-## Constraints
-
-- Skills are decision tools, not mandatory lifecycle stages.
-- `skills/*/SKILL.md` is the runtime source of truth.
-- Canonical metadata and full runtime reference are generated from `SKILL.md`, never manually copied.
-- Human docs own discovery, usage, examples, and composition.
-- The documentation is static, hosted on Cloudflare, and styled with Tailwind CSS.
-
-## Scope
-
-M7 entry point: a new visitor should see installation instructions before internal architecture, select a single route for their host, preview the 11 skills, and find the decision-to-skill guide. Native plugins and the thin npm adapter are alternatives to portable file-based installation, not parallel prerequisites. A generated `/llms.txt` links to canonical source but does not guarantee search indexing or marketplace acceptance.
-
-
-In:
-- goal-first homepage
-- quickstart and skill router
-- one human usage page for each skill
-- generated runtime reference for all eleven canonical skills
-- multi-skill recipes
-- product/system rationale
-- Cloudflare deployment instructions
-- discoverable `agentflow` router and ten specialist packages
-- documented installer-managed global/project install, update, and removal
-- native Claude and Codex plugin manifests and marketplace discovery
-- installable CLI executable with optional project initialization, diagnostics, dry-run and delegated lifecycle
-- source-ownership protection for name collisions during update/uninstall
-- release runbook, gated npm publishing and tag-pinned remote install/rollback acceptance
-- host-scoped managed updates, with version-change requirements and explicit release workflow
-- cross-agent file distribution matrix for Claude Code, Codex, Gemini CLI, Cursor and OpenCode; isolated project/global lifecycle and explicit host-invocation limitations
-
-Out:
-- user accounts
-- comments
-- CMS
-- analytics dashboard
-- runtime skill execution service
-- automatic host-agnostic updates or auto-enablement without user action
-- publication into third-party official/public plugin directories
-- a second proprietary skill downloader or mutable agent runtime
-
-## Proof
-
-- A user can identify `product-design` from an unclear feature task without reading all ten skills.
-- A simple local change can correctly result in no specialist skill.
-- Multi-domain tasks show separate ownership rather than a mandatory pipeline.
-- Changing a canonical skill description updates generated homepage metadata and runtime reference on the next build.
-- Missing/unexpected/misnamed skill packages fail before deployment.
+## Acceptance
+Current checkout discovers all eleven skills. Five-host portable installation tests verify accurate bytes and safe removal, while host-native manifests remain independently validated. Documentation explains the distinction between temporary source clone and installed selected skill folders.

@@ -1,41 +1,25 @@
 # Agentflow — Repository Rules
 
 ## Product
-Agentflow helps engineers route a concrete task to the smallest useful reasoning skill. The portable `agentflow` router selects among ten specialist skills.
-The homepage, skill chooser, human guides, and generated runtime references form one user journey.
-A skill is a decision tool, not a mandatory lifecycle stage.
+Agentflow routes concrete software-engineering tasks to the smallest relevant reasoning skills. Its eleven canonical skills are a router plus ten specialists. They are portable instructions, not an executable orchestration runtime.
 
-## Ownership
-- `skills/<name>/SKILL.md`: canonical instructions and runtime metadata.
-- `scripts/generate-skills.mjs`: validate canonical packages and required Agent Skills metadata constraints, then generate metadata/reference docs plus the optional static `/llms.txt` discovery index, all from the same `SKILL.md` frontmatter.
-- `src/content/docs/start/install.md`: document installer-managed project/global lifecycle.
-- `src/content/docs/start/native-plugins.md`: native marketplace commands and host-specific update behavior.
-- `plugin.json` and `.claude-plugin/plugin.json`: two native metadata adapters with identical package identity/version, not competing skill sources.
-- `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`: native marketplace catalog adapters pointing to the repository root.
-- `scripts/plugin-manifests.mjs`: validate manifest versions and native plugin roots; `package.json` owns the version.
-- `scripts/distribution.test.mjs`: prove skill-layout, router coverage, and guide/lifecycle documentation contracts.
-- `packages/cli/`: standalone, zero-runtime-dependency CLI. Only project bootstrap, offline diagnosis, and pinned delegation to external skills CLI are owned here; never implement another skill installer.
-- `src/content/docs/start/cli.md`: CLI configuration, safety and lifecycle documentation.
-- `src/content/docs/skills/`: human-facing usage, examples, and when-not-to-use boundaries.
-- `src/content/docs/start/` and `recipes/`: discovery and composition.
-- `src/components/`: presentation and interaction only.
-- Astro/Starlight: static routing, rendering and search. Cloudflare Pages: native GitHub build and static delivery. Existing Cloudflare Workers Builds: `wrangler.jsonc` serves `dist/` as static assets. Neither path requires custom GitHub Actions; never add Astro SSR adapter for this static documentation site.
-- `.agents/product.md` and `.agents/engineering.md`: authoritative product/system decisions.
+## Ownership and boundaries
+- `skills/<name>/SKILL.md`: the only canonical runtime source. Do not duplicate content into vendor directories.
+- `scripts/generate-skills.mjs`: validates skills and generates public reference pages, metadata and `llms.txt`.
+- `src/content/docs/`: human guides and lifecycle documentation; Astro/Starlight compiles static `dist/`.
+- `scripts/plugin-manifests.mjs`: validates native Claude/Codex manifests and package-version parity.
+- Upstream `skills@1.7.4`: owns portable install, list, update, remove and state/lockfiles.
+- Host-native Claude/Codex plugins: independent alternate managed installation routes.
 
-Never create a competing skill manifest or hand-copy full runtime instructions into guides.
-Use generated data for canonical skill identity; use human-guide frontmatter for display titles and summaries.
-Keep new responsibilities in existing boundaries unless a real independent owner is necessary.
+## Distribution
+Primary: `npx skills` with discovery on skills.sh. Alternate: host-managed native plugin. Never require or reintroduce `@howlil/agentflow-cli`, `packages/cli`, an npm publish workflow, custom registry, duplicate installer, or second lockfile. Root npm tooling is **only** for building/validating the website and plugin metadata.
 
-## Change flow
-1. Identify the user's decision and the owning boundary.
-2. Edit the smallest surface that owns it; update product/system contracts only when behavior or guarantees change.
-3. For skill changes, edit `SKILL.md` first and let the generator project canonical references.
-4. Run `npm test` and `npm run build`; verify homepage → chooser → guide → reference links when navigation changes.
-5. Keep generated `src/generated/` and `src/content/docs/reference/` out of commits.
+The installer may fetch the repository temporarily; only selected skills are installed. Installing only the router does not install specialists. Portable updates are manual. Invocation syntax and native marketplace auto-updates are host-specific, not universal guarantees.
 
-No backend, state store, new abstraction layer, or agent runtime without a concrete product need.
-CLI `init` may exclusively create `.agentflow.json` but must not mutate target project `AGENTS.md` or `.agents/`. Update/uninstall require an explicit scope and verified Agentflow source ownership in the official project/global lockfile; missing or mismatched records fail closed. Bare `agentflow update` must never update unrelated repositories.
-- `packages/cli/src/ownership.mjs` owns read-only source-identity checks; never implement an independent lockfile writer.
-- `.github/workflows/release.yml` owns matching-version npm publishing: default legacy `NPM_KEY` and explicitly opted-in, separately permissioned OIDC Trusted Publishing. Only the chosen publisher runs; publish success precedes tag/GitHub Release. OIDC selection requires prior npm maintainer trust setup, and must not silently fall back to static credentials. Remote acceptance runs automatically after successful releases through workflow_run and remains available manually; it does not publish npm packages or rewrite release tags. Keep the nested CLI package version synchronized with root `package.json` and native plugin manifests.
-Never duplicate canonical `skills/` into vendor-specific plugin directories. When bumping the version, update `package.json` and lockfile, run `npm run plugins:sync`, and verify `npm run plugins:check`. Native publication is independent from Cloudflare docs deployment.
-Do not claim auto-update or universal invocation syntax from file-based installation. Do not write to other projects' steering files during M1.
+## Verification
+Run `npm ci`, `npm run plugins:check`, `npm test`, `npm run build`. Cross-agent CI covers claude-code, codex, gemini-cli, cursor and opencode; preserve `AGENTS.md` and unrelated skills. Keep generated docs derived from canonical sources.
+
+## Release
+The private root `package.json`, lockfile, `plugin.json`, and `.claude-plugin/plugin.json` must have matching versions for a native release. After review and merge to master, use immutable matching `vX.Y.Z` tags. The GitHub release workflow creates a GitHub Release only. It must never publish npm. Historical npm package deletion/deprecation and credential revocation require separate npm-owner actions.
+
+Do not claim that documentation or tests constitute real host invocation, marketplace approval or automatic updates.

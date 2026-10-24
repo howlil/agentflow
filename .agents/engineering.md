@@ -1,167 +1,26 @@
-# Engineering
+# Agentflow — Engineering design
 
-## System
-
+## Architecture
 ```text
-skills/*/SKILL.md
-        ↓ canonical runtime source
-scripts/generate-skills.mjs
-        ├→ src/generated/skills.json
-        └→ generated runtime reference pages
-                     ↓
-human MD/MDX guides + generated metadata/reference
-                     ↓
-Astro content collections
-                     ↓
-Starlight + Pagefind
-                     ↓
-Tailwind v4
-                     ↓
-static dist/
-                     ↓
-Cloudflare Pages / Workers Static Assets
+skills/*/SKILL.md (canonical)
+       ├── upstream skills CLI / skills.sh discovery → selected host skill folders
+       ├── Claude/Codex native marketplaces → host-managed plugin bundles
+       └── generate-skills.mjs → guides, references, metadata, llms.txt
+
+src/content/docs + Astro/Starlight → static dist/ → Cloudflare
 ```
 
-## Responsibilities
+## Source of truth
+GitHub owns skill content. skills.sh provides public discovery and a path to the independent installer, not an immutable npm-style package registry. The installer can fetch a temporary GitHub checkout and scan eleven skills, while only user-selected skills are installed. Updates and lockfiles are managed upstream; do not implement another installer or per-host state file.
 
-- `skills/*/SKILL.md` owns canonical runtime skill behavior and routing descriptions.
-- `skills/agentflow/SKILL.md` selects specialists; it does not provide its own runtime.
-- The external `skills` CLI owns file-based global/project installation, update, and removal in M1.
-- `scripts/generate-skills.mjs` validates the eleven-skill set and required Agent Skills flat-scalar metadata limits, enforces directory/frontmatter identity, generates canonical metadata, and projects runtime reference pages.
-- Human Markdown/MDX owns usage guidance, examples, recipes, and product explanation.
-- Astro owns static build and content loading.
-- Starlight owns documentation navigation, layout, accessibility baseline, code rendering, and search integration.
-- Tailwind owns project-specific presentation.
-- Cloudflare Pages owns static publishing when using a Pages Git integration.
-- The existing Workers Builds project uses `wrangler.jsonc` to publish `dist/` as static assets. No Worker source entrypoint, Astro SSR adapter, or custom GitHub Actions deployment is required.
+## Host compatibility
+CI matrix covers `claude-code`, `codex`, `gemini-cli`, `cursor`, `opencode` using pinned `skills@1.7.4`. Project/global installs run in isolated HOME/workspaces. Test canonical SKILL.md byte equality, list/remove, and preservation of unrelated `AGENTS.md` and skill folders. Host runtime sessions, real marketplace approval, and automatic host updates are outside these tests.
 
-## State & Invariants
+## Native manifests and versions
+`package.json` is **private** and used for website tooling and shared version metadata; npm is not a distribution mechanism for Agentflow skill installs. Synchronize root package lock and native `plugin.json` files for releases via `npm run plugins:sync` and verify via `npm run plugins:check`. Each release uses a reviewed master commit and immutable tag.
 
-- Runtime behavior has one repository source of truth: `skills/<name>/SKILL.md`.
-- A skill directory name must equal its frontmatter `name`.
-- Exactly the intended eleven skill packages (agentflow router plus ten specialists) must exist unless the product/system contract changes deliberately.
-- Canonical `name` and `description` shown by the homepage are generated.
-- Runtime reference pages are generated from canonical `SKILL.md`; they are not edited by hand.
-- Human guides may teach or summarize a skill but must not silently redefine runtime behavior.
-- There is no mutable runtime application state or database.
-- Distribution uses the canonical `skills/<name>/SKILL.md` layout rather than vendor-specific copies.
-- File installation does not guarantee auto-updates or identical invocation syntax across hosts.
-- Native marketplace catalogs point at repository root and never embed copied skill text.
-- Both plugin manifests must retain package identity `agentflow` and package version.
+## CI / release
+CI validates skills, static site generation, native plugin manifests and portable installation. `.github/workflows/release.yml` creates GitHub releases **without npm publish**. Historical `@howlil/agentflow-cli` versions require separate npm-owner unpublish/deprecation. Remove obsolete publishing credentials externally; never repurpose them in repository workflows.
 
-## Critical Flows
-
-### Native plugin release
-
-```text
-npm version patch --no-git-tag-version
- → npm run plugins:sync
- → npm run plugins:check
- → npm test + npm run build
- → review + merge to master
- → git tag vX.Y.Z
- → release workflow verifies version + master ancestry
- → GitHub Release
- → host marketplace update depends on client configuration
-```
-
-### Change a skill
-
-```text
-edit skills/<name>/SKILL.md
-  ↓
-npm run build
-  ↓
-validate package identity/set
-  ↓
-regenerate metadata + runtime reference
-  ↓
-Astro/Starlight build
-```
-
-### Publish
-
-```text
-commit to master
-  → Cloudflare Pages or Workers Builds native Git integration
-  → npm run build (includes skill artifact generation)
-  → static dist/
-  → Cloudflare static hosting
-```
-
-## Guarantees
-
-- Metadata/reference drift is prevented structurally by generation.
-- Missing, unexpected, or misnamed skill packages fail before the site builds.
-- Content/config errors fail at build time instead of creating a partially broken runtime.
-- Search/navigation require no application backend.
-- Cloudflare Pages or Workers Static Assets serves the same static files until a real server-side requirement appears.
-
-## Decisions
-
-### M7 discovery, install route and source ownership
-
-The landing, README and `src/content/docs/start/distribution.md` show one decision: choose one installation route per host (portable `skills@1.7.4`, npm CLI adapter or native host plugin). Never imply that installing the router also installs specialists, that npm contains a separate skill runtime, or that file installation causes automatic host updates. `scripts/generate-skills.mjs` derives the optional `public/llms.txt` build artifact from exactly the validated 11 canonical `SKILL.md` metadata objects that generate `src/generated/skills.json`. The generated file is ignored in Git and must be present in `dist/llms.txt` in CI; do not maintain a manually copied second catalog. GitHub repository description/topics and external directory submissions are platform-owned changes, not a property of this static site build.
-
-
-### M8 npm Trusted Publishing and dependency safeguards
-
-The current npm release is `v0.3.0`. Separate `publish-npm` (default/unset or `token`, contents:read and NPM_KEY only) from `publish-npm-oidc` (explicit repository variable `AGENTFLOW_NPM_AUTH_MODE=oidc`, contents:read + id-token:write, never NPM_KEY/NODE_AUTH_TOKEN). Only one successful publisher can enable GitHub Release. Unknown modes fail closed. The npm owner must first register trusted publisher `howlil` / `agentflow` / `release.yml` with `npm publish` enabled; this is not part of GitHub source. OIDC produces automatic provenance on a future eligible public release, not retrospectively for `v0.3.0`. Dependabot creates bounded weekly npm/Actions PRs, and `dependency-audit.yml` checks lockfile npm advisories weekly with read-only permissions. Do not auto-merge dependency updates or call OIDC configured before the npm maintainer has completed its setup.
-
-### Release automation (NPM_KEY)
-
-`.github/workflows/release.yml` verifies a tag or manual version against the current `master` and root/CLI/native package parity, tests/builds/packs, and checks public npm registry tarball integrity before publishing. Only `publish-npm` receives `secrets.NPM_KEY` as `NODE_AUTH_TOKEN`; only after npm success can `github-release` generate the release/tag. Registry versions with mismatched tarball integrity cause hard failures; reruns with identical content are idempotent. Tag creation on workflow_dispatch via GitHub token does not retrigger tag events. Keep token authentication isolated, and prioritize moving to OIDC before npm retires direct publishing via bypass-2FA tokens in January 2027.
-
-### Post-review lifecycle acceptance repair
-
-The M5 public-release smoke remains fixed to the immutable v0.3.0 npm/tag pair; when a previous release tag exists, its acceptance installs previous → replaces with target while still installed → replaces with previous while target is still installed → finally uninstalls. A distinct local two-version fixture guards replacement semantics before a second public tag exists. M6 five-agent PR CI installs the packed candidate CLI and canonical skills from the current checkout; it intentionally does not claim to exercise a published candidate. The existing public v0.3.0 job remains a regression gate. Host app interactions and OIDC remain out of scope.
-
-### M6 cross-agent compatibility boundary
-
-CI installs the public `@howlil/agentflow-cli@0.3.0` and immutable `v0.3.0` skill with `skills@1.7.4` for `claude-code`, `codex`, `gemini-cli`, `cursor`, and `opencode` in isolated project and global scopes. Verify actual installer paths, canonical content, read-only status, source-owned uninstall and preservation of unrelated skill files/`AGENTS.md`. The installer uses the shared global `~/.agents/skills/` store for four universal agent IDs and `~/.claude/skills/` for Claude. No host login, native auto-update, or inference that `SKILL.md` proves model invocation. This milestone must not implement another installer or expand credential permissions.
-
-### M4 release acceptance and source ownership
-
-`packages/cli/src/ownership.mjs` validates installed source identity from official project `skills-lock.json` or global `$XDG_STATE_HOME/skills/.skill-lock.json` / `~/.agents/.skill-lock.json` before mutations. Unknown owners fail closed, and source-scoped uninstall expands to concrete owned names. Update/uninstall require explicit scope. Dry-run invokes no installer and makes no filesystem writes.
-
-The release workflow validates `vX.Y.Z` tag/version and `master` ancestry, publishes the CLI via the scoped `NPM_KEY` secret, and creates GitHub Release after verified npm publication. npm publication is gated by matching release version and a valid scoped `NPM_KEY` secret, with token exposure limited to the publish step. Preferred future transition is token-free OIDC trusted publishing. M5 adds automatic `workflow_run` acceptance after a successful release workflow, plus on-demand invocation; tests exercise the public npm executable and immutable release tag in disposable workspaces. Earlier-tag replacement and rollback only run when a previous published tag is provided. Do not equate these with host-managed auto-updates.
-
-### Windows CLI subprocess and router-install hardening
-
-The `agentflow` npm executable never installs the `agentflow` router implicitly. Installing that skill remains a separately selected and scoped `agentflow install --global|--project --agent <host> --skill agentflow` action owned by the pinned upstream manager; existing unrelated and locally owned skills remain untouched.
-
-Windows command execution must use `process.execPath` + the installed npm `bin/npx-cli.js` with `shell: false` and a separate argument vector. A bundled entrypoint relative to `node.exe` is preferred; a separately installed npm entrypoint may be used only when explicitly identified as `npm-cli.js` or `npx-cli.js`. Missing npm entrypoints fail clearly; never fall back to `cmd.exe`, interpolate selectors into a shell command, suppress warnings, or clone upstream install logic. Non-Windows still delegates to `npx`. Unit tests verify the resolver and failure contract, and Windows CI runs the real global install/status/uninstall with `NODE_OPTIONS=--throw-deprecation` to detect regressions.
-
-### M3 thin command-line adapter
-
-`packages/cli` is a separate publishable Node.js package with a `bin/agentflow.mjs` entry and no runtime dependencies. `src/main.mjs` owns argument validation, optional `.agentflow.json` bootstrap, offline diagnosis, and version-pinned subprocess delegation to `skills@1.7.4`. `init` uses exclusive create and never rewrites project steering files. No per-agent installation state is reimplemented: `status` and lifecycle are delegated to the upstream installer.
-
-Bare update is rejected because `skills update` without a selector can update unrelated sources. An update-by-name must be reviewed for collisions; `uninstall` with no skill selector uses the exact repository source. `--dry-run` is side-effect-free. CLI binary version must match root/native package version. Registry publication and cross-platform real-host testing remain release gates.
-
-### M2 native plugin adapters and versioning
-
-The canonical `skills/` root is shared by the Claude Code plugin manifest, the portable Agent Plugins manifest, and both marketplace catalogs. Host manifests are metadata adapters, not copied runtime skill sources.
-
-`package.json` owns the semantic version. `scripts/plugin-manifests.mjs --check` enforces version parity with the lockfile and both native manifests, same plugin identity, path containment at root, and exactly eleven canonical skills. `--write` synchronizes manifest versions only. Tag-triggered releases verify `vX.Y.Z` against package version and require an ancestor of `master` before publishing a GitHub Release.
-
-Managed updates depend on host configurations. A public GitHub release does not imply third-party official directory submission or automatic client refresh.
-
-### M1 installer-managed portable distribution
-
-Use the canonical Agent Skills layout with the upstream skills CLI for install/update/remove. Native plugin manifests and an Agentflow-specific CLI are separate milestones.
-
-### Canonical runtime packages in-repo
-
-The eleven `SKILL.md` files under `skills/` are authoritative for agent behavior.
-
-### Generated metadata and runtime reference
-
-Do not manually duplicate runtime descriptions or complete skill instructions in human docs. Generate those projections on every dev/build run.
-
-### Human guides stay separate
-
-Generated reference optimizes fidelity. Human guides optimize discovery and usage. They intentionally solve different jobs.
-
-### Astro + Starlight + Tailwind + Cloudflare
-
-The site remains documentation-first, build-time generated, and statically delivered. No backend capability currently traces to a product requirement.
+## Constraints
+No `packages/cli`, custom lockfile, proprietary installer, backend, forced native plugin installation, mandatory pipeline, or claim that `$agentflow` is invoked identically across all agents. Respect explicitly selected skills and existing steering documents. Keep single source of truth and clear responsibility boundaries.
