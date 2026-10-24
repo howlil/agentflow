@@ -1,6 +1,6 @@
 {
   "name": "@howlil/agentflow-cli",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Portable command-line manager for Agentflow engineering skills",
   "type": "module",
   "bin": {
