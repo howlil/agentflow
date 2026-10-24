@@ -112,7 +112,7 @@ jobs:
           $status = agentflow status --global --agent codex 2>&1 | Out-String
           if ($LASTEXITCODE -ne 0) { throw "Agentflow status failed: $status" }
           Write-Output $status
-          if ($status -notmatch '(?m)^agentflow\\s') { throw 'Router not detected in global skills' }
+          if ($status -notmatch '(?m)^agentflow\s') { throw 'Router not detected in global skills' }
           agentflow uninstall --global --agent codex --skill agentflow --yes
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
