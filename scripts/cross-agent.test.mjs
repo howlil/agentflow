@@ -12,7 +12,10 @@ test('matrix covers five agent IDs without requiring host credentials', async ()
   assert.match(workflow, /cross-agent-compatibility:/);
   assert.match(workflow, /agent: \[claude-code, codex, gemini-cli, cursor, opencode\]/);
   assert.match(workflow, /bash \.github\/scripts\/cross-agent-candidate\.sh/);
-  for (const agent of ids) assert.ok(script.includes(agent + ')'), 'Missing case for ' + agent);
+  const cases = script.match(/case "\$AGENT" in([\s\S]*?)\n\s*esac/)?.[1] || '';
+  const selectors = cases.split('\n').filter(line => /\)\s/.test(line)).flatMap(line =>
+    line.trim().split(')')[0].split('|').map(value => value.trim()));
+  for (const agent of ids) assert.ok(selectors.includes(agent), 'Missing case for ' + agent);
   assert.doesNotMatch(script, /gh auth login|npm publish|git push|\.npmrc/);
 });
 
