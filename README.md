@@ -79,6 +79,10 @@ npm run plugins:sync
 npm run plugins:check
 ```
 
+## Cross-agent distribution
+
+Project and global file-based Agent Skills installation is tested with `claude-code`, `codex`, `gemini-cli`, `cursor`, and `opencode` using a pinned upstream installer and the public v0.3.0 npm CLI. Each agent's host discovery and native invocation remain separate capabilities. See the [cross-agent compatibility matrix](src/content/docs/start/cross-agent-compatibility.md).
+
 ## Agentflow CLI (published on npm)
 
 A thin, separate Node.js executable lives under `packages/cli`. The CLI delegates portable skill lifecycle to pinned `skills@1.7.4`, adds safe project bootstrap and offline diagnosis, and never overwrites steering files.
