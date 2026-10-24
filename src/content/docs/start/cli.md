@@ -51,6 +51,8 @@ agentflow status --global
 
 `doctor` checks Node version, the presence of `npx`, optional Git/known AI binaries and local config, with no network or filesystem mutations. `status` delegates to the upstream `skills list`, which may fetch the pinned CLI on first invocation. The default agent comes from project config unless overridden explicitly.
 
+On Windows, the CLI launches npm's `npx-cli.js` through the active `node.exe` with a separate argument array and no command shell. This avoids Node.js `DEP0190` without suppressing deprecation warnings. Standard Node distributions (including fnm installations bundled with npm) contain that entrypoint. If npm is not bundled and its entrypoint cannot be found, install/repair npm rather than enabling a shell fallback. The CLI does not modify PowerShell execution policy or require Administrator privileges.
+
 ## Install
 
 ```bash
@@ -61,6 +63,19 @@ agentflow install --global --agent codex --skill agentflow --yes
 ```
 
 If no skill selector is given, upstream `skills add howlil/agentflow` offers its native interactive selection. `--yes` must be explicit to suppress confirmation. Native Claude/Codex plugin installs and file-based installations should not be mixed for the same agent and skill.
+
+### Install only the global router (Windows, Codex)
+
+Installing the npm CLI makes the `agentflow` **command** available; it does **not** automatically install the `agentflow` **router skill**. If `agentflow status --global --agent codex` shows specialists but not `agentflow`, use:
+
+```powershell
+cd $HOME
+agentflow install --global --agent codex --skill agentflow --copy --dry-run
+agentflow install --global --agent codex --skill agentflow --copy --yes
+agentflow status --global --agent codex
+```
+
+Only the named router is selected; other global skills remain untouched. Source ownership checks prevent overwriting a skill recorded as coming from a different repository. These commands operate on the **current machine**, not the GitHub checkout or a connected CI runner. Restart or refresh the host's skill discovery if the router is installed but not immediately offered as an invocation option.
 
 ## Update
 
