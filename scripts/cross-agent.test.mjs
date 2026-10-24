@@ -17,7 +17,7 @@ test('matrix covers five agent IDs without requiring host credentials', async ()
 });
 
 test('acceptance isolates HOME and protects unrelated skills and AGENTS.md', async () => {
-  const script = await read('.github/scripts/cross-agent-acceptance.sh');
+  const script = await read('.github/scripts/cross-agent-candidate.sh');
   for (const guard of [
     'mktemp -d', 'export HOME=', 'trap ',
     'npm pack', 'skills/agentflow/SKILL.md',
