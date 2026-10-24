@@ -86,3 +86,11 @@ Ensure `dist/index.html`, `dist/404.html`, and skill/reference HTML pages exist.
 - **Worker name mismatch:** The Worker name in Cloudflare must be `agentflow`, matching `wrangler.jsonc`.
 - **Expected Pages but see a deploy command:** You created/connected a Worker, not a Pages project. Choose Option B.
 - **Missing documentation routes:** Verify `dist/` contains static HTML; do not configure a single-page-app fallback for Starlight.
+
+## Social preview configuration
+
+The build generates a favicon, documentation logo and a 1200×630 PNG social card from `public/favicon.svg` and `public/social-card.template.svg`. The command `npm run brand:assets` is part of `prebuild` and `predev`; generated files are not committed.
+
+For production social crawlers, configure `PUBLIC_SITE_URL` as the **real, verified origin** of your deployed website, e.g. `https://your-confirmed-domain.example`, in the Cloudflare build environment before building. Do not use a preview-domain guess. Without this setting, the build still emits `dist/og.png`, but does not advertise an incorrect absolute `og:image` URL.
+
+Verify `dist/og.png` (1200×630), `dist/favicon.svg`, and the generated HTML `og:image`/Twitter tags after deployment. Static builds cannot infer Cloudflare's final custom domain from the `wrangler.jsonc` worker name alone.

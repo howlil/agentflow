@@ -32,6 +32,9 @@ jobs:
         run: |
           set -euo pipefail
           test -s dist/llms.txt
+          test -s dist/og.png
+          test -s dist/favicon.svg
+          test -s dist/social-preview.svg
           grep -Fq 'skills/agentflow/SKILL.md' dist/llms.txt
           test "$(grep -cF 'raw.githubusercontent.com/howlil/agentflow/master/skills/' dist/llms.txt)" -eq 11
       - name: Validate Claude plugin

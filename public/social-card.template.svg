@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Agentflow — Better judgment for AI agents</title>
+  <desc id="description">One router. Ten specialists. The right skill for every engineering decision.</desc>
+  <rect width="1200" height="630" fill="#0C0D10"/>
+  <rect x="0" y="0" width="1200" height="6" fill="#9B8BDE"/>
+  <!-- AGENTFLOW_MARK -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="185" y="126" fill="#DDDCE5" font-size="26" font-weight="700" letter-spacing="1.5">AGENTFLOW</text>
+    <text x="185" y="155" fill="#9496A6" font-size="18" letter-spacing="2.2">ENGINEERING SKILLS FOR AI AGENTS</text>
+    <text x="80" y="322" fill="#F6F4EF" font-size="76" font-weight="700" letter-spacing="-2.5">Better judgment</text>
+    <text x="80" y="416" fill="#F6F4EF" font-size="76" font-weight="700" letter-spacing="-2.5">for AI agents.</text>
+    <rect x="80" y="465" width="72" height="6" rx="3" fill="#9B8BDE"/>
+    <text x="80" y="534" fill="#B9BAC7" font-size="23" letter-spacing=".3">THE RIGHT SKILL FOR EVERY ENGINEERING DECISION.</text>
+    <text x="80" y="592" fill="#838594" font-size="17" font-weight="700" letter-spacing="1.5">01 ROUTER  ·  10 SPECIALISTS</text>
+    <text x="1133" y="592" text-anchor="end" fill="#838594" font-size="17" letter-spacing="1">howlil/agentflow</text>
+  </g>
+</svg>

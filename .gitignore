@@ -4,5 +4,8 @@ dist/
 .wrangler/
 src/generated/
 public/llms.txt
+public/og.png
+public/social-preview.svg
+src/assets/brand-mark.svg
 src/content/docs/reference/
 .DS_Store
