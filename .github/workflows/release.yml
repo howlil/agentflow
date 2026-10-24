@@ -66,6 +66,16 @@ jobs:
           fi
           echo "tag=$REQUESTED_TAG" >> "$GITHUB_OUTPUT"
           echo "version=$ROOT_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Validate selected npm authentication mode
+        shell: bash
+        env:
+          AUTH_MODE: ${{ vars.AGENTFLOW_NPM_AUTH_MODE }}
+        run: |
+          set -euo pipefail
+          case "$AUTH_MODE" in
+            ''|token|oidc) ;;
+            *) echo "Unsupported AGENTFLOW_NPM_AUTH_MODE; refusing release." >&2; exit 1 ;;
+          esac
       - run: npm ci
       - run: npm run plugins:check
       - run: npm test
@@ -83,7 +93,10 @@ jobs:
           node "$TMP/node_modules/@howlil/agentflow-cli/bin/agentflow.mjs" --version
 
   publish-npm:
-    name: Publish npm package
+    name: Publish npm package (legacy token)
+    # Default remains token-based until the npm package owner configures trust.
+    # An unknown auth mode must fail closed rather than silently publishing.
+    if: ${{ vars.AGENTFLOW_NPM_AUTH_MODE == '' || vars.AGENTFLOW_NPM_AUTH_MODE == 'token' }}
     needs: verify
     runs-on: ubuntu-latest
     permissions:
@@ -180,9 +193,94 @@ jobs:
           echo "npm publish returned success but registry verification failed." >&2
           exit 1
 
+  publish-npm-oidc:
+    name: Publish npm package (Trusted Publishing OIDC)
+    # Explicitly opt in only after configuring npmjs.com package trust for
+    # owner howlil / repository agentflow / workflow release.yml / npm publish.
+    if: ${{ vars.AGENTFLOW_NPM_AUTH_MODE == 'oidc' }}
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Prepare OIDC-capable npm
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global npm@11
+          node --version
+          npm --version
+      - name: Verify registry status and immutable artifact integrity
+        id: preflight
+        shell: bash
+        env:
+          PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          PACK_DIR="$(mktemp -d)"
+          trap 'rm -rf "$PACK_DIR"' EXIT
+          PACKAGE_SPEC="@howlil/agentflow-cli@$PACKAGE_VERSION"
+          LOCAL_INTEGRITY="$(npm pack ./packages/cli --json --dry-run | node -e "let s='';process.stdin.on('data',b=>s+=b);process.stdin.on('end',()=>process.stdout.write(JSON.parse(s)[0].integrity))")"
+          if npm view "$PACKAGE_SPEC" dist.integrity --json > "$PACK_DIR/registered.json" 2> "$PACK_DIR/npm-view.err"; then
+            REGISTERED_INTEGRITY="$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))" "$PACK_DIR/registered.json")"
+            if [ "$REGISTERED_INTEGRITY" != "$LOCAL_INTEGRITY" ]; then
+              echo "Existing npm version has different bytes. Refusing to replace." >&2
+              exit 1
+            fi
+            echo "Identical version is already published; no new registry write needed."
+            echo "result=already-published" >> "$GITHUB_OUTPUT"
+          elif grep -Eq 'E404|404 Not Found' "$PACK_DIR/npm-view.err"; then
+            # OIDC cannot query/approve pending stages. The publish attempt is
+            # immutable; an already staged version must be investigated, not retried.
+            echo "Package absent from public npm registry. Checking trusted publisher on publish."
+            echo "result=publish" >> "$GITHUB_OUTPUT"
+          else
+            cat "$PACK_DIR/npm-view.err" >&2
+            echo "Registry status unknown; refusing to publish." >&2
+            exit 1
+          fi
+      - name: Publish via GitHub OIDC with automatic provenance
+        if: ${{ steps.preflight.outputs.result == 'publish' }}
+        working-directory: packages/cli
+        shell: bash
+        run: |
+          set -euo pipefail
+          # npm requests an ephemeral identity scoped to this workflow.
+          # No static registry credentials are supplied to this job.
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+          npm publish --access public --registry=https://registry.npmjs.org
+      - name: Confirm public registry propagation
+        if: ${{ steps.preflight.outputs.result == 'publish' }}
+        shell: bash
+        env:
+          PACKAGE_VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18; do
+            if npm view "@howlil/agentflow-cli@$PACKAGE_VERSION" version --json | grep -Fxq "\"$PACKAGE_VERSION\""; then
+              echo "npm package @$PACKAGE_VERSION is publicly available."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Upload accepted but version is not public; inspect the npm lifecycle before attempting a retry." >&2
+          exit 1
+
   github-release:
     name: Publish GitHub Release
-    needs: [verify, publish-npm]
+    needs: [verify, publish-npm, publish-npm-oidc]
+    # Exactly one publisher must succeed; the unused publisher is skipped.
+    if: ${{ !cancelled() && needs.verify.result == 'success' && (needs.publish-npm.result == 'success' || needs.publish-npm-oidc.result == 'success') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

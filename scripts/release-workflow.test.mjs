@@ -25,7 +25,7 @@ test('npm publish uses the supplied NPM_KEY secret only in publish job', async (
   assert.doesNotMatch(workflow, /AGENTFLOW_NPM_PUBLISH_ENABLED/);
   assert.match(workflow, /npm whoami.*registry/);
   assert.match(workflow, /permissions:\s*\n\s*contents: read/);
-  assert.doesNotMatch(workflow, /id-token:\s*write/);
+  assert.match(workflow, /AGENTFLOW_NPM_AUTH_MODE == 'token'/);
 });
 
 test('npm registry preflight and dependent GitHub release refuse mismatched releases', async () => {
@@ -33,7 +33,9 @@ test('npm registry preflight and dependent GitHub release refuse mismatched rele
   assert.match(workflow, /dist\.integrity/);
   assert.match(workflow, /REGISTERED_INTEGRITY.*LOCAL_INTEGRITY/);
   assert.match(workflow, /Version exists on npm, but package contents differ/);
-  assert.match(workflow, /needs: \[verify, publish-npm\]/);
+  assert.match(workflow, /needs: \[verify, publish-npm, publish-npm-oidc\]/);
+  assert.match(workflow, /needs\.publish-npm-oidc\.result == 'success'/);
+  assert.match(workflow, /needs\.publish-npm\.result == 'success'/);
   assert.match(workflow, /gh release create/);
 });
 
@@ -53,6 +55,7 @@ test('standalone CLI distribution is scoped, public and version-aligned with rep
   assert.equal(cli.publishConfig.access, 'public');
   assert.equal(cli.version, rootPkg.version);
   assert.equal(cli.bin.agentflow, './bin/agentflow.mjs');
+  assert.equal(cli.repository.url, 'https://github.com/howlil/agentflow');
   assert.deepEqual(cli.files, ['bin/', 'src/', 'README.md', 'LICENSE']);
 });
 
@@ -69,4 +72,34 @@ test('master release request dispatches only explicit versioned release intent',
   assert.match(workflow, /gh workflow run release\.yml/);
   assert.match(workflow, /--ref master --raw-field "version=\$RELEASE_TAG"/);
   assert.doesNotMatch(workflow, /secrets\.NPM_KEY/);
+});
+
+test('OIDC publishing is explicitly selected and completely isolated from legacy NPM_KEY', async () => {
+  const workflow = await read('.github/workflows/release.yml');
+  const oidc = workflow.slice(workflow.indexOf('  publish-npm-oidc:'), workflow.indexOf('  github-release:'));
+  const token = workflow.slice(workflow.indexOf('  publish-npm:'), workflow.indexOf('  publish-npm-oidc:'));
+  assert.match(oidc, /AGENTFLOW_NPM_AUTH_MODE == 'oidc'/);
+  assert.match(oidc, /id-token: write/);
+  assert.match(oidc, /npm publish --access public/);
+  assert.match(oidc, /dist\.integrity/);
+  assert.match(oidc, /Existing npm version has different bytes/);
+  assert.match(oidc, /ACTIONS_ID_TOKEN_REQUEST_URL/);
+  assert.doesNotMatch(oidc, /NPM_KEY|NODE_AUTH_TOKEN|npm whoami/);
+  assert.doesNotMatch(token, /id-token: write/);
+  assert.match(token, /AGENTFLOW_NPM_AUTH_MODE == ''/);
+  assert.match(token, /NODE_AUTH_TOKEN/);
+  assert.match(workflow, /Validate selected npm authentication mode/);
+  assert.match(workflow, /Unsupported AGENTFLOW_NPM_AUTH_MODE; refusing release/);
+});
+
+test('dependency checks are bounded, read-only and detect high-severity issues', async () => {
+  const dependabot = await read('.github/dependabot.yml');
+  const audit = await read('.github/workflows/dependency-audit.yml');
+  assert.match(dependabot, /package-ecosystem: npm/);
+  assert.match(dependabot, /package-ecosystem: github-actions/);
+  assert.match(dependabot, /open-pull-requests-limit:/);
+  assert.match(audit, /workflow_dispatch:/);
+  assert.match(audit, /schedule:/);
+  assert.match(audit, /npm audit --omit=dev --audit-level=high/);
+  assert.doesNotMatch(audit, /NPM_KEY|id-token: write|contents: write|npm publish/);
 });
