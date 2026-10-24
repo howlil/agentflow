@@ -33,9 +33,9 @@ test('npm registry preflight and dependent GitHub release refuse mismatched rele
   assert.match(workflow, /dist\.integrity/);
   assert.match(workflow, /REGISTERED_INTEGRITY.*LOCAL_INTEGRITY/);
   assert.match(workflow, /Version exists on npm, but package contents differ/);
-  assert.match(workflow, /needs: \\[verify, publish-npm, publish-npm-oidc\\]/);
-  assert.match(workflow, /needs\\.publish-npm-oidc\\.result == 'success'/);
-  assert.match(workflow, /needs\\.publish-npm\\.result == 'success'/);
+  assert.match(workflow, /needs: \[verify, publish-npm, publish-npm-oidc\]/);
+  assert.match(workflow, /needs\.publish-npm-oidc\.result == 'success'/);
+  assert.match(workflow, /needs\.publish-npm\.result == 'success'/);
   assert.match(workflow, /gh release create/);
 });
 
@@ -80,7 +80,7 @@ test('OIDC publishing is explicitly selected and completely isolated from legacy
   assert.match(oidc, /AGENTFLOW_NPM_AUTH_MODE == 'oidc'/);
   assert.match(oidc, /id-token: write/);
   assert.match(oidc, /npm publish --access public/);
-  assert.match(oidc, /dist\\.integrity/);
+  assert.match(oidc, /dist\.integrity/);
   assert.match(oidc, /Existing npm version has different bytes/);
   assert.match(oidc, /ACTIONS_ID_TOKEN_REQUEST_URL/);
   assert.doesNotMatch(oidc, /NPM_KEY|NODE_AUTH_TOKEN|npm whoami/);
