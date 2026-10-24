@@ -1,44 +1,23 @@
 ---
-title: Install Agentflow
-description: Discover, install, update, and remove Agentflow skills in project or global scope.
+title: Install, update & remove
+description: Manage Agentflow through the ecosystem skills installer.
 ---
 
-For the fastest decision between portable skill files, a native plugin, and the published npm CLI, see [Distribution & discovery](/start/distribution/).
+Use the external [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md), tested with `skills@1.7.4` and Node.js 22.20+. The eleven canonical skills live under `skills/<name>/SKILL.md`.
 
-For editable, file-based installations, Agentflow publishes portable [Agent Skills](https://agentskills.io/specification) at `skills/<name>/SKILL.md`. Install them with the independent [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md), which requires Node.js 22.20 or later.
-
-For native managed Claude and Codex plugins, see [Native plugins](/start/native-plugins/). **Choose only one distribution route for each agent** to avoid duplicate skills.
-
-## Discover available skills
+## Discover and install
 
 ```bash
 npx skills@latest add howlil/agentflow --list
-```
-
-This previews the router and ten specialists without installing anything.
-
-## Project installation
-
-Run in the target project directory, then select the desired skills and AI agent:
-
-```bash
+# Interactive project install: select all eleven for router + specialists
 npx skills@latest add howlil/agentflow
+# Global install, selected host
+npx skills@latest add howlil/agentflow -g -a codex
+# Install one skill
+npx skills@latest add howlil/agentflow --skill agentflow -a codex --copy --yes
 ```
 
-## Global installation
-
-```bash
-npx skills@latest add howlil/agentflow -g
-```
-
-Global installations are usable across projects by the chosen agent. For explicit agent selection, specify a supported identifier such as `-a codex` or `-a claude-code`:
-
-```bash
-npx skills@latest add howlil/agentflow --skill agentflow -g
-npx skills@latest add howlil/agentflow --skill design-thinking -g
-```
-
-Installing the router alone does not install its specialists. Avoid duplicate global and project installations unless intentional.
+Installing the router alone does not install its specialists. Installing from the project directory is local; `-g` applies globally. Supported host IDs include `codex`, `claude-code`, `gemini-cli`, `cursor`, and `opencode`.
 
 ## Inspect and update
 
@@ -46,30 +25,29 @@ Installing the router alone does not install its specialists. Avoid duplicate gl
 npx skills@latest list
 npx skills@latest list -g
 npx skills@latest check
-npx skills@latest update       # choose scope
-npx skills@latest update -g    # global
-npx skills@latest update -p    # project
+npx skills@latest update -g
+npx skills@latest update -p
 ```
 
-Updates are **not automatic**. The update command updates previously installed skills; re-run `add` when you want to select newly introduced skill names.
+Updates are **not automatic**. The upstream installer owns the lockfiles, sources, and update semantics. Review installed source/scope before updating.
 
-## Uninstall
+## Remove
 
 ```bash
-npx skills@latest remove howlil/agentflow
 npx skills@latest remove -g howlil/agentflow
-npx skills@latest remove -g agentflow
+npx skills@latest remove howlil/agentflow
 ```
 
-Choose the correct project or global scope and confirm the removal selection. Do not use `--all` unless you also intend to delete unrelated installed skills.
+Do not choose `--all` unless unrelated skills must also be removed.
 
-## Cross-agent compatibility
+## Migration from retired npm wrapper
 
-For verified agent identifiers, project/global installation paths, and the five-host CI matrix, see [Cross-agent compatibility](/start/cross-agent-compatibility/). The pinned installer uses a shared `~/.agents/skills/` global store for several agents even when those hosts also support their own private skill directories. Use the documented host ID and scope; do not assume native-plugin update behavior for file-based skills.
+```bash
+npm uninstall -g @howlil/agentflow-cli
+```
 
-## Compatibility boundaries
+This uninstalls the discontinued wrapper executable **without removing your installed skill files**. No `.agentflow.json` bootstrap is required. Use `npx skills` for all portable lifecycle operations.
 
-- `skills.sh` provides file-based installation and user-initiated updates. Claude and Codex now have separate native marketplace paths documented on the native plugins page.
-- Skill activation syntax, symlink support, and automatic discovery vary by AI agent. `$agentflow` is not guaranteed to be a native command on every platform.
-- The router does not modify the target repository's `AGENTS.md` or other steering files.
-- Verify the installed skill with `npx skills@latest list` or `list -g`, then test invocation in the target agent. Cross-agent runtime acceptance must be tested per host.
+## Limitations
+
+The upstream installer may clone the GitHub repository temporarily to discover skill files. Host-specific materialization paths, symlinks, activation syntax, and refresh semantics vary by AI agent. Native marketplaces are a separate host-managed alternative and must not be installed alongside the same portable skill.
