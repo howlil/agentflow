@@ -8,7 +8,7 @@ const ids = ['claude-code', 'codex', 'gemini-cli', 'cursor', 'opencode'];
 
 test('matrix covers five agent IDs without requiring host credentials', async () => {
   const workflow = await read('.github/workflows/ci.yml');
-  const script = await read('.github/scripts/cross-agent-acceptance.sh');
+  const script = await read('.github/scripts/cross-agent-candidate.sh');
   assert.match(workflow, /cross-agent-compatibility:/);
   assert.match(workflow, /agent: \[claude-code, codex, gemini-cli, cursor, opencode\]/);
   assert.match(workflow, /bash \.github\/scripts\/cross-agent-candidate\.sh/);
