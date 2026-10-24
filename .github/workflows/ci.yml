@@ -112,3 +112,29 @@ jobs:
           EXPECTED_RELEASE_SHA: ''
           DISABLE_TELEMETRY: '1'
         run: bash .github/scripts/remote-acceptance.sh v0.3.0 ""
+  
+  cross-agent-compatibility:
+    name: Portable skills / ${{ matrix.agent }}
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [claude-code, codex, gemini-cli, cursor, opencode]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Exercise public package on isolated project and global scope
+        shell: bash
+        env:
+          DISABLE_TELEMETRY: '1'
+          AGENT_ID: ${{ matrix.agent }}
+        run: bash .github/scripts/cross-agent-acceptance.sh "$AGENT_ID"

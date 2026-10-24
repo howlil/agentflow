@@ -103,6 +103,10 @@ commit to master
 
 `.github/workflows/release.yml` verifies a tag or manual version against the current `master` and root/CLI/native package parity, tests/builds/packs, and checks public npm registry tarball integrity before publishing. Only `publish-npm` receives `secrets.NPM_KEY` as `NODE_AUTH_TOKEN`; only after npm success can `github-release` generate the release/tag. Registry versions with mismatched tarball integrity cause hard failures; reruns with identical content are idempotent. Tag creation on workflow_dispatch via GitHub token does not retrigger tag events. Keep token authentication isolated, and prioritize moving to OIDC before npm retires direct publishing via bypass-2FA tokens in January 2027.
 
+### M6 cross-agent compatibility boundary
+
+CI installs the public `@howlil/agentflow-cli@0.3.0` and immutable `v0.3.0` skill with `skills@1.7.4` for `claude-code`, `codex`, `gemini-cli`, `cursor`, and `opencode` in isolated project and global scopes. Verify actual installer paths, canonical content, read-only status, source-owned uninstall and preservation of unrelated skill files/`AGENTS.md`. The installer uses the shared global `~/.agents/skills/` store for four universal agent IDs and `~/.claude/skills/` for Claude. No host login, native auto-update, or inference that `SKILL.md` proves model invocation. This milestone must not implement another installer or expand credential permissions.
+
 ### M4 release acceptance and source ownership
 
 `packages/cli/src/ownership.mjs` validates installed source identity from official project `skills-lock.json` or global `$XDG_STATE_HOME/skills/.skill-lock.json` / `~/.agents/.skill-lock.json` before mutations. Unknown owners fail closed, and source-scoped uninstall expands to concrete owned names. Update/uninstall require explicit scope. Dry-run invokes no installer and makes no filesystem writes.
