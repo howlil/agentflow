@@ -38,4 +38,6 @@ test('guide documents five hosts and warns about model-session limitations', asy
   assert.match(guide, /not guaranteed/i);
   const config = await read('astro.config.mjs');
   assert.match(config, /'start\/cross-agent-compatibility'/);
+  assert.doesNotMatch(await read('.github/scripts/cross-agent-candidate.sh'), /RELEASE='v0\.3\.0'|VERSION='0\.3\.0'/);
+  assert.match(await read('.github/workflows/ci.yml'), /published-release-smoke:/);
 });
