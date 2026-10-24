@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  buildDelegation, parseArgs, readConfig, run, supportsNode, CONFIG_NAME,
+  buildDelegation, parseArgs, readConfig, resolveNpxInvocation, run, supportsNode, CONFIG_NAME,
 } from '../src/main.mjs';
 
 function capture() {
@@ -15,6 +15,9 @@ function capture() {
     err: value => errors.push(value),
     runner: async (cmd, args, options) => { calls.push({ cmd, args, options }); return 0; },
     nodeVersion: '22.23.3',
+    // Cross-platform mock tests exercise argv contracts; Windows invocation has
+    // dedicated resolver tests and an executable Windows CI smoke test.
+    platform: 'linux',
   };
 }
 
@@ -150,6 +153,77 @@ test('doctor is offline and reports node/environment checks without calling inst
 });
 
 test('delegation never interpolates arbitrary shell commands', () => {
-  assert.deepEqual(buildDelegation(parseArgs(['install', '-s', 'agentflow']), null).args,
+  assert.deepEqual(buildDelegation(parseArgs(['install', '-s', 'agentflow']), null, { platform: 'linux' }).args,
     ['--yes', 'skills@1.7.4', 'add', 'howlil/agentflow', '--skill', 'agentflow']);
+});
+
+test('Windows launches the pinned installer through node.exe, not npx.cmd or a shell', () => {
+  const nodePath = '/Program Files/fnm/node-v24/node.exe';
+  const npmEntrypoint = '/Program Files/fnm/node-v24/node_modules/npm/bin/npx-cli.js';
+  const runtime = {
+    platform: 'win32',
+    execPath: nodePath,
+    npmExecPath: undefined,
+    exists: path => path === npmEntrypoint,
+  };
+  const invocation = resolveNpxInvocation(runtime);
+  assert.deepEqual(invocation, { program: nodePath, prefixArgs: [npmEntrypoint] });
+  const delegated = buildDelegation(
+    parseArgs(['install', '--global', '--agent', 'codex', '--skill', 'agentflow', '--yes']),
+    null, runtime,
+  );
+  assert.equal(delegated.program, nodePath);
+  assert.deepEqual(delegated.args, [
+    npmEntrypoint, '--yes', 'skills@1.7.4', 'add', 'howlil/agentflow',
+    '-g', '-a', 'codex', '--skill', 'agentflow', '-y',
+  ]);
+});
+
+test('Windows supports an explicitly identified npm installation outside the Node directory', () => {
+  const runtime = {
+    platform: 'win32',
+    execPath: '/fnm/node.exe',
+    npmExecPath: '/Program Files/npm/bin/npm-cli.js',
+    exists: path => path === '/Program Files/npm/bin/npx-cli.js',
+  };
+  assert.deepEqual(resolveNpxInvocation(runtime), {
+    program: '/fnm/node.exe',
+    prefixArgs: ['/Program Files/npm/bin/npx-cli.js'],
+  });
+});
+
+test('Windows fails closed when npm entrypoint is missing or environment path is untrusted', () => {
+  for (const npmExecPath of ['/other/evil.js', 'relative/npm-cli.js', undefined]) {
+    assert.throws(() => resolveNpxInvocation({
+      platform: 'win32',
+      execPath: '/node/node.exe',
+      npmExecPath,
+      exists: () => false,
+    }), /Unable to locate npm\/bin\/npx-cli.js/);
+  }
+  assert.deepEqual(resolveNpxInvocation({ platform: 'linux' }), {
+    program: 'npx',
+    prefixArgs: [],
+  });
+});
+
+test('Windows global router install and status preserve one-source skill selector', async () => {
+  await sandbox(async cwd => {
+    const npmEntrypoint = '/node/node_modules/npm/bin/npx-cli.js';
+    const ctx = {
+      ...capture(), cwd, platform: 'win32', execPath: '/node/node.exe',
+      exists: path => path === npmEntrypoint,
+    };
+    assert.equal(await run(['install', '--global', '--agent', 'codex',
+      '--skill', 'agentflow', '--copy', '--yes'], ctx), 0);
+    assert.equal(await run(['status', '--global', '--agent', 'codex'], ctx), 0);
+    assert.deepEqual(ctx.calls.map(call => call.cmd), ['/node/node.exe', '/node/node.exe']);
+    assert.deepEqual(ctx.calls[0].args, [
+      npmEntrypoint, '--yes', 'skills@1.7.4', 'add', 'howlil/agentflow',
+      '-g', '-a', 'codex', '--skill', 'agentflow', '--copy', '-y',
+    ]);
+    assert.deepEqual(ctx.calls[1].args, [
+      npmEntrypoint, '--yes', 'skills@1.7.4', 'list', '-g', '-a', 'codex',
+    ]);
+  });
 });
