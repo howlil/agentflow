@@ -31,7 +31,7 @@ async function fixture(run) {
 test('current manifests have one plugin identity and canonical skill source', async () => {
   const result = await validatePluginDistribution({ root: repo });
   assert.equal(result.count, 11);
-  assert.equal(result.version, '0.3.0');
+  assert.equal(result.version, '0.3.1');
 });
 
 test('version drift is detected and can be synchronized without modifying other fields', async () => {
@@ -43,7 +43,7 @@ test('version drift is detected and can be synchronized without modifying other 
     await assert.rejects(syncPluginVersions({ root }), /version .* differs/);
     await syncPluginVersions({ root, write: true });
     assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), original);
-    assert.deepEqual(await validatePluginDistribution({ root }), { version: '0.3.0', count: 11 });
+    assert.deepEqual(await validatePluginDistribution({ root }), { version: '0.3.1', count: 11 });
   });
 });
 
