@@ -10,12 +10,12 @@ Agentflow follows the portable [Agent Skills](https://agentskills.io/specificati
 | Host | `--agent` ID | Project location | Global location | Native marketplace alternative |
 | --- | --- | --- | --- | --- |
 | Claude Code | `claude-code` | `.claude/skills/` | `~/.claude/skills/` | [Yes](/start/native-plugins/) |
-| Codex | `codex` | `.agents/skills/` | `~/.codex/skills/` | [Yes](/start/native-plugins/) |
-| Gemini CLI | `gemini-cli` | `.agents/skills/` | `~/.gemini/skills/` | No native Agentflow marketplace integration |
-| Cursor | `cursor` | `.agents/skills/` | `~/.cursor/skills/` | No native Agentflow marketplace integration |
-| OpenCode | `opencode` | `.agents/skills/` | `~/.config/opencode/skills/` | No native Agentflow marketplace integration |
+| Codex | `codex` | `.agents/skills/` | `~/.agents/skills/` | [Yes](/start/native-plugins/) |
+| Gemini CLI | `gemini-cli` | `.agents/skills/` | `~/.agents/skills/` | No native Agentflow marketplace integration |
+| Cursor | `cursor` | `.agents/skills/` | `~/.agents/skills/` | No native Agentflow marketplace integration |
+| OpenCode | `opencode` | `.agents/skills/` | `~/.agents/skills/` | No native Agentflow marketplace integration |
 
-The portable CLI's project/global paths are managed by upstream `skills@1.7.4`; Agentflow must not maintain another independent copy of its lock or installers. Host discovery paths may change in later upstream releases. The matrix CI tests the exact installer version and the publicly published Agentflow npm CLI.
+The **global column describes the materialized path observed from the pinned `skills@1.7.4` installer**, not every directory a host is able to read. For Codex, Gemini CLI, Cursor, and OpenCode, the installer uses the shared `~/.agents/skills/` location. These hosts also expose alternative agent-specific directories (respectively `~/.codex/skills/`, `~/.gemini/skills/`, `~/.cursor/skills/`, and `~/.config/opencode/skills/`). The portable CLI's project/global paths are managed by upstream `skills@1.7.4`; Agentflow must not maintain another independent copy of its lock or installers. Host discovery paths may change in later upstream releases. The matrix CI tests the exact installer version and the publicly published Agentflow npm CLI.
 
 ## Install
 
