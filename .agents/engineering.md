@@ -126,6 +126,12 @@ CI installs the public `@howlil/agentflow-cli@0.3.0` and immutable `v0.3.0` skil
 
 The release workflow validates `vX.Y.Z` tag/version and `master` ancestry, publishes the CLI via the scoped `NPM_KEY` secret, and creates GitHub Release after verified npm publication. npm publication is gated by matching release version and a valid scoped `NPM_KEY` secret, with token exposure limited to the publish step. Preferred future transition is token-free OIDC trusted publishing. M5 adds automatic `workflow_run` acceptance after a successful release workflow, plus on-demand invocation; tests exercise the public npm executable and immutable release tag in disposable workspaces. Earlier-tag replacement and rollback only run when a previous published tag is provided. Do not equate these with host-managed auto-updates.
 
+### Windows CLI subprocess and router-install hardening
+
+The `agentflow` npm executable never installs the `agentflow` router implicitly. Installing that skill remains a separately selected and scoped `agentflow install --global|--project --agent <host> --skill agentflow` action owned by the pinned upstream manager; existing unrelated and locally owned skills remain untouched.
+
+Windows command execution must use `process.execPath` + the installed npm `bin/npx-cli.js` with `shell: false` and a separate argument vector. A bundled entrypoint relative to `node.exe` is preferred; a separately installed npm entrypoint may be used only when explicitly identified as `npm-cli.js` or `npx-cli.js`. Missing npm entrypoints fail clearly; never fall back to `cmd.exe`, interpolate selectors into a shell command, suppress warnings, or clone upstream install logic. Non-Windows still delegates to `npx`. Unit tests verify the resolver and failure contract, and Windows CI runs the real global install/status/uninstall with `NODE_OPTIONS=--throw-deprecation` to detect regressions.
+
 ### M3 thin command-line adapter
 
 `packages/cli` is a separate publishable Node.js package with a `bin/agentflow.mjs` entry and no runtime dependencies. `src/main.mjs` owns argument validation, optional `.agentflow.json` bootstrap, offline diagnosis, and version-pinned subprocess delegation to `skills@1.7.4`. `init` uses exclusive create and never rewrites project steering files. No per-agent installation state is reimplemented: `status` and lifecycle are delegated to the upstream installer.

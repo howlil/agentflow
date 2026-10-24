@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { delimiter, join } from 'node:path';
+import { basename, delimiter, dirname, isAbsolute, join } from 'node:path';
 import { verifySkillOwnership } from './ownership.mjs';
 
 export const SKILLS_VERSION = '1.7.4';
@@ -141,10 +141,38 @@ function cliArgs(opts, config) {
   }
 }
 
-export function buildDelegation(opts, config) {
+// Run npm's JavaScript entrypoint directly on Windows. Spawning npx.cmd with
+// shell: true and an args array produces DEP0190 and loses argument isolation.
+// The Node installation (including fnm) normally bundles npm beside node.exe.
+export function resolveNpxInvocation({
+  platform = process.platform,
+  execPath = process.execPath,
+  npmExecPath = process.env.npm_execpath,
+  exists = existsSync,
+} = {}) {
+  if (platform !== 'win32') return { program: 'npx', prefixArgs: [] };
+
+  const candidates = [
+    join(dirname(execPath), 'node_modules', 'npm', 'bin', 'npx-cli.js'),
+  ];
+  // npm may be installed separately from Node. Trust only an explicit npm
+  // entrypoint whose filename identifies npm, never arbitrary PATH scripts.
+  if (typeof npmExecPath === 'string' && isAbsolute(npmExecPath) &&
+      ['npm-cli.js', 'npx-cli.js'].includes(basename(npmExecPath).toLowerCase())) {
+    candidates.push(join(dirname(npmExecPath), 'npx-cli.js'));
+  }
+  const entrypoint = candidates.find(path => exists(path));
+  if (!entrypoint) {
+    throw new Error('Unable to locate npm/bin/npx-cli.js for this Node.js installation. Reinstall npm or use a Node distribution bundled with npm.');
+  }
+  return { program: execPath, prefixArgs: [entrypoint] };
+}
+
+export function buildDelegation(opts, config, runtime = {}) {
+  const invocation = resolveNpxInvocation(runtime);
   return {
-    program: process.platform === 'win32' ? 'npx.cmd' : 'npx',
-    args: ['--yes', 'skills@' + SKILLS_VERSION, ...cliArgs(opts, config)],
+    program: invocation.program,
+    args: [...invocation.prefixArgs, '--yes', 'skills@' + SKILLS_VERSION, ...cliArgs(opts, config)],
   };
 }
 
@@ -155,10 +183,10 @@ export function findExecutable(name, env = process.env, platform = process.platf
 }
 
 function nativeRunner(program, args, { cwd } = {}) {
-  // All user-provided selectors are restricted to lowercase slug tokens.
-  // On Windows .cmd launchers require shell mode; never forward arbitrary arguments.
+  // The Windows command is node.exe + npm's JS entrypoint, never a .cmd file.
+  // Keep argument arrays separate; no shell interpretation on any platform.
   const result = spawnSync(program, args, {
-    cwd, stdio: 'inherit', shell: process.platform === 'win32',
+    cwd, stdio: 'inherit', shell: false,
     windowsHide: false,
   });
   if (result.error) throw new Error('Unable to launch ' + program + ': ' + result.error.message);
@@ -230,7 +258,13 @@ export async function run(argv, deps = {}) {
     }
     const config = await readConfig(cwd, fsApi);
     // Guard against editing other developers' unrelated skill installations.
-    const delegation = buildDelegation(opts, config);
+    const runtime = {
+      platform,
+      execPath: deps.execPath || process.execPath,
+      npmExecPath: (deps.env || process.env).npm_execpath,
+      exists: deps.exists || existsSync,
+    };
+    const delegation = buildDelegation(opts, config, runtime);
     if (opts.command === 'status') out('Agentflow installation status (' + (opts.global ? 'global' : 'project') + '):');
     if (opts.dryRun) {
       out('Dry run (not executed): ' + [delegation.program, ...delegation.args].join(' '));
@@ -244,7 +278,7 @@ export async function run(argv, deps = {}) {
       if (opts.command === 'uninstall' && !opts.skills.length) {
         // Unlike source-name fallback, concrete verified names cannot match a
         // different repository whose source is unknown to this lock.
-        delegation.args = buildDelegation({ ...opts, skills: owned }, config).args;
+        delegation.args = buildDelegation({ ...opts, skills: owned }, config, runtime).args;
       }
     }
     return await runner(delegation.program, delegation.args, { cwd });
