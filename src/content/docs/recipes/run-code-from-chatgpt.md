@@ -20,6 +20,28 @@ This is a host-dependent workflow: if ChatGPT's current GitHub integration does 
 6. Review the complete PR diff against every in-scope requirement, checking changed behavior, regressions, and preserved invariants. Use the smallest relevant Agentflow specialist skills; a fixed, mandatory skill chain is not required.
 7. Read **actual** CI statuses/logs for the **commit under review** from GitHub. Do not treat a green result on an older SHA as proof of the latest changes. Record evidence for each requirement, including explicitly unrun tests. Merge or release only after applicable gates and user approval.
 
+
+## Compile research into acceptance without dropping decisions
+
+For nontrivial implementation work, identify **approved actionable research conclusions**, not every brainstormed alternative. In the Issue template's research decision table, assign one stable `DEC-###` for each approved conclusion, record its real source, and assign exactly one disposition:
+- `INCLUDE` → link one or more existing `AF-###` requirement IDs.
+- `EXCLUDE` → provide the actual reason and authorization.
+- `DEFER` → provide the reason and continuation location where applicable.
+- If no approved research existed, explicitly record `N/A: no approved research decisions` rather than fabricating a decision.
+
+Each requirement has exactly one row in the authoritative **Requirement evidence ledger**: observable acceptance, meaningful failure case, state, changed code, and verification method/commit/result. Do not maintain an independent checked checklist. Before editing code, compare the research decision inventory to this ledger and ensure every included decision points to an actual requirement. Research source availability, ambiguities and scope conflicts remain explicit, not silently rewritten.
+
+### Reconcile from GitHub at each continuation
+
+1. Find the existing relevant Issue and PR (or linked specification), then fetch the *current* Issue body, PR diff and branch HEAD, not just a previous chat summary.
+2. Check actual changes against each still-in-scope acceptance criterion; avoid a duplicate branch/PR or a new requirement ID for the same work.
+3. For each code change, inspect the affected files and record the actual commit/PR. Read GitHub Actions results for the **same assessed HEAD**; a pass on an older SHA is stale.
+4. Only move a requirement to `VERIFIED` if its observable criterion is satisfied by credible inspected evidence. Otherwise keep `PENDING`, `IMPLEMENTED_UNVERIFIED` or `BLOCKED` and identify the precise missing proof.
+5. Update the **same** Issue evidence ledger and resume pointer. Re-read the remote Issue before writing to avoid silent overwrites. If the GitHub connector does not support conditional Issue updates, acknowledge the concurrency limitation and do not claim an atomic merge.
+6. Record the next unmet requirement and exact action, so "next" can resume from remote state without inventing progress. Mark `DONE` only when every in-scope requirement is verified and external release/approval gates are separately satisfied.
+
+The Agentflow repository includes a **structural validator** at `scripts/execution-contract.mjs`, covered by ordinary repository unit tests. This script checks table shape, IDs, included-decision linkage, incomplete claims and stale-SHA references **only on text that is supplied to it**; it is not automatically run against Issues in other repositories. It cannot confirm that approved research is complete, GitHub jobs actually passed, or a feature behaves correctly. ChatGPT must inspect those sources using authorized host tools. A valid table is not acceptance evidence.
+
 ## Resume a task when the user says "next"
 
 The issue contract and PR are the source of truth, not an assistant's recollection. Locate the active Issue and its latest `Resume pointer`; fetch the branch head, changed files, CI results, and requirement ledger. Start from the first pending or blocked item. Do not create another issue or duplicate PR merely because the conversation changed. Update the Issue's `Resume pointer` and evidence ledger after each bounded edit.

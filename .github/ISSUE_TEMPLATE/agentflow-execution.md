@@ -6,43 +6,50 @@ labels: []
 ---
 
 ## Objective
-<!-- One observable engineering outcome; link the approved research or specification where available. -->
+<!-- Name one observable engineering outcome. Replace every example placeholder before validation. -->
 
 ## Repository and baseline
 - Repository: <!-- owner/repo -->
-- Base branch and initial commit: <!-- observed branch / full SHA -->
-- Related research / ADR: <!-- actual links or paths, never fabricated -->
-- Active Issue / PR (if continuing): <!-- URL or none -->
+- Base branch and initial commit: <!-- actual branch / SHA -->
+- Related research / ADR: <!-- links/paths or N/A with explanation -->
+- Active Issue / PR (if continuing): <!-- existing URL or none -->
 
 ## Scope and invariants
-<!-- In-scope behavior, explicit exclusions, and properties that must remain true. -->
+<!-- Required behavior, preserved behavior, explicit exclusions, and consequential failure states. -->
+
+## Research decision traceability
+Record each **approved, actionable** research conclusion exactly once. Its disposition is INCLUDE (mapped to one or more requirement IDs), EXCLUDE, or DEFER (both require an explicit reason). These are research decisions, not a second requirement-status ledger. Do not copy an entire research transcript here. If the task has no approved research decisions, replace the example row with exactly: N/A: no approved research decisions.
+
+| Decision | Approved conclusion and source | Disposition | Requirement ID(s) or rationale |
+| --- | --- | --- | --- |
+| DEC-001 | <!-- approved conclusion and real source reference --> | INCLUDE | AF-001 |
 
 ## Acceptance contract
-The **Requirement evidence ledger below is the single authoritative record** for each requirement, acceptance check, implementation state, and verification evidence. Do not maintain a second requirement checklist that can drift out of sync. Requirement IDs are stable and unique within this Issue. New scope and modified acceptance criteria require a recorded decision.
+The **Requirement evidence ledger below is the single authoritative record** for requirement ID, observable acceptance, implementation state, and verification evidence. IDs are stable and unique within this Issue. A new decision affecting approved scope or acceptance must be recorded under Decisions and deviations. Do not maintain a separate status checklist.
 
 ## Requirement evidence ledger
 | Requirement | Required behavior and observable acceptance | Failure / edge case | State | Code / PR evidence | Verification (method, SHA, result) |
 | --- | --- | --- | --- | --- | --- |
-| AF-001 | <!-- required result and how to recognize it --> | <!-- meaningful failure case --> | PENDING | UNRECORDED | UNRUN |
+| AF-001 | <!-- behavior and objective proof --> | <!-- meaningful failure or N/A with reason --> | PENDING | UNRECORDED | UNRUN |
 
 Allowed states:
 - `PENDING`: no implementation evidence yet.
-- `IMPLEMENTED_UNVERIFIED`: code evidence exists, but acceptance proof is incomplete.
-- `VERIFIED`: reviewed code and required evidence demonstrate the behavior at the assessed commit and environment.
-- `BLOCKED`: a known failure or unavailable mandatory check prevents verification; record why.
+- `IMPLEMENTED_UNVERIFIED`: code evidence exists but acceptance proof is incomplete.
+- `VERIFIED`: inspected implementation and appropriate evidence satisfy the criterion at the assessed revision.
+- `BLOCKED`: a known failure or unavailable required check blocks completion; document the blocker.
 
-A green CI check for an older commit is not verification for a newer commit. Distinguish tests not run (`UNRUN`) from tests observed to fail.
+Evidence is a report of **actually observed** code/test results, not proof merely because a table says PASS. The host must read GitHub state for each cited run and confirm that its commit matches the latest assessed HEAD. Record UNRUN when tests cannot be executed.
 
 ## Decisions and deviations
-<!-- Record changes to approved scope, acceptance criteria, or implementation direction; link actual evidence. -->
+<!-- Record actual user-approved changes to research disposition, scope, or acceptance, including links. -->
 
 ## Resume pointer
-- Active PR and branch: <!-- link / branch or none -->
-- Latest inspected HEAD SHA: <!-- full SHA or unknown -->
-- CI evidence assessed for SHA: <!-- SHA and run URL or UNRUN -->
+- Active PR and branch: <!-- URL/branch or none -->
+- Latest inspected HEAD SHA: UNKNOWN
+- CI evidence assessed for SHA: UNRUN
 - Next requirement: AF-001
-- Next concrete action: <!-- target file or behavior -->
-- Open blockers: <!-- concrete failures or none -->
+- Next concrete action: <!-- exact affected code/behavior to inspect or implement -->
+- Open blockers: none
 
 ## Completion gate
-Only mark a requirement `VERIFIED` with inspected evidence appropriate to its acceptance criterion. Do not close while required checks or target-runtime acceptance are missing. No external AI coding worker, OpenAI API key, or standalone orchestrator is part of this workflow.
+No requirement is accepted without observable evidence. Record decisions omitted from implementation as EXCLUDE or DEFER with reasons; never silently drop them. Do not close while requirements remain unverified or required target-runtime checks are missing. No external AI worker, model API key, or standalone orchestrator is part of this workflow.
