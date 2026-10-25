@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { syncPluginVersions, validatePluginDistribution } from './plugin-manifests.mjs';
 
 const repo = fileURLToPath(new URL('..', import.meta.url));
+const packageVersion = JSON.parse(await readFile(join(repo, 'package.json'), 'utf8')).version;
 
 async function fixture(run) {
   const root = await mkdtemp(join(tmpdir(), 'agentflow-plugin-test-'));
@@ -31,7 +32,7 @@ async function fixture(run) {
 test('current manifests have one plugin identity and canonical skill source', async () => {
   const result = await validatePluginDistribution({ root: repo });
   assert.equal(result.count, 11);
-  assert.equal(result.version, '0.4.0');
+  assert.equal(result.version, packageVersion);
 });
 
 test('version drift is detected and can be synchronized without modifying other fields', async () => {
@@ -43,7 +44,7 @@ test('version drift is detected and can be synchronized without modifying other 
     await assert.rejects(syncPluginVersions({ root }), /version .* differs/);
     await syncPluginVersions({ root, write: true });
     assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), original);
-    assert.deepEqual(await validatePluginDistribution({ root }), { version: '0.4.0', count: 11 });
+    assert.deepEqual(await validatePluginDistribution({ root }), { version: packageVersion, count: 11 });
   });
 });
 
@@ -108,6 +109,6 @@ test('reject ChatGPT directory descriptions longer than submission limits', asyn
     const plugin = JSON.parse(await readFile(path, 'utf8'));
     plugin.extensions['com.openai'].interface.shortDescription = 'A'.repeat(31);
     await writeFile(path, JSON.stringify(plugin));
-    await assert.rejects(validatePluginDistribution({ root }), /listing descriptions/);
+    await assert.rejects(validatePluginDistribution({ root }), /shortDescription/);
   });
 });
