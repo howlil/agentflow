@@ -7,15 +7,16 @@ import { fileURLToPath } from 'node:url';
 import { syncPluginVersions, validatePluginDistribution } from './plugin-manifests.mjs';
 
 const repo = fileURLToPath(new URL('..', import.meta.url));
+const packageVersion = JSON.parse(await readFile(join(repo, 'package.json'), 'utf8')).version;
 
 async function fixture(run) {
   const root = await mkdtemp(join(tmpdir(), 'agentflow-plugin-test-'));
-  for (const folder of ['.claude-plugin', '.agents/plugins', 'skills']) {
+  for (const folder of ['.claude-plugin', '.agents/plugins', 'skills', 'assets']) {
     await mkdir(join(root, folder), { recursive: true });
   }
   const paths = ['package.json', 'package-lock.json', 'plugin.json',
     '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
-    '.agents/plugins/marketplace.json'];
+    '.agents/plugins/marketplace.json', 'assets/agentflow.svg'];
   for (const path of paths) {
     await writeFile(join(root, path), await readFile(join(repo, path)));
   }
@@ -31,7 +32,7 @@ async function fixture(run) {
 test('current manifests have one plugin identity and canonical skill source', async () => {
   const result = await validatePluginDistribution({ root: repo });
   assert.equal(result.count, 11);
-  assert.equal(result.version, '0.4.0');
+  assert.equal(result.version, packageVersion);
 });
 
 test('version drift is detected and can be synchronized without modifying other fields', async () => {
@@ -43,7 +44,7 @@ test('version drift is detected and can be synchronized without modifying other 
     await assert.rejects(syncPluginVersions({ root }), /version .* differs/);
     await syncPluginVersions({ root, write: true });
     assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), original);
-    assert.deepEqual(await validatePluginDistribution({ root }), { version: '0.4.0', count: 11 });
+    assert.deepEqual(await validatePluginDistribution({ root }), { version: packageVersion, count: 11 });
   });
 });
 
@@ -77,3 +78,37 @@ test('reject a Claude marketplace whose entry name diverges from the plugin iden
   });
 });
 
+
+test('reject a ChatGPT listing icon missing from the portable bundle', async () => {
+  await fixture(async root => {
+    const path = join(root, 'plugin.json');
+    const plugin = JSON.parse(await readFile(path, 'utf8'));
+    plugin.extensions['com.openai'].interface.logo = './assets/missing.svg';
+    await writeFile(path, JSON.stringify(plugin));
+    await assert.rejects(validatePluginDistribution({ root }), /ENOENT/);
+  });
+});
+
+test('reject host-mention starter prompts and misleading MCP declarations', async () => {
+  await fixture(async root => {
+    const path = join(root, 'plugin.json');
+    const plugin = JSON.parse(await readFile(path, 'utf8'));
+    plugin.extensions['com.openai'].interface.defaultPrompt = ['@Agentflow review code'];
+    await writeFile(path, JSON.stringify(plugin));
+    await assert.rejects(validatePluginDistribution({ root }), /starter prompts/);
+    plugin.extensions['com.openai'].interface.defaultPrompt = ['Review this code'];
+    plugin.extensions['com.openai'].apps = './.app.json';
+    await writeFile(path, JSON.stringify(plugin));
+    await assert.rejects(validatePluginDistribution({ root }), /skills-only package/);
+  });
+});
+
+test('reject ChatGPT directory descriptions longer than submission limits', async () => {
+  await fixture(async root => {
+    const path = join(root, 'plugin.json');
+    const plugin = JSON.parse(await readFile(path, 'utf8'));
+    plugin.extensions['com.openai'].interface.shortDescription = 'A'.repeat(31);
+    await writeFile(path, JSON.stringify(plugin));
+    await assert.rejects(validatePluginDistribution({ root }), /shortDescription/);
+  });
+});

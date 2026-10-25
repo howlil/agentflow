@@ -105,6 +105,12 @@ skills/*/SKILL.md
 
 Guides and examples explain how to use the skills; they do not replace the canonical runtime source.
 
+## ChatGPT Web plugin
+
+Agentflow can be packaged as a ChatGPT **skills-only** plugin from its canonical eleven skills and root `plugin.json`. CI produces a submission ZIP as the `agentflow-chatgpt-package` workflow artifact. Directory publication requires separate verification, installation testing and approval. Installing the plugin does not grant repository, shell or deployment access.
+
+[ChatGPT Web packaging and acceptance guide](src/content/docs/start/chatgpt-web.md).
+
 ## Documentation
 
 - [Install & distribution](src/content/docs/start/distribution.md)

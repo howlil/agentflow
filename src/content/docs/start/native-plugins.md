@@ -70,6 +70,10 @@ codex plugin marketplace remove agentflow
 
 Removing a marketplace does **not** automatically mean every previously installed plugin was uninstalled. Verify `not installed` in `codex plugin list` before removing the catalog. The repository cannot force client-side updates or installation policies.
 
+## ChatGPT Web (skills-only)
+
+The root portable manifest now includes OpenAI listing metadata and packaged visual assets. See [ChatGPT Web plugin](/start/chatgpt-web/) for submission packaging, safety/permission boundaries and the manual acceptance matrix. Installing a skill is not authorization to use tools or write to a repository.
+
 ## Editable skills for other coding agents
 
 Keep using [skills.sh](/start/install/), e.g. `npx skills@latest add howlil/agentflow -g`. These copies/symlinks have different lifecycle semantics and are not managed by Claude or Codex plugin marketplaces.

@@ -2,6 +2,7 @@ import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EXPECTED, parseFrontmatter } from './generate-skills.mjs';
+import { validateChatGPTPackage } from './chatgpt-package.mjs';
 
 export const VERSIONED_MANIFESTS = ['plugin.json', '.claude-plugin/plugin.json'];
 const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
@@ -47,6 +48,11 @@ export async function validatePluginDistribution({ root = process.cwd() } = {}) 
   if (!portable.description || !claude.description || portable.license !== 'MIT') {
     throw new Error('Plugin metadata must include descriptions and MIT license');
   }
+
+  // Validate the same portable root and canonical skill inventory we ship in the ZIP.
+  const chatgpt = await validateChatGPTPackage({ root });
+  if (chatgpt.version !== version) throw new Error('ChatGPT version differs from root package.json');
+
   if (claudeMarket.name !== 'agentflow' || claudeMarket.plugins?.length !== 1 ||
       claudeMarket.plugins[0]?.name !== claude.name ||
       claudeMarket.plugins[0]?.source !== './') {

@@ -37,6 +37,28 @@ jobs:
           test -s dist/social-preview.svg
           grep -Fq 'skills/agentflow/SKILL.md' dist/llms.txt
           test "$(grep -cF 'raw.githubusercontent.com/howlil/agentflow/master/skills/' dist/llms.txt)" -eq 11
+      - name: Package ChatGPT skills-only plugin
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist-package
+          version="$(node -p "require('./package.json').version")"
+          zip -q -r -X "dist-package/agentflow-chatgpt-v$version.zip" plugin.json skills assets
+          count="$(unzip -Z1 dist-package/*.zip | grep -Ec '^skills/[^/]+/SKILL.md$')"
+          test "$count" -eq 11
+          unzip -Z1 dist-package/*.zip | grep -Fxq 'plugin.json'
+          unzip -Z1 dist-package/*.zip | grep -Fxq 'assets/agentflow.svg'
+          extracted="$(mktemp -d)"
+          trap 'rm -rf "$extracted"' EXIT
+          unzip -q dist-package/*.zip -d "$extracted"
+          node scripts/chatgpt-package.mjs --check "$extracted"
+          # The shipped archive is the source of truth for acceptance; never
+          # validate only the checkout while publishing a different ZIP.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agentflow-chatgpt-package
+          path: dist-package/*.zip
+          if-no-files-found: error
       - name: Validate Claude plugin
         run: npx --yes @anthropic-ai/claude-code@latest plugin validate . --strict
       - name: Validate Codex plugin
