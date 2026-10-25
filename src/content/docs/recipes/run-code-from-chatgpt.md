@@ -1,26 +1,54 @@
 ---
-title: Agentflow execution MVP
-description: GitHub issue contracts and an opt-in coding worker
+title: Code from ChatGPT Web using GitHub
+description: ChatGPT-only engineering execution with GitHub Issues, code changes, PRs, and existing CI.
 ---
 
-# Run Agentflow coding requests
+# ChatGPT Web is the AI executor
 
-This M0-M1 implementation keeps Agentflow's eleven skills unchanged. It adds an opt-in GitHub Actions reference workflow scoped to the agentflow repository, not a new MCP service.
+**No external coding agent, OpenAI API key, custom MCP server, or Agentflow backend is required.**
+Agentflow is a skills-only engineering decision router. ChatGPT Web uses the GitHub connector the user has authorized to read actual repository files, make scoped code changes, and create/update Issues and PRs. GitHub is the durable engineering record. GitHub Actions may run existing tests, builds, or linters, but it does **not** invoke another AI model.
 
-## Setup
+This is a host-dependent workflow: if ChatGPT's current GitHub integration does not expose a specific operation, that operation is unavailable until the user provides an alternative authorized capability. The plugin cannot grant the host additional permissions, shell access, or unlimited repository context.
 
-- Merge the reviewed runner into the default branch.
-- Configure two GitHub Actions secrets: `OPENAI_API_KEY` for Codex and `AGENTFLOW_BOT_TOKEN` for publishing draft pull requests. The latter needs Contents and Pull requests write permission, scoped to this repository. API usage is billed separately.
-- Enable GitHub Actions pull request creation and add the issue label `agentflow:run`.
-- Create an open GitHub issue authored by the repository owner using the Agentflow execution issue template, with distinct requirement IDs and acceptance criteria.
-- Apply the label in a separate action or manually dispatch the workflow using the issue number.
+## Start one engineering task
 
-ChatGPT's GitHub connector can create and label issues. It cannot currently dispatch this workflow directly. If its issue author appears as an integration bot instead of the repository owner, validation refuses execution; create an owner-authored issue using GitHub UI instead.
+1. Identify the repository, current base branch, and relevant steering files (`AGENTS.md`, `.agents/product.md`, and `.agents/engineering.md` when they exist).
+2. Inspect the relevant implementation and tests. Reuse an existing Issue/PR when the task continues earlier work.
+3. Convert approved research into the [Agentflow execution contract](https://github.com/howlil/agentflow/blob/master/.github/ISSUE_TEMPLATE/agentflow-execution.md) format. Use stable requirement IDs, explicit acceptance checks, failure cases, constraints, and out-of-scope decisions.
+4. Save the contract in a GitHub Issue and create a scoped feature branch. For a complex change, split into bounded PR-sized work without losing the parent requirements.
+5. Implement by calling the authorized GitHub read/write tools from ChatGPT Web. Read before editing; for concurrent changes re-read the latest target state instead of overwriting another person's work. A remote file change is not proof that the code compiles.
+6. Review the complete PR diff against every in-scope requirement, checking changed behavior, regressions, and preserved invariants. Use the smallest relevant Agentflow specialist skills; a fixed, mandatory skill chain is not required.
+7. Read **actual** CI statuses/logs from GitHub. Record evidence for each requirement, including explicitly unrun tests. Merge or release only after applicable gates and user approval.
 
-## What happens
+## Resume a task when the user says "next"
 
-The workflow validates the issue contract and owner, executes Codex in a restricted workspace, runs the repository's fixed Node test and build commands, and captures a candidate patch. A separate publisher verifies protected-file exclusions and opens a draft PR. No generated code runs in the publishing job.
+The issue contract and PR are the source of truth, not an assistant's recollection. Locate the active Issue and its latest `Resume pointer`; fetch the branch head, changed files, CI results, and requirement ledger. Start from the first pending or blocked item. Do not create another issue or duplicate PR merely because the conversation changed. Update the Issue's `Resume pointer` and evidence ledger after each bounded edit.
 
-A draft PR is **not** proof that every requirement is satisfied. Independently review acceptance evidence and target-platform behavior before merging. Workflows may fail without correct secrets or permissions.
+States in the issue's requirement ledger:
 
-M2 evidence tracking, M3 durable run state, and M4 custom MCP orchestration remain future work.
+| State | Meaning |
+| --- | --- |
+| `PENDING` | No implementation evidence recorded |
+| `IMPLEMENTED_UNVERIFIED` | A code change is present but the acceptance proof is incomplete |
+| `VERIFIED` | Actual code and required test/runtime evidence satisfy the acceptance criterion |
+| `BLOCKED` | A known failure or unavailable mandatory check prevents completion |
+
+When test execution is not available through GitHub's existing CI, leave `Verification: UNRUN` and never infer a pass. For a Windows-specific feature, Linux CI passing cannot substitute for Windows runtime acceptance. For a multi-file change use commit/PR links and compare their concrete diffs; do not assert a transactional commit if the host only wrote files sequentially.
+
+## Host responsibilities
+
+- **ChatGPT Web:** select Agentflow skills, inspect code, reason, author changes, maintain the issue ledger, inspect PRs and evidence.
+- **GitHub:** source code, issue/PR persistence, branch history, authorization, and ordinary CI execution.
+- **Human user:** authorize repository writes, approve risky operations and releases, and perform required acceptance that the connected tools cannot execute.
+
+The existing GitHub plugin can perform many code/issue/PR operations, but direct GitHub Projects/Milestones CRUD and arbitrary shell access may not be available. Do not suggest that Agentflow silently supplies those tools.
+
+## Acceptance scenarios
+
+1. A new task creates one issue with unique requirement IDs and at least one acceptance check per requirement.
+2. A subsequent "next" resumes the same issue/PR and cites its current branch and most recent inspected commit.
+3. CI passing while required acceptance evidence is missing produces `IMPLEMENTED_UNVERIFIED`, not `VERIFIED`.
+4. GitHub write/CI tools being unavailable produces an explicit blocker rather than fictional logs or a claim of deployment.
+5. A user forbidding external executors never causes an API-key request, Codex GitHub Action, or autonomous worker creation.
+
+These are manual host-level acceptance scenarios; documentation alone does not prove that a ChatGPT host performed them. Test the installed plugin and connected GitHub integration before claiming full end-to-end compatibility.
