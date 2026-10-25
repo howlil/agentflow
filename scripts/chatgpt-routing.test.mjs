@@ -80,3 +80,14 @@ test('M0 product, engineering and repository contracts agree on host and state o
   assert.match(web, /opt-in host workflow/);
   assert.match(product, /manual host acceptance/);
 });
+
+test('M0 execution issue keeps one authoritative acceptance ledger', async () => {
+  const template = await read('.github/ISSUE_TEMPLATE/agentflow-execution.md');
+  assert.match(template, /single authoritative record/);
+  assert.match(template, /Requirement evidence ledger/);
+  assert.match(template, /Verification \(method, SHA, result\)/);
+  assert.match(template, /IMPLEMENTED_UNVERIFIED/);
+  const requirementRows = template.split('\n').filter(line => /^\| AF-[0-9]+ \|/.test(line));
+  assert.equal(requirementRows.length, 1, 'template should illustrate one requirement row');
+  assert.doesNotMatch(template, /^- \[[ xX]\] \*\*AF-[0-9]+/m, 'no duplicate checkbox requirement list');
+});
