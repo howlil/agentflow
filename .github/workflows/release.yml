@@ -3,6 +3,10 @@ on:
   push:
     tags:
       - 'v[0-9]*'
+    branches:
+      - master
+    paths:
+      - RELEASE_VERSION
   workflow_dispatch:
     inputs:
       version:
@@ -30,7 +34,7 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Match version and reviewed master ancestry
+      - name: Match release request, version and reviewed master ancestry
         id: release
         shell: bash
         env:
@@ -38,13 +42,17 @@ jobs:
           RUN_EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          if [ "$RUN_EVENT" = push ] && [ "$GITHUB_REF" = refs/heads/master ]; then
+            REQUESTED_TAG="$(tr -d '\r\n' < RELEASE_VERSION)"
+          fi
           [[ "$REQUESTED_TAG" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]] || exit 1
           ROOT_VERSION="$(node -p "require('./package.json').version")"
           test "$REQUESTED_TAG" = "v$ROOT_VERSION"
+          test "$REQUESTED_TAG" = "$(tr -d '\r\n' < RELEASE_VERSION)"
+          grep -Fxq "## $REQUESTED_TAG" CHANGELOG.md
           git fetch origin master
           git merge-base --is-ancestor "$GITHUB_SHA" origin/master
-          if [ "$RUN_EVENT" = workflow_dispatch ]; then
-            test "$GITHUB_REF" = refs/heads/master
+          if [ "$GITHUB_REF" = refs/heads/master ]; then
             test "$GITHUB_SHA" = "$(git rev-parse origin/master)"
           else
             test "$GITHUB_REF" = "refs/tags/$REQUESTED_TAG"
@@ -76,4 +84,10 @@ jobs:
             echo "Release already exists: $RELEASE_TAG"
             exit 0
           fi
-          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --generate-notes --title "Agentflow $RELEASE_TAG"
+          awk -v heading="## $RELEASE_TAG" '
+            $0 == heading { capture = 1; next }
+            capture && /^## / { exit }
+            capture { print }
+          ' CHANGELOG.md > /tmp/agentflow-release-notes.md
+          test -s /tmp/agentflow-release-notes.md
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --notes-file /tmp/agentflow-release-notes.md --title "Agentflow $RELEASE_TAG"

@@ -113,6 +113,8 @@ Guides and examples explain how to use the skills; they do not replace the canon
 - [Cross-agent compatibility](src/content/docs/start/cross-agent-compatibility.md)
 - [Releases and rollback](src/content/docs/start/release-and-rollback.md)
 - [Brand voice and visual system](BRAND.md)
+- [Release history and migration notes](CHANGELOG.md)
+- [GitHub Releases](https://github.com/howlil/agentflow/releases)
 
 ## Development
 
