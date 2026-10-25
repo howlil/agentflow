@@ -21,7 +21,24 @@ function tables(body, name, columns, errors) {
   if (content === null) { errors.push('Missing section: ' + name); return []; }
   const lines = content.split('\n').map(x => x.trim()).filter(x => x.startsWith('|'));
   if (lines.length < 3) { errors.push('Missing Markdown table rows in ' + name); return []; }
-  const split = line => line.slice(1, -1).split('|').map(x => x.trim());
+  // Markdown pipes preceded by an odd number of backslashes are cell content.
+  // Keep the original escape sequence in the value; only unescaped pipes divide cells.
+  const split = line => {
+    const cells = [];
+    let value = '';
+    let backslashes = 0;
+    for (const char of line.slice(1, -1)) {
+      if (char === '|' && backslashes % 2 === 0) {
+        cells.push(value.trim());
+        value = '';
+      } else {
+        value += char;
+      }
+      backslashes = char === '\\' ? backslashes + 1 : 0;
+    }
+    cells.push(value.trim());
+    return cells;
+  };
   if (split(lines[0]).length !== columns || split(lines[1]).length !== columns ||
       !split(lines[1]).every(x => /^:?-{3,}:?$/.test(x))) {
     errors.push('Invalid table header/separator in ' + name);

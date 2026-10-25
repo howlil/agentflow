@@ -82,3 +82,16 @@ test('M2 new issue template is intentionally invalid until the user supplies act
   assert.match(template, /Research decision traceability/);
   assert.match(template, /single authoritative record/);
 });
+
+test('M2 Markdown tables support escaped pipes in content without losing columns', () => {
+  const body = good()
+    .replace('X returns the expected result', 'Accept A \\| B and return the expected result')
+    .replace('Approved choice, source: design-notes.md', 'Approved A \\| B, source: design-notes.md');
+  const result = validateExecutionContract(body);
+  assert.equal(result.valid, true, result.diagnostics.join('; '));
+});
+
+test('M2 even-numbered backslashes do not escape a column delimiter', () => {
+  const body = good().replace('X returns the expected result', 'A \\\\| B is a separate column');
+  invalid(body, 'Invalid column count in Requirement evidence ledger');
+});

@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
-const QUICK_DOCS = new Set(['README.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'SECURITY.md', 'SUPPORT.md']);
+// README is covered by product/install contract tests; do not skip those checks.
+const QUICK_DOCS = new Set(['CHANGELOG.md', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'SECURITY.md', 'SUPPORT.md']);
 
 export function classifyPaths(paths) {
   if (!Array.isArray(paths) || paths.length === 0)

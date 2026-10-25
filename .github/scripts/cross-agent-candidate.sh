@@ -21,20 +21,35 @@ printf 'Project steering preserved\n' > AGENTS.md
 cp AGENTS.md "$TEMP/original-agents"
 mkdir -p "$PROJECT_DIR/unrelated"
 printf 'Other publisher\n' > "$PROJECT_DIR/unrelated/SKILL.md"
+# Reference policies must ship with the selected skill (project and global).
+assert_installed() {
+  local target="$1" reference
+  cmp "$REPO/skills/agentflow/SKILL.md" "$target/SKILL.md"
+  for reference in engineering-operating-policy.md github-delivery-policy.md project-archetypes.md; do
+    cmp "$REPO/skills/agentflow/references/$reference" "$target/references/$reference"
+  done
+}
+assert_removed() {
+  local target="$1" reference
+  test ! -e "$target/SKILL.md"
+  for reference in engineering-operating-policy.md github-delivery-policy.md project-archetypes.md; do
+    test ! -e "$target/references/$reference"
+  done
+}
 npx --yes skills@1.7.4 add "$REPO" --list > "$TEMP/discovery.txt" 2>&1
 grep -Fq agentflow "$TEMP/discovery.txt"
 grep -Fq code-review "$TEMP/discovery.txt"
 npx --yes skills@1.7.4 add "$REPO" --skill agentflow --agent "$AGENT" --copy --yes
-cmp "$REPO/skills/agentflow/SKILL.md" "$PROJECT_DIR/agentflow/SKILL.md"
+assert_installed "$PROJECT_DIR/agentflow"
 npx --yes skills@1.7.4 list --agent "$AGENT" | grep -Fq agentflow
 npx --yes skills@1.7.4 remove agentflow --agent "$AGENT" --yes
-test ! -e "$PROJECT_DIR/agentflow/SKILL.md"
+assert_removed "$PROJECT_DIR/agentflow"
 test -f "$PROJECT_DIR/unrelated/SKILL.md"
 cmp AGENTS.md "$TEMP/original-agents"
 npx --yes skills@1.7.4 add "$REPO" --skill agentflow --global --agent "$AGENT" --copy --yes
-cmp "$REPO/skills/agentflow/SKILL.md" "$HOME/$GLOBAL_DIR/agentflow/SKILL.md"
+assert_installed "$HOME/$GLOBAL_DIR/agentflow"
 npx --yes skills@1.7.4 list --global --agent "$AGENT" | grep -Fq agentflow
 npx --yes skills@1.7.4 remove agentflow --global --agent "$AGENT" --yes
-test ! -e "$HOME/$GLOBAL_DIR/agentflow/SKILL.md"
+assert_removed "$HOME/$GLOBAL_DIR/agentflow"
 cmp AGENTS.md "$TEMP/original-agents"
 echo "PASS: $AGENT portable project/global lifecycle from current checkout."
