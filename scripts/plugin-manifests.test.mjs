@@ -10,12 +10,12 @@ const repo = fileURLToPath(new URL('..', import.meta.url));
 
 async function fixture(run) {
   const root = await mkdtemp(join(tmpdir(), 'agentflow-plugin-test-'));
-  for (const folder of ['.claude-plugin', '.agents/plugins', 'skills']) {
+  for (const folder of ['.claude-plugin', '.agents/plugins', 'skills', 'assets']) {
     await mkdir(join(root, folder), { recursive: true });
   }
   const paths = ['package.json', 'package-lock.json', 'plugin.json',
     '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
-    '.agents/plugins/marketplace.json'];
+    '.agents/plugins/marketplace.json', 'assets/agentflow.svg'];
   for (const path of paths) {
     await writeFile(join(root, path), await readFile(join(repo, path)));
   }
@@ -77,3 +77,37 @@ test('reject a Claude marketplace whose entry name diverges from the plugin iden
   });
 });
 
+
+test('reject a ChatGPT listing icon missing from the portable bundle', async () => {
+  await fixture(async root => {
+    const path = join(root, 'plugin.json');
+    const plugin = JSON.parse(await readFile(path, 'utf8'));
+    plugin.extensions['com.openai'].interface.logo = './assets/missing.svg';
+    await writeFile(path, JSON.stringify(plugin));
+    await assert.rejects(validatePluginDistribution({ root }), /ENOENT/);
+  });
+});
+
+test('reject host-mention starter prompts and misleading MCP declarations', async () => {
+  await fixture(async root => {
+    const path = join(root, 'plugin.json');
+    const plugin = JSON.parse(await readFile(path, 'utf8'));
+    plugin.extensions['com.openai'].interface.defaultPrompt = ['@Agentflow review code'];
+    await writeFile(path, JSON.stringify(plugin));
+    await assert.rejects(validatePluginDistribution({ root }), /starter prompts/);
+    plugin.extensions['com.openai'].interface.defaultPrompt = ['Review this code'];
+    plugin.extensions['com.openai'].apps = './.app.json';
+    await writeFile(path, JSON.stringify(plugin));
+    await assert.rejects(validatePluginDistribution({ root }), /skills-only package/);
+  });
+});
+
+test('reject ChatGPT directory descriptions longer than submission limits', async () => {
+  await fixture(async root => {
+    const path = join(root, 'plugin.json');
+    const plugin = JSON.parse(await readFile(path, 'utf8'));
+    plugin.extensions['com.openai'].interface.shortDescription = 'A'.repeat(31);
+    await writeFile(path, JSON.stringify(plugin));
+    await assert.rejects(validatePluginDistribution({ root }), /listing descriptions/);
+  });
+});
