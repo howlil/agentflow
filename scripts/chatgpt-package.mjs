@@ -2,6 +2,7 @@ import { lstat, readFile, readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EXPECTED, parseFrontmatter } from './generate-skills.mjs';
+import sharp from 'sharp';
 
 const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -51,31 +52,51 @@ async function cleanTree(path) {
 }
 
 function assetPath(path) {
-  if (typeof path !== 'string' || !/^\.\/assets\/[a-zA-Z0-9_-]+\.(svg|png|webp)$/.test(path)) {
+  if (typeof path !== 'string' || !/^\.\/assets\/[a-zA-Z0-9_-]+\.(svg|png|webp|jpe?g)$/.test(path)) {
     throw new Error('Invalid ChatGPT asset path: ' + String(path));
   }
   return path.slice(2);
 }
 
-async function imageFile(root, path) {
+async function imageFile(root, path, { icon = false } = {}) {
   const safePath = assetPath(path);
   const full = join(root, safePath);
-  const bytes = await regularFile(full);
+  const stat = await lstat(full);
+  if (!stat.isFile() || stat.isSymbolicLink()) throw new Error('ChatGPT image must be a regular file: ' + path);
+  if (stat.size > 5 * 1024 * 1024) throw new Error('ChatGPT image exceeds 5 MiB: ' + path);
+
+  const bytes = await readFile(full);
+  let width, height;
   if (safePath.endsWith('.svg')) {
-    const square = bytes.match(/viewBox=["']0 0 (\d+) (\d+)["']/);
-    if (!square || Number(square[1]) < 48 || square[1] !== square[2]) {
-      throw new Error('ChatGPT SVG icon must have a square viewBox at least 48 units: ' + path);
+    const svg = bytes.toString('utf8');
+    if (!/<svg\b/i.test(svg)) throw new Error('Invalid ChatGPT SVG image: ' + path);
+    const viewBox = svg.match(/viewBox=["']\s*[-\d.]+\s+[-\d.]+\s+([\d.]+)\s+([\d.]+)\s*["']/i);
+    const w = svg.match(/\bwidth=["']([\d.]+)(?:px)?["']/i);
+    const h = svg.match(/\bheight=["']([\d.]+)(?:px)?["']/i);
+    width = Number(viewBox?.[1] ?? w?.[1]);
+    height = Number(viewBox?.[2] ?? h?.[1]);
+    if (/<(?:script|foreignObject)\b|on[a-z]+\s*=|(?:xlink:)?href\s*=/i.test(svg)) {
+      throw new Error('ChatGPT SVG image contains active or linked content: ' + path);
     }
-    if (/<(?:script|foreignObject)\b|on(?:load|error)\s*=|(?:xlink:)?href\s*=/i.test(bytes)) {
-      throw new Error('ChatGPT SVG asset contains unsupported active or external content: ' + path);
+  } else {
+    const metadata = await sharp(bytes).metadata();
+    width = metadata.width;
+    height = metadata.height;
+    if (!width || !height || width > 4096 || height > 4096) {
+      throw new Error('Invalid ChatGPT raster dimensions: ' + path);
     }
+  }
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0 ||
+      (icon && (width < 48 || height < 48 || width !== height))) {
+    throw new Error('ChatGPT icon must be square and at least 48x48: ' + path);
   }
 }
 
 export async function validateChatGPTPackage({ root = process.cwd(), strictRoot = false } = {}) {
   const portable = JSON.parse(await regularFile(join(root, 'plugin.json')));
   if (portable.$schema !== 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json' ||
-      !NAME.test(portable.name || '') || portable.name.length > 64 ||
+      typeof portable.name !== 'string' || portable.name !== 'agentflow' ||
+      !NAME.test(portable.name) || portable.name.length > 64 ||
       !SEMVER.test(portable.version || '')) {
     throw new Error('Invalid portable ChatGPT plugin identity, schema or semantic version');
   }
@@ -118,10 +139,10 @@ export async function validateChatGPTPackage({ root = process.cwd(), strictRoot 
   }
   for (const key of ['logo', 'composerIcon']) {
     if (!ui[key]) throw new Error('Missing ChatGPT ' + key + ' icon');
-    await imageFile(root, ui[key]);
+    await imageFile(root, ui[key], { icon: true });
   }
   for (const key of ['logoDark', 'composerIconDark']) {
-    if (ui[key] !== undefined) await imageFile(root, ui[key]);
+    if (ui[key] !== undefined) await imageFile(root, ui[key], { icon: true });
   }
   if (ui.screenshots !== undefined) {
     if (!Array.isArray(ui.screenshots)) throw new Error('Invalid ChatGPT screenshots');
