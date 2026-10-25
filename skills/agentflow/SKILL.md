@@ -31,6 +31,8 @@ Agentflow routes by **unresolved decision**, not by a mandatory SDLC pipeline. I
 
 Use the **smallest relevant subset**. Before following a specialist's workflow, load its canonical `SKILL.md` if accessible. Installing only this router does not automatically install the specialist skills. If a specialist is unavailable, do not invent its full instructions.
 
+**Direct specialist activation is valid.** Some hosts, including ChatGPT, may activate a specialist directly from its metadata without invoking this router first. Do not require a router invocation as a precondition for `$code-review`, `engineering-design`, or any other specialist; respect the selected skill's scope. When multiple decisions overlap and this router is selected, coordinate only the necessary skills.
+
 ## 3. Build the decision graph
 
 ```text
