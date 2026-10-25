@@ -56,7 +56,7 @@ codex plugin add agentflow@agentflow
 codex plugin list
 ```
 
-Alternatively, in a supported Codex or ChatGPT desktop client, open the Plugins Directory and install **agentflow** from the **Agentflow Engineering** source.
+Alternatively, in a supported Codex or ChatGPT desktop client, open the Plugins Directory and install **agentflow** from the **Agentflow** source.
 
 To uninstall the native plugin and manage the marketplace separately:
 
