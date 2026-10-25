@@ -44,37 +44,7 @@ jobs:
           mkdir -p dist-package
           version="$(node -p "require('./package.json').version")"
           zip -q -r -X "dist-package/agentflow-chatgpt-v$version.zip" plugin.json skills assets
-          count="$(unzip -Z1 dist-package/*.zip | grep -Ec '^skills/[^/]+/SKILL.md
-        run: npx --yes @anthropic-ai/claude-code@latest plugin validate . --strict
-      - name: Validate Codex plugin
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx --yes @openai/codex@latest plugin marketplace add .
-          npx --yes @openai/codex@latest plugin add agentflow@agentflow
-          npx --yes @openai/codex@latest plugin list | grep -q agentflow
-          npx --yes @openai/codex@latest plugin remove agentflow@agentflow
-  cross-agent-compatibility:
-    name: Portable skills / ${{ matrix.agent }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        agent: [claude-code, codex, gemini-cli, cursor, opencode]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          package-manager-cache: false
-      - name: Test upstream skills installer with current canonical files
-        shell: bash
-        env:
-          AGENT_ID: ${{ matrix.agent }}
-          DISABLE_TELEMETRY: '1'
-        run: bash .github/scripts/cross-agent-candidate.sh "$AGENT_ID"
-)"
+          count="$(unzip -Z1 dist-package/*.zip | grep -Ec '^skills/[^/]+/SKILL.md$')"
           test "$count" -eq 11
           unzip -Z1 dist-package/*.zip | grep -Fxq 'plugin.json'
           unzip -Z1 dist-package/*.zip | grep -Fxq 'assets/agentflow.svg'
