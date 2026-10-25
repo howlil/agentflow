@@ -16,6 +16,11 @@ Primary: `npx skills` with discovery on skills.sh. Alternate: host-managed nativ
 
 The installer may fetch the repository temporarily; only selected skills are installed. Installing only the router does not install specialists. Portable updates are manual. Invocation syntax and native marketplace auto-updates are host-specific, not universal guarantees.
 
+## Optional ChatGPT Web + GitHub mode
+The existing Agentflow skills-only plugin can guide coding through **ChatGPT Web as the only AI executor** and an authorized GitHub connector. GitHub stores code, Issues/PRs, and ordinary CI evidence; it never becomes an external AI coding worker. Installing Agentflow does not grant GitHub access, shell tools, model credentials, or autonomous execution. This mode is optional and must not weaken the portable eleven-skill routing/distribution contract.
+
+For nontrivial continuation, inspect the latest Issue/PR and HEAD SHA first, reuse an existing relevant branch/PR, and distinguish edited code from tested/accepted behavior. Do not force Issue/branch/PR setup for a trivial or read-only task. Keep the single canonical routing policy in `skills/agentflow/SKILL.md`; do not duplicate specialist guidance here. See `src/content/docs/recipes/run-code-from-chatgpt.md` for the host workflow. User approvals and repository permissions govern irreversible operations.
+
 ## Verification
 Run `npm ci`, `npm run plugins:check`, `npm test`, `npm run build`. Cross-agent CI covers claude-code, codex, gemini-cli, cursor and opencode; preserve `AGENTS.md` and unrelated skills. Keep generated docs derived from canonical sources.
 

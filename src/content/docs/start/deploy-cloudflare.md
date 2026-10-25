@@ -26,12 +26,15 @@ In the Cloudflare dashboard, open the **agentflow** Worker → **Settings → Bu
 | Deploy command | `npx wrangler deploy` |
 | Node version | `22.23.4` (see `.node-version`) |
 
+For feature-branch preview builds, Workers Builds may run `npx wrangler preview` instead of the production `npx wrangler deploy`. The root `wrangler.jsonc` includes `"previews": {}` so those preview builds can use the same static assets without requiring a separate Worker backend. A preview build does **not** publish a production release.
+
 The repository already contains:
 
 ```json
 {
   "name": "agentflow",
   "compatibility_date": "2026-10-09",
+  "previews": {},
   "assets": {
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",
