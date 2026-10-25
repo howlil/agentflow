@@ -7,13 +7,15 @@ Agentflow ships portable `SKILL.md` files from GitHub and optional Claude/Codex 
 
 ## Publish
 
-1. Review and merge source to `master`.
-2. Bump version in `package.json` and `package-lock.json` for new native plugin releases.
-3. Run `npm run plugins:sync`, `npm run plugins:check`, `npm test` and `npm run build`.
-4. Create an immutable matching `vX.Y.Z` tag on the reviewed master commit, or dispatch `Publish Agentflow Release` on master.
-5. The workflow checks version and ancestry, then creates only a **GitHub Release**. No workflow publishes npm packages.
+1. Prepare a reviewed release PR updating `package.json`, `package-lock.json`, the two native plugin manifests, `CHANGELOG.md`, and the one-line `RELEASE_VERSION` request (for example `v0.4.0`).
+2. Run `npm ci`, `npm run plugins:check`, `npm test` and `npm run build`; CI verifies all five portable hosts and both native manifests.
+3. Merge that PR into `master` **only after checks pass**. A change to `RELEASE_VERSION` triggers the protected `Publish Agentflow Release` workflow, which checks tag/version equality, changelog entry and reviewed master ancestry.
+4. After the workflow passes, the release job creates the immutable `vX.Y.Z` GitHub tag/Release and copies only that version's section from `CHANGELOG.md` into release notes. If the Release already exists, it exits without replacing it.
+5. Alternatively, manually dispatch the same workflow on `master` with the matching version, or push a matching annotated tag. All routes run the same checks. No workflow publishes npm packages.
 
-GitHub tags provide reviewable fixed snapshots. The ordinary `npx skills add howlil/agentflow` flow follows whichever branch/ref the upstream installer resolves; do not claim default installs are immutable or tag-pinned.
+Never change `RELEASE_VERSION` without a deliberate approved release. Changing it is the publication trigger. On failures, inspect the workflow logs and do **not** claim a release exists until the GitHub Release can be fetched.
+
+GitHub tags provide reviewable fixed snapshots. [Latest releases](https://github.com/howlil/agentflow/releases) and [changelog](https://github.com/howlil/agentflow/blob/master/CHANGELOG.md) are separate from third-party indexing. The ordinary `npx skills add howlil/agentflow` flow follows whichever branch/ref the upstream installer resolves; do not claim default installs are immutable or tag-pinned.
 
 ## Update and rollback
 
