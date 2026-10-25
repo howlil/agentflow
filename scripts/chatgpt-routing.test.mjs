@@ -92,3 +92,28 @@ test('M0 execution issue keeps one authoritative acceptance ledger', async () =>
   assert.equal(requirementRows.length, 1, 'template should illustrate one requirement row');
   assert.doesNotMatch(template, /^- \[[ xX]\] \*\*AF-[0-9]+/m, 'no duplicate checkbox requirement list');
 });
+
+test('M1 router ships three scoped policies without adding a specialist', async () => {
+  const router = await read('skills/agentflow/SKILL.md');
+  const names = [
+    'engineering-operating-policy.md',
+    'github-delivery-policy.md',
+    'project-archetypes.md'
+  ];
+  const folder = 'skills/agentflow/references/';
+  const files = (await readdir(join(root, folder))).sort();
+  assert.deepEqual(files, [...names].sort());
+  for (const name of names) {
+    assert.ok(router.includes('references/' + name), 'router does not route to ' + name);
+    const body = await read(folder + name);
+    assert.ok(body.startsWith('# '), 'reference requires a descriptive heading: ' + name);
+    assert.ok(body.length > 300 && body.length < 9000, 'reference should be substantial but compact: ' + name);
+  }
+  assert.match(router, /Avoid loading all three for every request/);
+  assert.match(router, /Directly selected specialist skills may run without this router/);
+  assert.match(await read(folder + names[0]), /time-to-verified-outcome/);
+  assert.match(await read(folder + names[1]), /older SHA/);
+  assert.match(await read(folder + names[2]), /README/);
+  const skillDirs = (await readdir(join(root, 'skills'), { withFileTypes: true })).filter(x => x.isDirectory());
+  assert.equal(skillDirs.length, 11, 'reference files must not become new skills');
+});

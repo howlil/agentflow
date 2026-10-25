@@ -89,3 +89,13 @@ For a multi-step task, preserve an issue-backed execution contract:
 7. **Gate**: only claim completion if each in-scope requirement has credible evidence and there are no unresolved blocking checks. Ask for approval before a risky or irreversible merge/release. If the available GitHub connector cannot perform a needed operation, report that specific limitation, rather than inventing another runtime.
 
 The issue and PR are the durable source of truth for continuation; ChatGPT conversation context is helpful but not authoritative. Existing GitHub CI remains an allowed verification mechanism, **not an AI execution worker**. Use the template `.github/ISSUE_TEMPLATE/agentflow-execution.md` where present; never overwrite unrelated project policies or require a fixed workflow for trivial changes.
+
+## 7. Conditional operating policies
+
+For coordinated tasks, load only the relevant source file under `references/` **when it exists in the installed Agentflow skill**. These are global workflow defaults, not new skills, host capabilities, or replacements for the repository's `AGENTS.md` and specialist contracts:
+
+- `references/engineering-operating-policy.md`: nontrivial engineering execution, risk-proportionate verification, stop rules, metrics and concise result/evidence reporting.
+- `references/github-delivery-policy.md`: authorized GitHub writes, continuation, branch/commit/PR hygiene, CI relevance and release gating.
+- `references/project-archetypes.md`: OSS/commercial/private repository documentation, README quality and community readiness.
+
+Avoid loading all three for every request. For trivial or read-only work with no applicable policy decision, work directly. Do not force specialist invocation or create an Issue/branch/PR because a policy was loaded. Explicit user intent, higher-priority host instructions and applicable repo contracts take precedence; state material conflicts. Installing the router without the referenced files must not be treated as granting or guaranteeing their behavior. Directly selected specialist skills may run without this router, so do not claim these defaults automatically cover every host session.
