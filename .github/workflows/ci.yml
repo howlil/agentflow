@@ -7,16 +7,16 @@ permissions:
   contents: read
 # Cancel only superseded PR checks; release workflows remain independent.
 concurrency:
-  group: agentflow-ci-${{ github.workflow }-${{ github.event.pull_request.number || github.ref }
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }
+  group: agentflow-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   classify:
     name: Classify changed files
     runs-on: ubuntu-latest
     outputs:
-      full_required: ${{ steps.scope.outputs.full_required }
-      portable_required: ${{ steps.scope.outputs.portable_required }
+      full_required: ${{ steps.scope.outputs.full_required }}
+      portable_required: ${{ steps.scope.outputs.portable_required }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -29,7 +29,7 @@ jobs:
         id: scope
         shell: bash
         env:
-          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           CI_HEAD_SHA: HEAD
         run: |
           set -euo pipefail
@@ -38,33 +38,33 @@ jobs:
   verify:
     name: verify
     needs: classify
-    if: ${{ always() }
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       # Required gate: failed classification MUST fail verify; no skipped-green bypass.
       - name: Require valid scope classification
         shell: bash
         env:
-          RESULT: ${{ needs.classify.result }
-          FULL: ${{ needs.classify.outputs.full_required }
+          RESULT: ${{ needs.classify.result }}
+          FULL: ${{ needs.classify.outputs.full_required }}
         run: |
           set -euo pipefail
           test "$RESULT" = success
           [[ "$FULL" = true || "$FULL" = false ]]
       - name: Root-docs fast path
-        if: ${{ needs.classify.outputs.full_required == 'false' }
+        if: ${{ needs.classify.outputs.full_required == 'false' }}
         run: echo "Safe root-documentation diff checked; no build or compatibility changes."
       - uses: actions/checkout@v7
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
       - uses: actions/setup-node@v7
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
         with:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
       - name: Lint workflows
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -73,13 +73,13 @@ jobs:
           tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
           /tmp/actionlint .github/workflows/*.yml
       - run: npm run plugins:check
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
       - run: npm test
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
       - run: npm run build
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
       - name: Verify generated skill discovery index
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -90,7 +90,7 @@ jobs:
           grep -Fq 'skills/agentflow/SKILL.md' dist/llms.txt
           test "$(grep -cF 'raw.githubusercontent.com/howlil/agentflow/master/skills/' dist/llms.txt)" -eq 11
       - name: Package ChatGPT skills-only plugin
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -108,16 +108,16 @@ jobs:
           # The shipped archive is the source of truth for acceptance; never
           # validate only the checkout while publishing a different ZIP.
       - uses: actions/upload-artifact@v4
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
         with:
           name: agentflow-chatgpt-package
           path: dist-package/*.zip
           if-no-files-found: error
       - name: Validate Claude plugin
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
         run: npx --yes @anthropic-ai/claude-code@latest plugin validate . --strict
       - name: Validate Codex plugin
-        if: ${{ needs.classify.outputs.full_required == 'true' }
+        if: ${{ needs.classify.outputs.full_required == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -128,7 +128,7 @@ jobs:
 
   cross-agent-compatibility:
     needs: classify
-    if: ${{ needs.classify.result == 'success' && needs.classify.outputs.portable_required == 'true' }
+    if: ${{ needs.classify.result == 'success' && needs.classify.outputs.portable_required == 'true' }}
     name: Portable skills / ${{ matrix.agent }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
