@@ -16,7 +16,7 @@ npm test
 npm run build
 ```
 
-The GitHub CI `verify` job creates an `agentflow-chatgpt-package` artifact containing the submission ZIP after checks pass. Its archive root includes `plugin.json`, `skills/` and `assets/`. Download the ZIP from the successful workflow artifact, then upload the inner ZIP in the [ChatGPT plugin developer portal](https://chatgpt.com/plugins).
+The GitHub CI `verify` job creates an `agentflow-chatgpt-package` artifact containing the submission ZIP after checks pass. It **extracts and revalidates the exact ZIP** using `node scripts/chatgpt-package.mjs --check <extracted-directory>` and rejects unexpected archive roots, missing or invalid skills, unsafe asset paths, invalid listing metadata, and bundled MCP/app/hooks files. The archive root contains only `plugin.json`, `skills/` and `assets/`. Download the artifact from the successful workflow, then upload the inner ZIP in the [ChatGPT plugin developer portal](https://chatgpt.com/plugins).
 
 The root portable `plugin.json` owns the OpenAI `extensions.com.openai.interface` listing. `assets/agentflow.svg` provides both listing and composer icons. The Claude plugin manifest and Codex marketplace remain independent installation routes. **Do not add** duplicate skills or an extra `.codex-plugin/plugin.json` manifest.
 
@@ -30,7 +30,7 @@ ChatGPT Web can provide tools when the user has enabled or connected them, but i
 4. Distinguish design guidance, proposed code, observed diffs, executed tests and completed remote actions.
 5. Declare missing evidence and unrun checks rather than asserting completion.
 
-Use the host's plugin chooser or mention mechanism to activate Agentflow. Neither `$agentflow` nor slash commands are guaranteed in ChatGPT Web.
+Use the host's plugin chooser or mention mechanism to activate Agentflow. Neither `$agentflow` nor slash commands are guaranteed in ChatGPT Web. ChatGPT may also select an individual specialist directly, without first running the router; this is expected. The router coordinates only when its decision scope is genuinely relevant.
 
 ## M3 routing acceptance matrix
 
@@ -48,7 +48,9 @@ Use the host's plugin chooser or mention mechanism to activate Agentflow. Neithe
 | "Use code-review specifically on this patch" | Respect explicit selection | Override with unrelated skill |
 | "Delegate five reviewers" without delegation tools | Manual bounded approach | Invent worker execution |
 
-Test both explicit plugin selection and implicit routing where supported. Record model responses and observed tool calls before labeling behavior validated.
+Test both explicit plugin selection and implicit routing where supported. Record the installed package version, exact prompt, actual selected skill (if observable), tool calls, response, expected behavior, and pass/fail result. A scenario passes only if the output respects the expected behavior **and** does not exhibit its failure signal. The repository's Node tests validate instruction packaging and static invariants, not model activation or correctness. Do not count them as host behavioral tests.
+
+**Host release gate:** All nine acceptance scenarios must be exercised in an installed ChatGPT session. Record any failures and resolve them before declaring ChatGPT compatibility validated. Portal metadata checks and skill scans must also pass; CI green alone is insufficient.
 
 ## Release and submission
 
