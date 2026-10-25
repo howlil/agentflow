@@ -89,3 +89,22 @@ test('rejects malformed icon path and missing packaged assets', async () => {
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /ENOENT/);
   });
 });
+
+test('screenshots may be rectangular while icons must be square', async () => {
+  await fixture(async root => {
+    const screenshot = './assets/wide.svg';
+    await writeFile(join(root, 'assets', 'wide.svg'),
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"></svg>');
+    await mutate(root, p => { p.extensions['com.openai'].interface.screenshots = [screenshot]; });
+    assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 11);
+    await mutate(root, p => { p.extensions['com.openai'].interface.logo = screenshot; });
+    await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /square and at least 48x48/);
+  });
+});
+
+test('portable archive is bound to Agentflow package identity', async () => {
+  await fixture(async root => {
+    await mutate(root, p => { p.name = 'another-plugin'; });
+    await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /plugin identity/);
+  });
+});
