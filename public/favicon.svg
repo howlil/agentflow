@@ -1,4 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#292929"/>
-  <path d="M17 42 28 20h8L47 42h-8l-2.2-5H27.2L25 42h-8Zm13-12h4l-2-5-2 5Z" fill="#fff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Agentflow — focused decision routing</title>
+  <rect width="64" height="64" rx="15" fill="#0C0D10"/>
+  <path d="M16 32h12c11 0 11-14 22-14" fill="none" stroke="#F6F4EF" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M28 32c11 0 11 14 22 14" fill="none" stroke="#9B8BDE" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="16" cy="32" r="4.5" fill="#F6F4EF"/>
+  <circle cx="50" cy="18" r="4.5" fill="#F6F4EF"/>
+  <circle cx="50" cy="46" r="4.5" fill="#9B8BDE"/>
 </svg>

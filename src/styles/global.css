@@ -1,22 +1,33 @@
 @layer base, starlight, theme, components, utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
 @import '@astrojs/starlight-tailwind';
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
 :root {
-  --agentflow-font: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --af-ink: #0C0D10;
+  --af-surface: #16171D;
+  --af-ivory: #F6F4EF;
+  --af-muted: #B9BAC7;
+  --af-accent: #9B8BDE;
+  --af-font-ui: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --af-font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --af-font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+
+  --agentflow-font: var(--af-font-ui);
   --sl-font: var(--agentflow-font);
+  --sl-font-mono: var(--af-font-mono);
   --sl-content-width: 52rem;
-  --sl-color-accent-low: #eaf2ff;
-  --sl-color-accent: #2563eb;
-  --sl-color-accent-high: #173b74;
+  --sl-color-accent-low: #EFEAFF;
+  --sl-color-accent: #6651A5;
+  --sl-color-accent-high: #3E2B78;
 }
 
 :root[data-theme='dark'] {
-  --sl-color-accent-low: #13213a;
-  --sl-color-accent: #7aa7ff;
-  --sl-color-accent-high: #dce8ff;
+  --sl-color-accent-low: #241C3B;
+  --sl-color-accent: #B4A5FF;
+  --sl-color-accent-high: #E6DFFF;
 }
 
 html,
@@ -26,9 +37,8 @@ body {
 
 .skill-grid {
   display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  margin-block: 1.25rem 2rem;
+  gap: 0.875rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
 }
 
 .flow {

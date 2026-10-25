@@ -4,25 +4,119 @@ interface Props {
   skill: string;
   description: string;
   href: string;
+  featured?: boolean;
 }
 
-const { title, skill, description, href } = Astro.props;
+const { title, skill, description, href, featured = false } = Astro.props;
 ---
 
-<a
-  href={href}
-  class="group block rounded-xl border border-slate-200 bg-white p-4 no-underline transition hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700"
->
-  <div class="mb-3 flex items-start justify-between gap-3">
-    <h3 class="m-0 text-base font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-      {title}
-    </h3>
-    <span class="shrink-0 rounded-md bg-slate-100 px-2 py-1 font-mono text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-400">
-      {skill}
-    </span>
+<a href={href} class:list={['af-skill-card', featured && 'af-skill-card--router']}>
+  <div class="af-skill-card__header">
+    <span class="af-skill-card__kind">{featured ? 'Router' : 'Specialist'}</span>
+    <span class="af-skill-card__arrow" aria-hidden="true">↗</span>
   </div>
-  <p class="m-0 text-sm leading-6 text-slate-600 dark:text-slate-400">{description}</p>
-  <span class="mt-4 inline-flex text-sm font-medium text-blue-600 group-hover:underline dark:text-blue-400">
-    Open guide →
-  </span>
+  <div class="af-skill-card__body">
+    <h3>{title}</h3>
+    <p>{description}</p>
+  </div>
+  <span class="af-skill-card__slug">{skill}</span>
 </a>
+
+<style>
+  .af-skill-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.25rem;
+    min-width: 0;
+    min-height: 13rem;
+    padding: 1.25rem;
+    color: var(--sl-color-text);
+    background: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 1rem;
+    text-decoration: none;
+    transition: border-color 160ms ease, background-color 160ms ease;
+  }
+
+  .af-skill-card:hover,
+  .af-skill-card:focus-visible {
+    border-color: var(--sl-color-accent);
+    background: var(--sl-color-gray-7);
+  }
+
+  .af-skill-card:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .af-skill-card--router {
+    min-height: 11rem;
+    border-color: var(--sl-color-accent);
+    background: var(--sl-color-accent-low);
+  }
+
+  .af-skill-card--router:hover,
+  .af-skill-card--router:focus-visible {
+    background: var(--sl-color-accent-low);
+  }
+
+  .af-skill-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .af-skill-card__kind {
+    color: var(--sl-color-accent);
+    font: 600 0.6875rem/1.2 var(--af-font-mono);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .af-skill-card__arrow {
+    color: var(--sl-color-gray-3);
+    font-size: 1.15rem;
+    line-height: 1;
+    transition: transform 160ms ease;
+  }
+
+  .af-skill-card:hover .af-skill-card__arrow,
+  .af-skill-card:focus-visible .af-skill-card__arrow {
+    transform: translate(2px, -2px);
+    color: var(--sl-color-accent);
+  }
+
+  .af-skill-card__body {
+    flex: 1;
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--sl-color-text);
+    font: 600 1.05rem/1.3 var(--af-font-ui);
+    letter-spacing: -0.025em;
+  }
+
+  p {
+    margin: 0.55rem 0 0;
+    color: var(--sl-color-gray-2);
+    font: 400 0.875rem/1.55 var(--af-font-ui);
+  }
+
+  .af-skill-card__slug {
+    align-self: flex-start;
+    max-width: 100%;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.55rem;
+    color: var(--sl-color-gray-2);
+    font: 500 0.7rem/1.3 var(--af-font-mono);
+    overflow-wrap: anywhere;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .af-skill-card, .af-skill-card__arrow { transition: none; }
+  }
+</style>

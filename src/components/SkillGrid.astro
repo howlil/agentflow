@@ -16,15 +16,53 @@ const cards = await Promise.all(
     };
   }),
 );
+
+const router = cards.find(card => card.skill === 'agentflow');
+if (!router) throw new Error('Missing canonical agentflow router');
+const specialists = cards.filter(card => card.skill !== 'agentflow');
 ---
 
-<div class="skill-grid">
-  {cards.map((skill) => (
-    <SkillCard
-      title={skill.title}
-      skill={skill.skill}
-      description={skill.description}
-      href={skill.href}
-    />
-  ))}
+<div class="af-skill-catalog">
+  <section aria-label="Routing skill">
+    <p class="af-skill-catalog__eyebrow">01 / Start here</p>
+    <div class="af-skill-catalog__router">
+      <SkillCard {...router} featured />
+    </div>
+  </section>
+
+  <section aria-label="Specialist skills">
+    <div class="af-skill-catalog__group-heading">
+      <p class="af-skill-catalog__eyebrow">02 / Specialists</p>
+      <span>{specialists.length} focused skills</span>
+    </div>
+    <div class="skill-grid">
+      {specialists.map(skill => <SkillCard {...skill} />)}
+    </div>
+  </section>
 </div>
+
+<style>
+  .af-skill-catalog { display: grid; gap: 2rem; }
+  .af-skill-catalog__eyebrow {
+    margin: 0 0 0.8rem;
+    font: 600 0.7rem/1.25 var(--af-font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-3);
+  }
+  .af-skill-catalog__group-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.8rem;
+  }
+  .af-skill-catalog__group-heading .af-skill-catalog__eyebrow { margin: 0; }
+  .af-skill-catalog__group-heading span {
+    font: 500 0.75rem/1.3 var(--af-font-mono);
+    color: var(--sl-color-gray-3);
+  }
+  .af-skill-catalog__router { display: grid; }
+  .skill-grid { margin: 0; }
+</style>

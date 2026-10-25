@@ -1,18 +1,19 @@
 {
   "name": "agentflow",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
     "plugins:sync": "node scripts/plugin-manifests.mjs --write",
     "plugins:check": "node scripts/plugin-manifests.mjs --check",
     "skills:generate": "node scripts/generate-skills.mjs",
-    "predev": "npm run skills:generate",
+    "predev": "npm run skills:generate && npm run brand:assets",
     "dev": "astro dev",
-    "prebuild": "npm run skills:generate && npm run plugins:check",
+    "prebuild": "npm run skills:generate && npm run plugins:check && npm run brand:assets",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "node --test scripts/*.test.mjs"
+    "test": "node --test scripts/*.test.mjs",
+    "brand:assets": "node scripts/build-brand-assets.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "0.42.2",
@@ -20,6 +21,7 @@
     "@lucide/astro": "1.47.0",
     "@tailwindcss/vite": "4.3.3",
     "astro": "7.3.3",
-    "tailwindcss": "4.3.3"
+    "tailwindcss": "4.3.3",
+    "sharp": "0.35.5"
   }
 }

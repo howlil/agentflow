@@ -2,11 +2,27 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import tailwindcss from '@tailwindcss/vite';
 
+const siteUrl = process.env.PUBLIC_SITE_URL?.trim();
+const socialUrl = siteUrl ? new URL('/og.png', siteUrl).toString() : null;
+
 export default defineConfig({
   integrations: [
     starlight({
       title: 'Agentflow',
-      description: 'A practical guide to choosing and composing reusable software-engineering agent skills.',
+      logo: {
+        src: './src/assets/brand-mark.svg',
+      },
+      head: [
+        { tag: 'meta', attrs: { name: 'theme-color', content: '#0C0D10' } },
+        { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
+        ...(socialUrl ? [
+          { tag: 'meta', attrs: { property: 'og:image', content: socialUrl } },
+          { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+          { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+          { tag: 'meta', attrs: { name: 'twitter:image', content: socialUrl } },
+        ] : []),
+      ],
+      description: 'Better judgment for AI agents. Portable engineering skills selected by the decision at hand.',
       social: [
         {
           icon: 'github',

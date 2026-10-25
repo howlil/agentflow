@@ -20,6 +20,6 @@ The installer may fetch the repository temporarily; only selected skills are ins
 Run `npm ci`, `npm run plugins:check`, `npm test`, `npm run build`. Cross-agent CI covers claude-code, codex, gemini-cli, cursor and opencode; preserve `AGENTS.md` and unrelated skills. Keep generated docs derived from canonical sources.
 
 ## Release
-The private root `package.json`, lockfile, `plugin.json`, and `.claude-plugin/plugin.json` must have matching versions for a native release. After review and merge to master, use immutable matching `vX.Y.Z` tags. The GitHub release workflow creates a GitHub Release only. It must never publish npm. Historical npm package deletion/deprecation and credential revocation require separate npm-owner actions.
+The private root `package.json`, lockfile, `plugin.json`, and `.claude-plugin/plugin.json` must have matching versions for a native release. For an intentional release, update `CHANGELOG.md` and `RELEASE_VERSION` in a reviewed PR with synced root and native versions. Merging the release request to master triggers the verified GitHub Release workflow, which creates immutable matching `vX.Y.Z` tags and a GitHub Release only. It must never publish npm. Historical npm package deletion/deprecation and credential revocation require separate npm-owner actions.
 
 Do not claim that documentation or tests constitute real host invocation, marketplace approval or automatic updates.
