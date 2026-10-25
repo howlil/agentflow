@@ -39,3 +39,21 @@ test('router rejects unsupported host execution claims', async () => {
     assert.ok(router.includes(guardrail), 'missing routing guardrail: ' + guardrail);
   }
 });
+
+test('GitHub-only ChatGPT execution has explicit persistence and evidence boundaries', async () => {
+  const router = await read('skills/agentflow/SKILL.md');
+  const guide = await read('src/content/docs/recipes/run-code-from-chatgpt.md');
+  const template = await read('.github/ISSUE_TEMPLATE/agentflow-execution.md');
+  for (const constraint of [
+    'ChatGPT Web to be the only AI executor',
+    'Do not introduce an external Codex worker',
+    'IMPLEMENTED_UNVERIFIED',
+    'Existing GitHub CI remains an allowed verification mechanism',
+    'update the same GitHub issue/PR'
+  ]) assert.ok(router.includes(constraint), 'router missing: ' + constraint);
+  for (const required of ['Resume pointer', 'Requirement evidence ledger', 'Acceptance contract']) {
+    assert.ok(template.includes(required), 'issue template missing: ' + required);
+  }
+  assert.match(guide, /No external coding agent, OpenAI API key/);
+  assert.match(guide, /source of truth/);
+});
