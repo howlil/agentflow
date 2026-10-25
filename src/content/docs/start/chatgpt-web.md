@@ -18,6 +18,8 @@ npm run build
 
 The GitHub CI `verify` job creates an `agentflow-chatgpt-package` artifact containing the submission ZIP after checks pass. It **extracts and revalidates the exact ZIP** using `node scripts/chatgpt-package.mjs --check <extracted-directory>` and rejects unexpected archive roots, missing or invalid skills, unsafe asset paths, invalid listing metadata, and bundled MCP/app/hooks files. The archive root contains only `plugin.json`, `skills/` and `assets/`. Download the artifact from the successful workflow, then upload the inner ZIP in the [ChatGPT plugin developer portal](https://chatgpt.com/plugins).
 
+For a tagged release, the verified `agentflow-chatgpt-vX.Y.Z.zip` is also attached directly to [Agentflow GitHub Releases](https://github.com/howlil/agentflow/releases). Use the ZIP asset (not GitHub's auto-generated source archive) for host acceptance testing. Publishing that artifact does not mean the ChatGPT plugin has been installed, approved, or listed publicly.
+
 The root portable `plugin.json` owns the OpenAI `extensions.com.openai.interface` listing. `assets/agentflow.svg` provides both listing and composer icons. The Claude plugin manifest and Codex marketplace remain independent installation routes. **Do not add** duplicate skills or an extra `.codex-plugin/plugin.json` manifest.
 
 ## Operating contract

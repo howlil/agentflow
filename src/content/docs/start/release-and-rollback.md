@@ -13,6 +13,8 @@ Agentflow ships portable `SKILL.md` files from GitHub and optional Claude/Codex 
 4. After the workflow passes, the release job creates the immutable `vX.Y.Z` GitHub tag/Release and copies only that version's section from `CHANGELOG.md` into release notes. If the Release already exists, it exits without replacing it.
 5. Alternatively, manually dispatch the same workflow on `master` with the matching version, or push a matching annotated tag. All routes run the same checks. No workflow publishes npm packages.
 
+The release workflow also generates, extracts and validates the packaged ChatGPT skills-only ZIP, then attaches the same artifact to its GitHub Release. The asset is for manual developer testing and submission and is **not** an official directory listing or proof of host skill activation.
+
 Never change `RELEASE_VERSION` without a deliberate approved release. Changing it is the publication trigger. On failures, inspect the workflow logs and do **not** claim a release exists until the GitHub Release can be fetched.
 
 GitHub tags provide reviewable fixed snapshots. [Latest releases](https://github.com/howlil/agentflow/releases) and [changelog](https://github.com/howlil/agentflow/blob/master/CHANGELOG.md) are separate from third-party indexing. The ordinary `npx skills add howlil/agentflow` flow follows whichever branch/ref the upstream installer resolves; do not claim default installs are immutable or tag-pinned.

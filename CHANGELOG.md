@@ -2,6 +2,24 @@
 
 Agentflow releases track the canonical `skills/*/SKILL.md` library, website and optional native plugin manifests. The private root package is **not** an npm CLI. Updates to this changelog are part of a reviewed release request.
 
+## v0.4.1
+
+**Agentflow v0.4.1 — ChatGPT Web Skills-Only Package**
+
+### Highlights
+
+- **ChatGPT Web packaging:** ship the same 11 canonical engineering skills in a portable skills-only plugin with `extensions.com.openai` listing metadata and reusable brand SVG. No MCP server or second installer.
+- **Decision-routing correctness:** clarify that a specialist may activate directly without a router-first invocation, and that guidance never grants shell, repository, write or deployment permissions.
+- **Validated distribution artifact:** generate a ChatGPT plugin ZIP from `plugin.json`, `skills/` and `assets/`; extract and verify the actual archive, including metadata, version, skill inventory, image formats, unsafe files and host capability boundaries.
+- **Release attachment:** publish the exact verified ChatGPT ZIP as an asset alongside the immutable GitHub release tag, making downloads independent of expiring GitHub Actions artifacts.
+- **Regression coverage:** add tests for package identity, version synchronization, image dimensions, optional onboarding, missing or unexpected files, symlinks and host-specific guardrails.
+
+### Compatibility and publishing
+
+The eleven canonical skill names and Claude/Codex installation paths are preserved. This is a skills-only ChatGPT plugin package, **not** a published entry in the public ChatGPT Plugin Directory, and it does not imply approval, runtime activation, or access to connected GitHub tools.
+
+Before directory submission, install the ZIP using the supported ChatGPT developer flow and verify the nine host-acceptance cases in `src/content/docs/start/chatgpt-web.md`. Keep results and any missing capabilities explicit. No npm package is published.
+
 ## v0.4.0
 
 **Agentflow v0.4.0 — Engineering Skills for AI Agents**
