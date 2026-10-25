@@ -7,7 +7,7 @@ try {
    .split('\0').filter(x=>x&&!x.startsWith('.agentflow-run/')).join('\0'));
  if(!paths.length) throw new Error('No code changes generated');
  git('add','--',...paths);
- const staged=pathsFromGit(git('diff','--cached','--name-only','-z'));
+ const staged=pathsFromGit(git('diff','--cached','--name-only','-z','--no-renames'));
  if(!staged.length) throw new Error('No staged changes');
  if(git('diff','--cached','--raw').split('\n').some(x=>/^:.*\b(120000|160000)\b/.test(x)))
   throw new Error('Symlink/submodule changes are prohibited');
