@@ -14,11 +14,11 @@ This is a host-dependent workflow: if ChatGPT's current GitHub integration does 
 
 1. Identify the repository, current base branch, and relevant steering files (`AGENTS.md`, `.agents/product.md`, and `.agents/engineering.md` when they exist).
 2. Inspect the relevant implementation and tests. Reuse an existing Issue/PR when the task continues earlier work.
-3. Convert approved research into the [Agentflow execution contract](https://github.com/howlil/agentflow/blob/master/.github/ISSUE_TEMPLATE/agentflow-execution.md) format. Use stable requirement IDs, explicit acceptance checks, failure cases, constraints, and out-of-scope decisions.
-4. Save the contract in a GitHub Issue and create a scoped feature branch. For a complex change, split into bounded PR-sized work without losing the parent requirements.
+3. Convert approved research into the execution contract format in `.github/ISSUE_TEMPLATE/agentflow-execution.md` when that template exists in the target repository. This is an optional repository template, not a guaranteed file on every branch. Use stable requirement IDs, explicit acceptance checks, failure cases, constraints, and out-of-scope decisions.
+4. For nontrivial or multi-turn work, record the contract in a GitHub Issue or linked repository specification. Reuse an existing relevant Issue, branch, and PR before creating new ones; create a scoped branch only when the change merits review. Trivial/read-only work does not need extra Git ceremony. Split large work into bounded changes without losing the parent requirements.
 5. Implement by calling the authorized GitHub read/write tools from ChatGPT Web. Read before editing; for concurrent changes re-read the latest target state instead of overwriting another person's work. A remote file change is not proof that the code compiles.
 6. Review the complete PR diff against every in-scope requirement, checking changed behavior, regressions, and preserved invariants. Use the smallest relevant Agentflow specialist skills; a fixed, mandatory skill chain is not required.
-7. Read **actual** CI statuses/logs from GitHub. Record evidence for each requirement, including explicitly unrun tests. Merge or release only after applicable gates and user approval.
+7. Read **actual** CI statuses/logs for the **commit under review** from GitHub. Do not treat a green result on an older SHA as proof of the latest changes. Record evidence for each requirement, including explicitly unrun tests. Merge or release only after applicable gates and user approval.
 
 ## Resume a task when the user says "next"
 

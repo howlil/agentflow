@@ -57,3 +57,26 @@ test('GitHub-only ChatGPT execution has explicit persistence and evidence bounda
   assert.match(guide, /No external coding agent, OpenAI API key/);
   assert.match(guide, /source of truth/);
 });
+
+test('M0 product, engineering and repository contracts agree on host and state ownership', async () => {
+  const product = await read('.agents/product.md');
+  const engineering = await read('.agents/engineering.md');
+  const steering = await read('AGENTS.md');
+  const router = await read('skills/agentflow/SKILL.md');
+  const guide = await read('src/content/docs/recipes/run-code-from-chatgpt.md');
+  const web = await read('src/content/docs/start/chatgpt-web.md');
+
+  for (const doc of [product, engineering, steering]) {
+    assert.match(doc, /ChatGPT Web/);
+    assert.match(doc, /GitHub/);
+    assert.match(doc, /eleven|ten specialist|ten specialists/i);
+  }
+  assert.match(product, /No custom npm installer/);
+  assert.match(engineering, /No separate persistent worker/);
+  assert.match(steering, /Installing Agentflow does not grant GitHub access/);
+  assert.match(router, /Reuse the existing relevant branch\/PR/);
+  assert.match(guide, /older SHA/);
+  assert.doesNotMatch(guide, /blob\/master\/\.github\/ISSUE_TEMPLATE\/agentflow-execution\.md/);
+  assert.match(web, /opt-in host workflow/);
+  assert.match(product, /manual host acceptance/);
+});

@@ -22,6 +22,12 @@ For a tagged release, the verified `agentflow-chatgpt-vX.Y.Z.zip` is also attach
 
 The root portable `plugin.json` owns the OpenAI `extensions.com.openai.interface` listing. `assets/agentflow.svg` provides both listing and composer icons. The Claude plugin manifest and Codex marketplace remain independent installation routes. **Do not add** duplicate skills or an extra `.codex-plugin/plugin.json` manifest.
 
+## Optional GitHub-backed engineering workflow
+
+With a separately connected and authorized GitHub integration, ChatGPT Web can use Agentflow guidance to inspect code, make supported GitHub changes, and follow work recorded in Issues and PRs. ChatGPT is the only AI executor in this mode; GitHub Actions may execute ordinary CI tests, not a separate coding model. See [Code from ChatGPT Web using GitHub](/recipes/run-code-from-chatgpt/).
+
+This is an **opt-in host workflow**, not an additional Agentflow service, permission grant, or evidence of hands-free execution. Plugin packaging checks do not prove a real host coding session succeeded.
+
 ## Operating contract
 
 ChatGPT Web can provide tools when the user has enabled or connected them, but installing Agentflow does not grant GitHub, shell, commit or deployment access. The router should:
