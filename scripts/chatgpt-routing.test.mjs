@@ -76,6 +76,7 @@ test('M0 product, engineering and repository contracts agree on host and state o
   assert.match(steering, /Installing Agentflow does not grant GitHub access/);
   assert.match(router, /Reuse the existing relevant branch\/PR/);
   assert.match(guide, /older SHA/);
+  assert.doesNotMatch(guide, /\\\\n\\\\n/, 'guide must use real paragraph breaks');
   assert.doesNotMatch(guide, /blob\/master\/\.github\/ISSUE_TEMPLATE\/agentflow-execution\.md/);
   assert.match(web, /opt-in host workflow/);
   assert.match(product, /manual host acceptance/);

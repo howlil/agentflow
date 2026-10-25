@@ -24,7 +24,9 @@ This is a host-dependent workflow: if ChatGPT's current GitHub integration does 
 
 The issue contract and PR are the source of truth, not an assistant's recollection. Locate the active Issue and its latest `Resume pointer`; fetch the branch head, changed files, CI results, and requirement ledger. Start from the first pending or blocked item. Do not create another issue or duplicate PR merely because the conversation changed. Update the Issue's `Resume pointer` and evidence ledger after each bounded edit.
 
-The issue's requirement evidence ledger is the **single source of truth** for requirement state, observable acceptance, code changes and verification. Do not create a second checklist with independent status. A requirement ID is unique within its Issue. When changing approved scope, record the decision rather than silently rewriting acceptance criteria.\n\nStates in the issue's requirement ledger:
+The issue's requirement evidence ledger is the **single source of truth** for requirement state, observable acceptance, code changes and verification. Do not create a second checklist with independent status. A requirement ID is unique within its Issue. When changing approved scope, record the decision rather than silently rewriting acceptance criteria.
+
+States in the issue's requirement ledger:
 
 | State | Meaning |
 | --- | --- |
