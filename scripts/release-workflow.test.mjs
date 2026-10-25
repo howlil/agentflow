@@ -25,8 +25,8 @@ test('release request is version-aligned, has changelog and never publishes npm'
   assert.equal(plugin.version, pkg.version);
   assert.equal(claude.version, pkg.version);
   assert.ok(changelog.includes('## ' + trigger));
-  assert.match(workflow, /branches:\\s*\\n\\s*- master/);
-  assert.match(workflow, /paths:\\s*\\n\\s*- RELEASE_VERSION/);
+  assert.match(workflow, /branches:\s*\n\s*- master/);
+  assert.match(workflow, /paths:\s*\n\s*- RELEASE_VERSION/);
   assert.ok(workflow.includes('gh release create'));
   assert.ok(workflow.includes('--notes-file /tmp/agentflow-release-notes.md'));
   assert.ok(workflow.includes('git merge-base --is-ancestor'));
