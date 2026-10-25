@@ -24,7 +24,7 @@ In the Cloudflare dashboard, open the **agentflow** Worker → **Settings → Bu
 | Root directory | Repository root |
 | Build command | `npm run build` |
 | Deploy command | `npx wrangler deploy` |
-| Node version | `22.23.3` (see `.node-version`) |
+| Node version | `22.23.4` (see `.node-version`) |
 
 The repository already contains:
 
@@ -53,6 +53,8 @@ Push to master
 ```
 
 No custom GitHub Actions CI/CD or Cloudflare API token in the repository is required.
+
+**Node.js compatibility:** `.node-version` pins Node 22.23.4, including the October 2026 security fixes required by Astro 7.4.2. Workers Builds honors this version file unless a configured `NODE_VERSION` override takes precedence. If Cloudflare still reports an older Node version, check the project's **Settings → Build → Build Variables and Secrets** and change the override to `22.23.4` or remove the outdated override. The project should not be pinned to Node 22.23.3.
 
 ## Option B — use an actual Cloudflare Pages project
 
