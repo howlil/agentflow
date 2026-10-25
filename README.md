@@ -1,126 +1,61 @@
 # Agentflow
 
-<img src="public/favicon.svg" width="56" height="56" alt="Agentflow routing mark" />
-
 **Better judgment for AI agents.**
 
-Portable engineering skills for AI coding agents. Agentflow helps an agent choose the right reasoning for the decision at hand—without forcing every task through a rigid workflow.
+Agentflow is an open-source engineering skill library: **one decision router and ten focused specialists** for product behavior, architecture, UI, implementation, testing, review, security, and operations. It helps an AI coding host choose the reasoning a task actually needs rather than forcing every change through a fixed pipeline.
 
-**The right skill for every engineering decision.**
+[![CI](https://github.com/howlil/agentflow/actions/workflows/ci.yml/badge.svg)](https://github.com/howlil/agentflow/actions/workflows/ci.yml) [![Skills ecosystem](https://skills.sh/b/howlil/agentflow)](https://skills.sh/howlil/agentflow)
 
-[![Skills ecosystem](https://skills.sh/b/howlil/agentflow)](https://skills.sh/howlil/agentflow)
-[![CI](https://github.com/howlil/agentflow/actions/workflows/ci.yml/badge.svg)](https://github.com/howlil/agentflow/actions/workflows/ci.yml)
+## Install and use
 
-## Install in 60 seconds
-
-Agentflow uses the independent [skills CLI](https://github.com/vercel-labs/skills) for portable installation. Node.js 22.20+ is required for the tested `skills@1.7.4`.
+For portable coding hosts, use the independent [skills CLI](https://github.com/vercel-labs/skills). The tested version is `skills@1.7.4` with Node.js 22.20+.
 
 ```bash
-# Explore all eleven skills before installing
+# See the eleven available skills
 npx skills@1.7.4 add howlil/agentflow --list
 
-# Globally install for Codex; select all eleven interactively
+# Install for Codex; select the router and specialists interactively
 npx skills@1.7.4 add howlil/agentflow -g -a codex
-
-# Or install only the router in your current project
-npx skills@1.7.4 add howlil/agentflow --skill agentflow -a codex --copy --yes
 ```
 
-**One router + ten specialists.** The router does not bundle or auto-install its specialists. Select all eleven if you want full routing coverage. Use only **one installation route per AI host**: portable skills or the [native Claude Code / Codex plugin](src/content/docs/start/native-plugins.md).
+Then ask your coding host:
 
-## How Agentflow works
+> Use Agentflow to review the race condition in booking creation. Inspect the affected code, identify any unresolved design or verification decisions, and use only the relevant skills.
+
+The host must have the repository/files and tools needed for the requested action. A skill is **instructional guidance**, not a separate code-executing agent. Installing only `agentflow` does not automatically install its ten specialists.
+
+For other hosts and install modes: [installation guide](src/content/docs/start/install.md), [five-host compatibility](src/content/docs/start/cross-agent-compatibility.md), and [native Claude/Codex plugins](src/content/docs/start/native-plugins.md). Use one installation method per host; portable copies are updated manually.
+
+## What it does
 
 ```text
 Engineering task
-      |
-      v
-Which decision is unresolved?
-      |
-      +-- none --> proceed directly
-      |
-      +-- yes ---> agentflow (router)
-                       |
-                       v
-                 relevant specialist(s)
-                       |
-                       v
-                 bounded guidance
-                       |
-                       v
-                 verify the outcome
+   → inspect available evidence
+   → identify unresolved decision
+   → select the smallest useful specialist set
+   → implement/review with host tools, when authorized
+   → verify the actual result
 ```
 
-The `agentflow` router is useful when the next engineering decision is unclear or multiple disciplines overlap. It examines the task and suggests the smallest relevant specialist set. It **does not run a separate orchestration service**, change your project steering files, or automatically invoke every skill.
+A simple rename does not need a design workflow. A concurrency bug may need implementation reasoning and a targeted concurrency test; those are selected only when they resolve a real uncertainty.
 
-### Example: fix a race condition
+[Browse all eleven skills and their responsibilities](src/content/docs/start/choose-a-skill.md).
 
-A task such as “Prevent two workers from creating the same booking” may need:
+## ChatGPT Web + GitHub (optional)
 
-- `engineering-design` to define the concurrency and ownership guarantees, if unclear.
-- `design-thinking` to implement an established contract, if the implementation path is unresolved.
-- `test-engineering` to prove the concurrency behavior and failure cases.
+Agentflow also has a **skills-only ChatGPT plugin package**. An authorized GitHub connection can let ChatGPT inspect repository code, edit files, work with Issues/PRs and read existing CI. **ChatGPT remains the AI executor; GitHub stores code and work state.** No separate model worker or OpenAI API key is required for this in-chat mode.
 
-If the design and tests are already clear, the agent should not invoke those skills just to follow a sequence.
+The repository's CI produces a candidate plugin ZIP. A passing package check or GitHub Release does **not** mean that a new ChatGPT plugin version was installed, approved, or published in the directory. Availability and tool permissions depend on the host and account.
 
-## The skill system
+[ChatGPT package/acceptance](src/content/docs/start/chatgpt-web.md) · [GitHub-only engineering workflow](src/content/docs/recipes/run-code-from-chatgpt.md)
 
-| Skill | Decision it owns |
-| --- | --- |
-| **`agentflow`** | Which engineering skill is relevant now? |
-| `product-design` | What observable product behavior is required? |
-| `engineering-design` | What boundaries and system guarantees are needed? |
-| `design-graph` | How should interface states and interactions work? |
-| `design-thinking` | How does an established contract become implementation? |
-| `test-engineering` | How do we verify correctness and failure modes? |
-| `code-review` | Is the implementation sound and maintainable? |
-| `security-review` | Are trust boundaries and sensitive data protected? |
-| `production-ops` | How is production observed and recovered? |
-| `graph-protocol` | When does bounded delegation help? |
-| `call-graph-output` | How do we communicate an existing execution graph? |
+## Contribute and get help
 
-[Explore the skill guides](src/content/docs/start/choose-a-skill.md). Every skill's canonical runtime instructions live in `skills/<name>/SKILL.md`.
-
-## Built for your coding agent
-
-Agentflow is a **portable skill library**, not a new agent runtime. The same canonical source supports several coding hosts through the upstream skills installer. Native plugins are also available for Claude Code and Codex.
-
-Portable skills require user-initiated updates; file installation does not imply automatic host activation or automatic updates.
-
-```bash
-npx skills@1.7.4 check
-npx skills@1.7.4 update -g
-npx skills@1.7.4 remove -g howlil/agentflow
-```
-
-An upstream installer may temporarily download or clone the GitHub repository for skill discovery, but installs only the selected skill directories.
-
-## Source-of-truth model
-
-```text
-skills/*/SKILL.md
-    ├─ skills CLI → selected agent skill directories
-    ├─ Claude/Codex marketplaces → host-managed plugins
-    └─ build generator → metadata, references and llms.txt
-```
-
-Guides and examples explain how to use the skills; they do not replace the canonical runtime source.
-
-## ChatGPT Web plugin
-
-Agentflow can be packaged as a ChatGPT **skills-only** plugin from its canonical eleven skills and root `plugin.json`. CI produces a submission ZIP as the `agentflow-chatgpt-package` workflow artifact. Directory publication requires separate verification, installation testing and approval. Installing the plugin does not grant repository, shell or deployment access.
-
-[ChatGPT Web packaging and acceptance guide](src/content/docs/start/chatgpt-web.md).
-
-## Documentation
-
-- [Install & distribution](src/content/docs/start/distribution.md)
-- [Choose a skill](src/content/docs/start/choose-a-skill.md)
-- [Quickstart](src/content/docs/start/quickstart.md)
-- [Cross-agent compatibility](src/content/docs/start/cross-agent-compatibility.md)
-- [Releases and rollback](src/content/docs/start/release-and-rollback.md)
-- [Brand voice and visual system](BRAND.md)
-- [Release history and migration notes](CHANGELOG.md)
-- [GitHub Releases](https://github.com/howlil/agentflow/releases)
+- [Contributing](CONTRIBUTING.md) — focused patches, local checks and review expectations
+- [Support](SUPPORT.md) — installation issues, usage questions and bug reports
+- [Security policy](SECURITY.md) — reporting vulnerabilities without disclosing details publicly
+- [Code of conduct](CODE_OF_CONDUCT.md) — participation and moderation expectations
+- [Release notes](CHANGELOG.md) · [GitHub Releases](https://github.com/howlil/agentflow/releases)
 
 ## Development
 
@@ -131,14 +66,6 @@ npm test
 npm run build
 ```
 
-The private root `package.json` is used for the Astro/Starlight website and native plugin validation; **no Agentflow-specific npm CLI is published from this repository**. Static documentation deploys to Cloudflare.
+The root `package.json` is **private** and is used for the documentation site, plugin metadata and validation—not a new Agentflow npm installer. Canonical skill instructions live in `skills/<name>/SKILL.md`. See [distribution](src/content/docs/start/distribution.md) and [release process](src/content/docs/start/release-and-rollback.md).
 
-### Migrating from the discontinued npm wrapper
-
-```bash
-npm uninstall -g @howlil/agentflow-cli
-```
-
-This removes the old global executable without deleting already-installed skill files. npm registry package ownership and historical versions are managed separately.
-
-MIT licensed. [Canonical GitHub repository](https://github.com/howlil/agentflow).
+Agentflow is licensed under the [MIT License](LICENSE).
