@@ -63,6 +63,22 @@ jobs:
       - run: npm run plugins:check
       - run: npm test
       - run: npm run build
+      - name: Verify release ChatGPT package ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist-package
+          archive="dist-package/agentflow-chatgpt-v$(node -p "require('./package.json').version").zip"
+          zip -q -r -X "$archive" plugin.json skills assets
+          extracted="$(mktemp -d)"
+          trap 'rm -rf "$extracted"' EXIT
+          unzip -q "$archive" -d "$extracted"
+          node scripts/chatgpt-package.mjs --check "$extracted"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agentflow-chatgpt-release
+          path: dist-package/*.zip
+          if-no-files-found: error
   github-release:
     needs: verify
     if: ${{ needs.verify.result == 'success' }}
@@ -73,6 +89,10 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: agentflow-chatgpt-release
+          path: dist-package
       - name: Publish GitHub release, never an npm package
         shell: bash
         env:
@@ -90,4 +110,6 @@ jobs:
             capture { print }
           ' CHANGELOG.md > /tmp/agentflow-release-notes.md
           test -s /tmp/agentflow-release-notes.md
-          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --notes-file /tmp/agentflow-release-notes.md --title "Agentflow $RELEASE_TAG"
+          artifact="dist-package/agentflow-chatgpt-$RELEASE_TAG.zip"
+          test -s "$artifact"
+          gh release create "$RELEASE_TAG" "$artifact" --target "$GITHUB_SHA" --notes-file /tmp/agentflow-release-notes.md --title "Agentflow $RELEASE_TAG"
