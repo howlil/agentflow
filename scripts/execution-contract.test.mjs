@@ -47,8 +47,12 @@ test('M2 detects duplicate requirement IDs and stale CI evidence', () => {
 
 test('M2 research decisions must map to actual requirements or document exclusion', () => {
   invalid(good().replace('| INCLUDE | AF-001 |', '| INCLUDE | AF-999 |'), 'Unresolved requirement AF-999');
-  invalid(good().replace('| DEC-001 |', '| DEC-100 |').replace('DEC-100 |', 'DEC-100 |') +
-    '\n| DEC-100 | Same decision | INCLUDE | AF-001 |', 'Duplicate research decision: DEC-100');
+  const duplicateDecision = good().replace(
+    '| DEC-001 | Approved choice, source: design-notes.md | INCLUDE | AF-001 |',
+    '| DEC-100 | Approved choice, source: design-notes.md | INCLUDE | AF-001 |\n' +
+    '| DEC-100 | Another approved conclusion | INCLUDE | AF-001 |'
+  );
+  invalid(duplicateDecision, 'Duplicate research decision: DEC-100');
   invalid(good().replace('| INCLUDE | AF-001 |', '| EXCLUDE | - |'), 'Missing approved exclusion');
   const excluded = good().replace('| INCLUDE | AF-001 |', '| EXCLUDE | Reason: request explicitly removed after review |');
   assert.equal(validateExecutionContract(excluded).valid, true);

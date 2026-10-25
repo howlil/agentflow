@@ -18,7 +18,7 @@ labels: []
 <!-- Required behavior, preserved behavior, explicit exclusions, and consequential failure states. -->
 
 ## Research decision traceability
-Record each **approved, actionable** research conclusion exactly once. Its disposition is INCLUDE (mapped to one or more requirement IDs), EXCLUDE, or DEFER (both require an explicit reason). These are research decisions, not a second requirement-status ledger. Do not copy an entire research transcript here. If the task has no approved research decisions, replace the example row with exactly: N/A: no approved research decisions.
+Record each **approved, actionable** research conclusion exactly once. Its disposition is INCLUDE (mapped to one or more requirement IDs), EXCLUDE, or DEFER (both require an explicit reason). These are research decisions, not a second requirement-status ledger. Do not copy an entire research transcript here. If the task has no approved research decisions, replace the **entire decision table (header, divider, and rows)** with the single line: N/A: no approved research decisions.
 
 | Decision | Approved conclusion and source | Disposition | Requirement ID(s) or rationale |
 | --- | --- | --- | --- |
