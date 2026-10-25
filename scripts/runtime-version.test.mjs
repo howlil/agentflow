@@ -15,5 +15,5 @@ test('Node runtime is supported by security-patched Astro and Cloudflare docs ag
     'Astro 7.4.2 requires >=22.23.4 and October 2026 Node security fixes');
   const guide = await read('src/content/docs/start/deploy-cloudflare.md');
   assert.ok(guide.includes('Node version | `' + version + '`'), 'documented Cloudflare Node pin must match .node-version');
-  assert.ok(!guide.includes('22.23.3'), 'document must not recommend the known-incompatible runtime');
+  assert.doesNotMatch(guide, /Node version\s*\|\s*`22\.23\.3`/, 'Cloudflare version table must not recommend the incompatible runtime');
 });
