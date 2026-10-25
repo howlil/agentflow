@@ -49,13 +49,13 @@ test('generated static discovery index tracks changes to canonical skill descrip
   }
 });
 
-test('README, hero, documentation and sidebar prioritize installation routes', async () => {
+test('README, hero, documentation and sidebar keep a truthful installation path', async () => {
   const readme = await read('README.md');
   const guide = await read('src/content/docs/start/distribution.md');
   const home = await read('src/content/docs/index.mdx');
   const hero = await read('src/components/landing/LandingHero.astro');
   const config = await read('astro.config.mjs');
-  assert.ok(readme.indexOf('## Install in 60 seconds') < readme.indexOf('## Source-of-truth model'));
+  assert.ok(readme.indexOf('## Install and use') < readme.indexOf('## Development'));
   assert.ok(readme.includes('npx skills@1.7.4 add howlil/agentflow --list'));
   assert.ok(readme.includes('skills.sh/b/howlil/agentflow'));
   assert.doesNotMatch(readme, /npm install -g @howlil\/agentflow-cli/);
@@ -73,7 +73,7 @@ test('canonical runtime count is unchanged and generated discovery output is ign
   assert.ok((await read('scripts/generate-skills.mjs')).includes('formatDiscoveryIndex(outputs.map'));
 });
 
-test('brand messaging is consistent without overstating runtime capabilities', async () => {
+test('brand and README describe capabilities without claiming a separate runtime', async () => {
   const readme = await read('README.md');
   const brand = await read('BRAND.md');
   const index = await read('src/content/docs/index.mdx');
@@ -83,9 +83,11 @@ test('brand messaging is consistent without overstating runtime capabilities', a
     assert.ok(copy.includes('Better judgment for AI agents.'), 'Primary tagline drift');
   }
   assert.match(hero, /Better judgment[\s\S]*for AI agents\./);
-  assert.ok(readme.includes('The right skill for every engineering decision.'));
-  assert.ok(readme.includes('## Install in 60 seconds'));
-  assert.ok(readme.includes('## Source-of-truth model'));
+  assert.ok(readme.includes('one decision router and ten focused specialists'));
+  assert.ok(readme.includes('not a separate code-executing agent'));
+  assert.ok(readme.includes('CONTRIBUTING.md'));
+  assert.ok(readme.includes('SECURITY.md'));
+  assert.ok(readme.includes('SUPPORT.md'));
   assert.ok(readme.includes('npx skills@1.7.4 add howlil/agentflow'));
   assert.ok(index.includes('<SkillGrid />'));
   assert.ok(hero.includes('href="/start/distribution/"'));
