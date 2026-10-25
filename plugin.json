@@ -16,5 +16,30 @@
     "decision-routing",
     "code-review",
     "architecture"
-  ]
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Agentflow",
+        "shortDescription": "Engineering skills that fit",
+        "longDescription": "Better judgment for AI agents. Agentflow routes software engineering decisions to a focused set of eleven portable skills covering product design, architecture, implementation, interface modeling, testing, security, operations and code review. It provides guidance and workflows, not automatic repository access or a separate execution service.",
+        "developerName": "howlil",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Route engineering decisions",
+          "Review architecture and code",
+          "Plan implementation and verification"
+        ],
+        "websiteURL": "https://github.com/howlil/agentflow",
+        "defaultPrompt": [
+          "Review the architecture boundaries in this backend design.",
+          "Find concrete correctness risks in this code change.",
+          "Plan targeted tests for a concurrency-sensitive feature."
+        ],
+        "brandColor": "#0C0D10",
+        "composerIcon": "./assets/agentflow.svg",
+        "logo": "./assets/agentflow.svg"
+      }
+    }
+  }
 }
