@@ -70,7 +70,7 @@ jobs:
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          permission-profile: ':workspace'
+          sandbox: workspace-write
           safety-strategy: drop-sudo
           prompt-file: .agentflow-run/prompt.md
           output-file: .agentflow-run/codex-summary.txt
