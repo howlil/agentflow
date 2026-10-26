@@ -1,9 +1,10 @@
-import { validateExecutionContract } from './execution-contract.mjs';
+import { validateExecutionContract, parseResumePointer } from './execution-contract.mjs';
 
 export function checkAcceptance({ body, repository, issueNumber, expectedSha, branchSha, run, jobs }) {
   const structural = validateExecutionContract(body);
   const errors = [...structural.diagnostics];
-  const field = name => body.match(new RegExp('^- ' + name + ':\\s*(.+)$', 'm'))?.[1]?.trim() || '';
+  const resume = parseResumePointer(body);
+  const field = name => resume.fields[name] ?? '';
   const phase = field('Execution phase');
   const cited = field('CI evidence assessed for SHA');
   const runRef = cited.match(/\brun=https:\/\/github\.com\/([^/\s]+\/[^/\s]+)\/actions\/runs\/(\d+)\b/);

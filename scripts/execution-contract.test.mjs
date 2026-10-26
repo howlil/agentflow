@@ -107,3 +107,15 @@ test('M2 even-numbered backslashes do not escape a column delimiter', () => {
   const body = good().replace('X returns the expected result', 'A \\\\| B is a separate column');
   invalid(body, 'Invalid column count in Requirement evidence ledger');
 });
+
+test('M2 duplicate operational fields in the Resume pointer fail closed', () => {
+  const duplicated = good().replace('- Next requirement: AF-001',
+    '- Next requirement: AF-001\n- Next requirement: DONE');
+  invalid(duplicated, 'Duplicate Resume pointer field: Next requirement');
+});
+
+test('M2 ignores fields outside Resume pointer', () => {
+  const body = good().replace('## Resume pointer',
+    '- Latest inspected HEAD SHA: ' + OLD + '\n\n## Resume pointer');
+  assert.equal(validateExecutionContract(body).valid, true);
+});

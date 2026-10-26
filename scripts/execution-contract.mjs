@@ -52,12 +52,22 @@ function tables(body, name, columns, errors) {
   }).filter(cells => cells.length === columns);
 }
 
-function field(body, name) {
-  const resume = section(body, 'Resume pointer');
-  if (!resume) return null;
-  const prefix = '- ' + name + ':';
-  const row = resume.split('\n').find(s => s.trim().startsWith(prefix));
-  return row ? row.trim().slice(prefix.length).trim() : null;
+// The Resume pointer is the sole source of operational fields.
+// Duplicate keys fail closed rather than allowing different readers to select different values.
+export function parseResumePointer(body) {
+  const resume = typeof body === 'string' ? section(body, 'Resume pointer') : null;
+  const fields = Object.create(null);
+  const diagnostics = [];
+  if (resume === null) return { fields, diagnostics };
+  const known = new Set(['Active PR and branch', 'Execution phase', 'Latest inspected HEAD SHA',
+    'CI evidence assessed for SHA', 'Next requirement', 'Next concrete action', 'Open blockers']);
+  for (const line of resume.split('\n')) {
+    const match = line.trim().match(/^- ([^:]+):\s*(.*)$/);
+    if (!match || !known.has(match[1])) continue;
+    if (Object.hasOwn(fields, match[1])) diagnostics.push('Duplicate Resume pointer field: ' + match[1]);
+    else fields[match[1]] = match[2].trim();
+  }
+  return { fields, diagnostics };
 }
 
 export function validateExecutionContract(body) {
@@ -114,13 +124,16 @@ export function validateExecutionContract(body) {
     } else errors.push('Invalid research disposition: ' + id);
   }
 
-  const phase = field(body, 'Execution phase');
+  const resume = parseResumePointer(body);
+  errors.push(...resume.diagnostics);
+  const field = name => resume.fields[name] ?? null;
+  const phase = field('Execution phase');
   if (phase !== null && !EXECUTION_PHASES.has(phase)) errors.push('Invalid execution phase: ' + phase);
-  const next = field(body, 'Next requirement');
-  const head = field(body, 'Latest inspected HEAD SHA');
-  const ci = field(body, 'CI evidence assessed for SHA');
-  const nextAction = field(body, 'Next concrete action');
-  const blockers = field(body, 'Open blockers');
+  const next = field('Next requirement');
+  const head = field('Latest inspected HEAD SHA');
+  const ci = field('CI evidence assessed for SHA');
+  const nextAction = field('Next concrete action');
+  const blockers = field('Open blockers');
   const unresolved = requirements.filter(row => VALID_STATES.has(row[3]) && row[3] !== 'VERIFIED').map(row => row[0]);
   if (unresolved.length && !unresolved.includes(next)) errors.push('Resume pointer must identify an unresolved requirement');
   if (!unresolved.length && requirements.length && next !== 'DONE') errors.push('Completed ledger requires Next requirement: DONE');

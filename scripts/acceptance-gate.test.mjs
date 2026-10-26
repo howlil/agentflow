@@ -51,3 +51,27 @@ test('stale, failed and forged GitHub evidence fail closed', () => {
   reject({...make(),jobs:[]},'Required verify job');
   reject({...make(),body:makeBody().replace('howlil/agentflow/actions/runs/42','attacker/repo/actions/runs/42')},'link must belong');
 });
+
+test('only Resume pointer values are authoritative; prefixed decoys cannot validate', () => {
+  const body = makeBody().replace(
+    '## Resume pointer',
+    '- Execution phase: ACCEPTED\n- Latest inspected HEAD SHA: ' + sha + '\n- Next requirement: DONE\n\n## Resume pointer'
+  ).replace('- Execution phase: VERIFYING', '- Execution phase: BLOCKED');
+  reject({...make(),body}, 'phase VERIFYING or ACCEPTED');
+});
+
+test('duplicate Resume pointer fields reject acceptance even when first value is valid', () => {
+  const body = makeBody().replace('- Execution phase: VERIFYING',
+    '- Execution phase: VERIFYING\n- Execution phase: BLOCKED');
+  reject({...make(),body}, 'Duplicate Resume pointer field');
+  const wrongSha = makeBody().replace('- Latest inspected HEAD SHA: ' + sha,
+    '- Latest inspected HEAD SHA: ' + sha + '\n- Latest inspected HEAD SHA: ' + old);
+  reject({...make(),body:wrongSha}, 'Duplicate Resume pointer field');
+});
+
+test('authoritative fields outside Resume pointer never satisfy the gate', () => {
+  const body = makeBody().replace('- CI evidence assessed for SHA: sha=' + sha + '; run=https://github.com/' + repo + '/actions/runs/42',
+    '- CI evidence assessed for SHA: UNRUN');
+  reject({...make(),body:body + '\n\n## Appendix\n- CI evidence assessed for SHA: sha=' +
+    sha + '; run=https://github.com/' + repo + '/actions/runs/42'}, 'CI run link must belong');
+});
