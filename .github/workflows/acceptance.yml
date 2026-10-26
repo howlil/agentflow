@@ -1,0 +1,28 @@
+name: Agentflow Issue Acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Number of completed Agentflow execution Issue'
+        required: true
+        type: number
+permissions:
+  contents: read
+  issues: read
+  actions: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Check Issue ledger against real GitHub state
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: node scripts/check-issue-acceptance.mjs

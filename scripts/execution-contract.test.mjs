@@ -83,6 +83,18 @@ test('M2 new issue template is intentionally invalid until the user supplies act
   assert.match(template, /single authoritative record/);
 });
 
+test('M2 optional execution phase rejects premature ACCEPTED claims', () => {
+  const pending = good().replace('Next requirement: AF-001', 'Execution phase: ACCEPTED\n- Next requirement: AF-001');
+  invalid(pending, 'ACCEPTED requires all requirements VERIFIED');
+  invalid(pending.replace('ACCEPTED', 'UNKNOWN'), 'Invalid execution phase');
+  const passed = good('VERIFIED', 'Review; sha=' + SHA + '; PASS')
+    .replace('Next requirement: DONE', 'Execution phase: ACCEPTED\n- Next requirement: DONE')
+    .replace('CI evidence assessed for SHA: UNRUN', 'CI evidence assessed for SHA: sha=' + SHA + '; run=https://github.com/org/repo/actions/runs/123');
+  assert.equal(validateExecutionContract(passed).valid, true, validateExecutionContract(passed).diagnostics.join('; '));
+  invalid(passed.replace('Open blockers: none', 'Open blockers: pending'), 'ACCEPTED cannot have open blockers');
+  invalid(passed.replace('run=https://github.com/org/repo/actions/runs/123', 'UNRUN'), 'ACCEPTED requires a HEAD SHA');
+});
+
 test('M2 Markdown tables support escaped pipes in content without losing columns', () => {
   const body = good()
     .replace('X returns the expected result', 'Accept A \\| B and return the expected result')
@@ -94,4 +106,23 @@ test('M2 Markdown tables support escaped pipes in content without losing columns
 test('M2 even-numbered backslashes do not escape a column delimiter', () => {
   const body = good().replace('X returns the expected result', 'A \\\\| B is a separate column');
   invalid(body, 'Invalid column count in Requirement evidence ledger');
+});
+
+test('M2 duplicate operational fields in the Resume pointer fail closed', () => {
+  const duplicated = good().replace('- Next requirement: AF-001',
+    '- Next requirement: AF-001\n- Next requirement: DONE');
+  invalid(duplicated, 'Duplicate Resume pointer field: Next requirement');
+});
+
+test('M2 ignores fields outside Resume pointer', () => {
+  const body = good().replace('## Resume pointer',
+    '- Latest inspected HEAD SHA: ' + OLD + '\n\n## Resume pointer');
+  assert.equal(validateExecutionContract(body).valid, true);
+});
+
+test('M2 rejects duplicate authoritative sections and repository identities', () => {
+  invalid(good() + '\n\n## Resume pointer\n- Next requirement: DONE', 'Duplicate authoritative section: Resume pointer');
+  invalid(good().replace('Repository: org/repo', 'Repository: org/repo\n- Repository: attacker/repo'),
+    'Repository and baseline must have exactly one Repository field');
+  invalid(good().replace('Repository: org/repo', 'Repository: INVALID'), 'Invalid repository identity');
 });

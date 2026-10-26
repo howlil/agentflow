@@ -3,6 +3,7 @@
 const REQUIREMENT_ID = /^AF-\d{3,}$/;
 const DECISION_ID = /^DEC-\d{3,}$/;
 const VALID_STATES = new Set(['PENDING', 'IMPLEMENTED_UNVERIFIED', 'VERIFIED', 'BLOCKED']);
+const EXECUTION_PHASES = new Set(['PLANNED', 'IMPLEMENTING', 'VERIFYING', 'NEEDS_REPAIR', 'BLOCKED', 'ACCEPTED']);
 const SHA = /^[0-9a-f]{40}$/i;
 const incomplete = value => !value || /<!--|-->|^\s*(?:TBD|TODO|—|-)\s*$/i.test(value);
 
@@ -14,6 +15,18 @@ function section(body, name) {
   const after = normalized.slice(offset + delimiter.length);
   const end = after.indexOf('\n## ');
   return end < 0 ? after : after.slice(0, end);
+}
+
+export function parseIssueRepository(body) {
+  const baseline = typeof body === 'string' ? section(body, 'Repository and baseline') : null;
+  const matches = (baseline || '').split('\n')
+    .map(line => line.trim().match(/^- Repository:\s*(.+)$/))
+    .filter(Boolean);
+  const diagnostics = [];
+  if (matches.length !== 1) diagnostics.push('Repository and baseline must have exactly one Repository field');
+  const name = matches.length === 1 ? matches[0][1].trim() : '';
+  if (name && !/^[\w.-]+\/[\w.-]+$/.test(name)) diagnostics.push('Invalid repository identity: ' + name);
+  return { name, diagnostics };
 }
 
 function tables(body, name, columns, errors) {
@@ -51,12 +64,22 @@ function tables(body, name, columns, errors) {
   }).filter(cells => cells.length === columns);
 }
 
-function field(body, name) {
-  const resume = section(body, 'Resume pointer');
-  if (!resume) return null;
-  const prefix = '- ' + name + ':';
-  const row = resume.split('\n').find(s => s.trim().startsWith(prefix));
-  return row ? row.trim().slice(prefix.length).trim() : null;
+// The Resume pointer is the sole source of operational fields.
+// Duplicate keys fail closed rather than allowing different readers to select different values.
+export function parseResumePointer(body) {
+  const resume = typeof body === 'string' ? section(body, 'Resume pointer') : null;
+  const fields = Object.create(null);
+  const diagnostics = [];
+  if (resume === null) return { fields, diagnostics };
+  const known = new Set(['Active PR and branch', 'Execution phase', 'Latest inspected HEAD SHA',
+    'CI evidence assessed for SHA', 'Next requirement', 'Next concrete action', 'Open blockers']);
+  for (const line of resume.split('\n')) {
+    const match = line.trim().match(/^- ([^:]+):\s*(.*)$/);
+    if (!match || !known.has(match[1])) continue;
+    if (Object.hasOwn(fields, match[1])) diagnostics.push('Duplicate Resume pointer field: ' + match[1]);
+    else fields[match[1]] = match[2].trim();
+  }
+  return { fields, diagnostics };
 }
 
 export function validateExecutionContract(body) {
@@ -65,8 +88,12 @@ export function validateExecutionContract(body) {
     return { valid: false, diagnostics: ['Issue body must be nonempty text'], requirements: [] };
   }
   for (const name of ['Objective', 'Repository and baseline', 'Scope and invariants', 'Research decision traceability', 'Acceptance contract', 'Requirement evidence ledger', 'Resume pointer']) {
-    if (section(body, name) === null) errors.push('Missing section: ' + name);
+    const normalized = body.replace(/\r\n/g, '\n');
+    const count = normalized.split('\n').filter(line => line === '## ' + name).length;
+    if (count === 0) errors.push('Missing section: ' + name);
+    if (count > 1) errors.push('Duplicate authoritative section: ' + name);
   }
+  errors.push(...parseIssueRepository(body).diagnostics);
   for (const name of ['Objective', 'Scope and invariants']) {
     const content = section(body, name);
     if (!content || !content.split('\n').some(line => line.trim() && !incomplete(line.trim()))) {
@@ -113,11 +140,16 @@ export function validateExecutionContract(body) {
     } else errors.push('Invalid research disposition: ' + id);
   }
 
-  const next = field(body, 'Next requirement');
-  const head = field(body, 'Latest inspected HEAD SHA');
-  const ci = field(body, 'CI evidence assessed for SHA');
-  const nextAction = field(body, 'Next concrete action');
-  const blockers = field(body, 'Open blockers');
+  const resume = parseResumePointer(body);
+  errors.push(...resume.diagnostics);
+  const field = name => resume.fields[name] ?? null;
+  const phase = field('Execution phase');
+  if (phase !== null && !EXECUTION_PHASES.has(phase)) errors.push('Invalid execution phase: ' + phase);
+  const next = field('Next requirement');
+  const head = field('Latest inspected HEAD SHA');
+  const ci = field('CI evidence assessed for SHA');
+  const nextAction = field('Next concrete action');
+  const blockers = field('Open blockers');
   const unresolved = requirements.filter(row => VALID_STATES.has(row[3]) && row[3] !== 'VERIFIED').map(row => row[0]);
   if (unresolved.length && !unresolved.includes(next)) errors.push('Resume pointer must identify an unresolved requirement');
   if (!unresolved.length && requirements.length && next !== 'DONE') errors.push('Completed ledger requires Next requirement: DONE');
@@ -133,6 +165,13 @@ export function validateExecutionContract(body) {
   if (incomplete(blockers)) errors.push('Missing blocker field');
   if (requirements.some(row => row[3] === 'BLOCKED') && blockers && blockers.toLowerCase() === 'none') {
     errors.push('BLOCKED requirement must appear in open blockers');
+  }
+  if (phase === 'ACCEPTED') {
+    if (unresolved.length || next !== 'DONE') errors.push('ACCEPTED requires all requirements VERIFIED and Next requirement: DONE');
+    if (!blockers || blockers.toLowerCase() !== 'none') errors.push('ACCEPTED cannot have open blockers');
+    if (!ci || !/\bsha=[0-9a-f]{40}\b/i.test(ci) || !/\brun=https:\/\/github\.com\/[^\s]+\/actions\/runs\/\d+\b/.test(ci)) {
+      errors.push('ACCEPTED requires a HEAD SHA and linked CI run (structure is not actual CI verification)');
+    }
   }
   for (const [id, , , state, , verification] of requirements) {
     if (state === 'VERIFIED') {
