@@ -2,6 +2,26 @@
 
 Agentflow releases track the canonical `skills/*/SKILL.md` library, website and optional native plugin manifests. The private root package is **not** an npm CLI. Updates to this changelog are part of a reviewed release request.
 
+## v0.5.0
+
+**Agentflow v0.5.0 — GitHub Code Factory Foundation and Lean Engineering Policies**
+
+### Highlights
+
+- **ChatGPT Web + GitHub workflow (opt-in):** a single AI executor in ChatGPT Web can use authorized GitHub tools for source changes, Issues, pull requests and actual CI evidence. No external coding agent, separate backend or model API key.
+- **Conditional operating policies:** reusable engineering execution, GitHub delivery/CI, and OSS/private/commercial documentation guidance under the Agentflow router's `references/`; the original one-router/ten-specialist inventory is unchanged.
+- **Research-to-acceptance contract:** Issue template, stable requirement and decision IDs, verification evidence/resume pointers, and a structural validator with regression tests. It does not execute GitHub tests or automatically validate external Issues.
+- **Lean, risk-adaptive CI:** always-on required verification; conditional five-host portable installer matrix; safe documentation fast path that still runs README contract tests; superseded PR-run cancellation.
+- **Distribution confidence:** verify portable reference files during install and removal for five coding hosts; generate and validate the actual ChatGPT skills-only ZIP.
+- **Open-source onboarding:** product-focused README and concrete contribution, security, support and conduct guidance; Cloudflare Worker preview builds for feature branches.
+- **Regression hardening:** Markdown escaped-pipe handling, release/package invariants, source-of-truth alignment and SHA-aware verification discipline.
+
+### Compatibility and acceptance
+
+The eleven canonical skill names and supported distribution routes remain unchanged. The root npm package stays private, and **no npm publication occurs**. The GitHub Release includes the ChatGPT candidate ZIP for manual installation/testing; it is not confirmation of ChatGPT Plugin Directory approval or installation.
+
+**Host-level E2E acceptance remains open** in [Issue #34](https://github.com/howlil/agentflow/issues/34): load this exact plugin candidate into ChatGPT, confirm new router instructions, validate GitHub permissions and negative cases, and exercise cross-conversation `next`. Passing repository CI does not satisfy those checks.
+
 ## v0.4.1
 
 **Agentflow v0.4.1 — ChatGPT Web Skills-Only Package**
