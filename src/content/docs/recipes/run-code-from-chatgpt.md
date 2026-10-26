@@ -59,6 +59,14 @@ States in the issue's requirement ledger:
 
 When test execution is not available through GitHub's existing CI, leave `Verification: UNRUN` and never infer a pass. For a Windows-specific feature, Linux CI passing cannot substitute for Windows runtime acceptance. For a multi-file change use commit/PR links and compare their concrete diffs; do not assert a transactional commit if the host only wrote files sequentially.
 
+## Opt-in deterministic acceptance gate
+
+After all required Issue requirements have trustworthy evidence, mark them `VERIFIED`, set `Execution phase: VERIFYING`, `Next requirement: DONE`, and `Open blockers: none`, then record the current **master** SHA and an actual successful CI run as `sha=<40-hex>; run=https://github.com/owner/repo/actions/runs/<id>`. Structural validation cannot prove that a CI run passed, a research requirement was complete, or that real host acceptance occurred.
+
+The **Agentflow Issue Acceptance** GitHub Actions workflow is invoked manually with an Issue number. It reads GitHub with minimal read-only permissions and fails if the Issue is malformed, a requirement remains unverified, the master SHA changed, the cited CI run failed or belongs to another revision, or the required `verify` job did not succeed. It does **not** close Issues, alter branches, deploy anything or approve releases. Only mark the acceptance gate verified after its actual GitHub workflow has succeeded.
+
+**This is an opt-in evidence check, not mandatory branch protection.** Other repositories do not gain it automatically from installing Agentflow; target repositories need their own verification and administrator-managed required checks/rulesets where necessary. Do not advertise `ACCEPTED` solely because the workflow file exists. Host-installed plugin E2E and semantic completeness still need independent review.
+
 ## Host responsibilities
 
 - **ChatGPT Web:** select Agentflow skills, inspect code, reason, author changes, maintain the issue ledger, inspect PRs and evidence.
