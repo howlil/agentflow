@@ -69,7 +69,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist-package
           archive="dist-package/agentflow-chatgpt-v$(node -p "require('./package.json').version").zip"
-          zip -q -r -X "$archive" plugin.json skills assets
+          zip -q -r -X "$archive" .codex-plugin skills assets
           extracted="$(mktemp -d)"
           trap 'rm -rf "$extracted"' EXIT
           unzip -q "$archive" -d "$extracted"

@@ -27,7 +27,7 @@ test('M3 Issue contracts, website and source changes keep full verification', ()
 });
 test('M3 skill/manifest/installer changes still require portable matrix', () => {
   for (const p of ['skills/agentflow/SKILL.md','skills/agentflow/references/github-delivery-policy.md',
-    'assets/agentflow.svg','plugin.json','.claude-plugin/plugin.json','package-lock.json',
+    'assets/agentflow.svg','plugin.json','.claude-plugin/plugin.json','.codex-plugin/plugin.json','package-lock.json',
     'scripts/generate-skills.mjs','scripts/chatgpt-package.mjs',
     '.github/scripts/cross-agent-candidate.sh','.github/workflows/ci.yml','RELEASE_VERSION']) {
     assert.deepEqual(classifyPaths([p]), {

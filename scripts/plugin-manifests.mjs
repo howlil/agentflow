@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { EXPECTED, parseFrontmatter } from './generate-skills.mjs';
 import { validateChatGPTPackage } from './chatgpt-package.mjs';
 
-export const VERSIONED_MANIFESTS = ['plugin.json', '.claude-plugin/plugin.json'];
+export const VERSIONED_MANIFESTS = ['plugin.json', '.claude-plugin/plugin.json', '.codex-plugin/plugin.json'];
 const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
 async function readJson(root, path) {
@@ -39,18 +39,23 @@ export async function validatePluginDistribution({ root = process.cwd() } = {}) 
   const version = await syncPluginVersions({ root });
   const portable = await readJson(root, 'plugin.json');
   const claude = await readJson(root, '.claude-plugin/plugin.json');
+  const codex = await readJson(root, '.codex-plugin/plugin.json');
   const claudeMarket = await readJson(root, '.claude-plugin/marketplace.json');
   const codexMarket = await readJson(root, '.agents/plugins/marketplace.json');
 
   if (portable.$schema !== 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json') {
     throw new Error('Portable manifest must use Agent Plugins 1.0 schema');
   }
-  if (!portable.description || !claude.description || portable.license !== 'MIT') {
+  if (!portable.description || !claude.description || !codex.description || portable.license !== 'MIT') {
     throw new Error('Plugin metadata must include descriptions and MIT license');
   }
 
-  // Validate the same portable root and canonical skill inventory we ship in the ZIP.
+  // Validate the canonical ChatGPT manifest before checking legacy listing parity.
   const chatgpt = await validateChatGPTPackage({ root });
+  if (codex.name !== portable.name || codex.version !== version || codex.description !== portable.description ||
+      JSON.stringify(codex.interface) !== JSON.stringify(portable.extensions?.['com.openai']?.interface)) {
+    throw new Error('ChatGPT canonical manifest differs from portable root listing identity or metadata');
+  }
   if (chatgpt.version !== version) throw new Error('ChatGPT version differs from root package.json');
 
   if (claudeMarket.name !== 'agentflow' || claudeMarket.plugins?.length !== 1 ||
@@ -59,7 +64,7 @@ export async function validatePluginDistribution({ root = process.cwd() } = {}) 
     throw new Error('Claude marketplace must reference this root plugin exactly once');
   }
   if (codexMarket.name !== 'agentflow' || codexMarket.plugins?.length !== 1 ||
-      codexMarket.plugins[0]?.name !== portable.name ||
+      codexMarket.plugins[0]?.name !== codex.name ||
       codexMarket.plugins[0]?.source?.source !== 'local' ||
       codexMarket.plugins[0]?.source?.path !== './' ||
       codexMarket.plugins[0]?.policy?.installation !== 'AVAILABLE' ||

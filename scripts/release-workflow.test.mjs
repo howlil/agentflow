@@ -15,6 +15,7 @@ test('release request is version-aligned, has changelog and never publishes npm'
   const lock = JSON.parse(await read('package-lock.json'));
   const plugin = JSON.parse(await read('plugin.json'));
   const claude = JSON.parse(await read('.claude-plugin/plugin.json'));
+  const codex = JSON.parse(await read('.codex-plugin/plugin.json'));
   const trigger = (await read('RELEASE_VERSION')).trim();
   const changelog = await read('CHANGELOG.md');
   const workflow = await read('.github/workflows/release.yml');
@@ -24,6 +25,7 @@ test('release request is version-aligned, has changelog and never publishes npm'
   assert.equal(lock.packages[''].version, pkg.version);
   assert.equal(plugin.version, pkg.version);
   assert.equal(claude.version, pkg.version);
+  assert.equal(codex.version, pkg.version);
   assert.ok(changelog.includes('## ' + trigger));
   assert.match(workflow, /branches:\s*\n\s*- master/);
   assert.match(workflow, /paths:\s*\n\s*- RELEASE_VERSION/);
@@ -31,6 +33,8 @@ test('release request is version-aligned, has changelog and never publishes npm'
   assert.ok(workflow.includes('--notes-file /tmp/agentflow-release-notes.md'));
   assert.ok(workflow.includes('git merge-base --is-ancestor'));
   assert.ok(workflow.includes('npm run plugins:check'));
+  assert.ok(workflow.includes('.codex-plugin skills assets'));
+  assert.ok(!workflow.includes('zip -q -r -X "$archive" plugin.json skills assets'));
   assert.ok(workflow.includes('test "$REQUESTED_TAG" = "v$ROOT_VERSION"'));
   assert.doesNotMatch(workflow, /npm publish|publish-npm|NPM_KEY|NODE_AUTH_TOKEN/);
 });
