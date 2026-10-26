@@ -100,7 +100,10 @@ jobs:
           count="$(unzip -Z1 dist-package/*.zip | grep -Ec '^skills/[^/]+/SKILL.md$')"
           test "$count" -eq 11
           unzip -Z1 dist-package/*.zip | grep -Fxq '.codex-plugin/plugin.json'
-          ! unzip -Z1 dist-package/*.zip | grep -Fxq 'plugin.json'
+          if unzip -Z1 dist-package/*.zip | grep -Fxq 'plugin.json'; then
+            echo 'Legacy root plugin.json is forbidden in ChatGPT ZIP' >&2
+            exit 1
+          fi
           unzip -Z1 dist-package/*.zip | grep -Fxq 'assets/agentflow.svg'
           extracted="$(mktemp -d)"
           trap 'rm -rf "$extracted"' EXIT
