@@ -2,6 +2,24 @@
 
 Agentflow releases track the canonical `skills/*/SKILL.md` library, website and optional native plugin manifests. The private root package is **not** an npm CLI. Updates to this changelog are part of a reviewed release request.
 
+## v0.6.0
+
+**Agentflow v0.6.0 — Lean Code Factory acceptance integrity**
+
+### Changes
+
+- **Lean orchestration contract:** route the smallest relevant specialist set; use DAG delegation only when the host genuinely supports workers and coordination provides value. The host, not Agentflow, remains the AI executor.
+- **Issue-based execution integrity:** execution phases with fail-closed `ACCEPTED` checks; a shared authoritative `Resume pointer` parser that rejects duplicated fields and authoritative sections; valid repository identity in the baseline.
+- **GitHub evidence gate:** `scripts/acceptance-gate.mjs` rejects mismatched repository, run IDs, commit SHA, unrelated CI, wrong branches, failed jobs, and unverified requirements. Only completed `CI` runs triggered by a `push` to `master` with a successful `verify` job qualify.
+- **Manual read-only GitHub workflow:** `Agentflow Issue Acceptance` checks the existing Issue and CI through GitHub API; it rejects changed master/Issue state mid-check and never edits Issues, merges code, or deploys.
+- **Regression coverage and guidance:** tests for duplicate/shadowed fields, invalid Issue identities, stale CI, forged runs, and host-orchestration boundaries; documentation distinguishes opt-in evidence checks from required branch protection.
+
+### Compatibility and remaining acceptance
+
+The original **one router + ten specialist skills** and skills-only distribution remain. There is no Agentflow backend, agent worker pool, scheduler, external AI model executor, npm package publish, or new API-key requirement.
+
+GitHub Release includes the `agentflow-chatgpt-v0.6.0.zip` skills-only candidate. **Publishing the ZIP does not update a currently installed ChatGPT plugin, establish public Plugin Directory listing, or prove cross-conversation E2E**; those tests remain open in [Issue #34](https://github.com/howlil/agentflow/issues/34). The manual acceptance workflow is opt-in, and repository administrators must separately configure branch-protection/required-check policy.
+
 ## v0.5.0
 
 **Agentflow v0.5.0 — GitHub Code Factory Foundation and Lean Engineering Policies**
