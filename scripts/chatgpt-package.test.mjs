@@ -11,14 +11,14 @@ const version = JSON.parse(await readFile(join(repo, 'package.json'), 'utf8')).v
 
 async function fixture(run) {
   const root = await mkdtemp(join(tmpdir(), 'agentflow-chatgpt-package-'));
-  for (const path of ['plugin.json', 'assets', 'skills']) {
+  for (const path of ['.codex-plugin', 'assets', 'skills']) {
     await cp(join(repo, path), join(root, path), { recursive: true });
   }
   try { await run(root); } finally { await rm(root, { recursive: true, force: true }); }
 }
 
 async function mutate(root, transform) {
-  const file = join(root, 'plugin.json');
+  const file = join(root, '.codex-plugin', 'plugin.json');
   const plugin = JSON.parse(await readFile(file, 'utf8'));
   transform(plugin);
   await writeFile(file, JSON.stringify(plugin, null, 2) + '\n');
@@ -26,7 +26,7 @@ async function mutate(root, transform) {
 
 test('an extracted archive validates without website or marketplace files', async () => {
   await fixture(async root => {
-    assert.deepEqual((await readdir(root)).sort(), ['assets', 'plugin.json', 'skills']);
+    assert.deepEqual((await readdir(root)).sort(), ['.codex-plugin', 'assets', 'skills']);
     assert.deepEqual(await validateChatGPTPackage({ root, strictRoot: true }), { version, count: 11 });
   });
 });
@@ -37,34 +37,34 @@ test('archives with unexpected files or symlinks fail before distribution', asyn
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /unexpected or missing root entries/);
   });
   await fixture(async root => {
-    await symlink(join(root, 'plugin.json'), join(root, 'assets', 'linked.json'));
+    await symlink(join(root, '.codex-plugin', 'plugin.json'), join(root, 'assets', 'linked.json'));
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /symlinks or special files/);
   });
 });
 
 test('optional onboarding skill is allowed only when it points to a packaged skill', async () => {
   await fixture(async root => {
-    await mutate(root, p => { p.extensions['com.openai'].onboardingSkill = './skills/agentflow/SKILL.md'; });
+    await mutate(root, p => { p.onboardingSkill = './skills/agentflow/SKILL.md'; });
     assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 11);
-    await mutate(root, p => { p.extensions['com.openai'].onboardingSkill = '../outside/SKILL.md'; });
+    await mutate(root, p => { p.onboardingSkill = '../outside/SKILL.md'; });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /onboardingSkill path/);
   });
 });
 
 test('developer identity is not hardcoded to a single account name', async () => {
   await fixture(async root => {
-    await mutate(root, p => { p.extensions['com.openai'].interface.developerName = 'Verified Engineering Studio'; });
+    await mutate(root, p => { p.interface.developerName = 'Verified Engineering Studio'; });
     assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 11);
   });
 });
 
 test('invalid listing contrast and oversized descriptions are rejected', async () => {
   await fixture(async root => {
-    await mutate(root, p => { p.extensions['com.openai'].interface.brandColor = '#FFFFFF'; });
+    await mutate(root, p => { p.interface.brandColor = '#FFFFFF'; });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /2:1 contrast/);
     await mutate(root, p => {
-      p.extensions['com.openai'].interface.brandColor = '#0C0D10';
-      p.extensions['com.openai'].interface.shortDescription = 'X'.repeat(31);
+      p.interface.brandColor = '#0C0D10';
+      p.interface.shortDescription = 'X'.repeat(31);
     });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /shortDescription/);
   });
@@ -83,9 +83,9 @@ test('rejects missing skill directories and ZIPs containing app configs', async 
 
 test('rejects malformed icon path and missing packaged assets', async () => {
   await fixture(async root => {
-    await mutate(root, p => { p.extensions['com.openai'].interface.logo = '../outside.svg'; });
+    await mutate(root, p => { p.interface.logo = '../outside.svg'; });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /asset path/);
-    await mutate(root, p => { p.extensions['com.openai'].interface.logo = './assets/missing.svg'; });
+    await mutate(root, p => { p.interface.logo = './assets/missing.svg'; });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /ENOENT/);
   });
 });
@@ -95,9 +95,9 @@ test('screenshots may be rectangular while icons must be square', async () => {
     const screenshot = './assets/wide.svg';
     await writeFile(join(root, 'assets', 'wide.svg'),
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"></svg>');
-    await mutate(root, p => { p.extensions['com.openai'].interface.screenshots = [screenshot]; });
+    await mutate(root, p => { p.interface.screenshots = [screenshot]; });
     assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 11);
-    await mutate(root, p => { p.extensions['com.openai'].interface.logo = screenshot; });
+    await mutate(root, p => { p.interface.logo = screenshot; });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /square and at least 48x48/);
   });
 });
@@ -106,5 +106,27 @@ test('portable archive is bound to Agentflow package identity', async () => {
   await fixture(async root => {
     await mutate(root, p => { p.name = 'another-plugin'; });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /plugin identity/);
+  });
+});
+
+test('reject legacy root manifest in upload ZIP and duplicate nested manifest', async () => {
+  await fixture(async root => {
+    await writeFile(join(root, 'plugin.json'), '{}');
+    await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /unexpected or missing root entries/);
+  });
+  await fixture(async root => {
+    await writeFile(join(root, '.codex-plugin', 'extra.json'), '{}');
+    await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /only .codex-plugin\/plugin.json/);
+  });
+});
+
+test('reject missing skills declaration and legacy nested listing', async () => {
+  await fixture(async root => {
+    await mutate(root, p => { delete p.skills; });
+    await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /root skills and top-level interface/);
+  });
+  await fixture(async root => {
+    await mutate(root, p => { p.extensions = { 'com.openai': { interface: p.interface } }; delete p.interface; });
+    await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /root skills and top-level interface/);
   });
 });

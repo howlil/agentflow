@@ -40,7 +40,7 @@ claude plugin validate . --strict
 
 ## Codex / ChatGPT desktop
 
-Codex discovers the [portable Agent Plugins](https://developers.openai.com/plugins/build/plugins) `plugin.json` in this repository root. The curated source is `.agents/plugins/marketplace.json`.
+Codex discovers the [official plugin manifest](https://developers.openai.com/plugins/build/plugins) at `.codex-plugin/plugin.json`. Root `plugin.json` remains for legacy portable tooling. The curated source is `.agents/plugins/marketplace.json`.
 
 Add the public repository as a tracked Codex marketplace:
 
@@ -72,7 +72,7 @@ Removing a marketplace does **not** automatically mean every previously installe
 
 ## ChatGPT Web (skills-only)
 
-The root portable manifest now includes OpenAI listing metadata and packaged visual assets. See [ChatGPT Web plugin](/start/chatgpt-web/) for submission packaging, safety/permission boundaries and the manual acceptance matrix. Installing a skill is not authorization to use tools or write to a repository.
+The official `.codex-plugin/plugin.json` contains top-level OpenAI listing metadata and the release ZIP includes that manifest, `skills/`, and `assets/`. See [ChatGPT Web plugin](/start/chatgpt-web/) for submission packaging, safety/permission boundaries and the manual acceptance matrix. Installing a skill is not authorization to use tools or write to a repository.
 
 ## Editable skills for other coding agents
 

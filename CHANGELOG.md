@@ -2,6 +2,20 @@
 
 Agentflow releases track the canonical `skills/*/SKILL.md` library, website and optional native plugin manifests. The private root package is **not** an npm CLI. Updates to this changelog are part of a reviewed release request.
 
+## v0.6.1
+
+**Agentflow v0.6.1 — ChatGPT package-format compatibility**
+
+### Fixes
+
+- Change the ChatGPT upload ZIP to the required `.codex-plugin/plugin.json` path with top-level `interface` and `skills: "./skills/"`. Keep the legacy root manifest for portable consumers and verify listing identity parity.
+- Revalidate the exact extracted ZIP, rejecting legacy ZIP layout, duplicate manifest files, unsafe paths and missing skills. Add regression tests and updated upload instructions.
+- Synchronize v0.6.1 across package, lockfile, Claude manifest, Codex manifest, root manifest and release trigger.
+
+### Acceptance caveat
+
+This addresses a confirmed package-format mismatch with the current OpenAI documentation, not an observed portal error code. GitHub CI and a release ZIP do **not** prove the ChatGPT portal accepted the upload or updated the installed plugin. Host checks remain necessary. No npm publish, MCP backend, autonomous workers or change to the eleven canonical skills.
+
 ## v0.6.0
 
 **Agentflow v0.6.0 — Lean Code Factory acceptance integrity**

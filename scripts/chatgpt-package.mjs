@@ -93,9 +93,8 @@ async function imageFile(root, path, { icon = false } = {}) {
 }
 
 export async function validateChatGPTPackage({ root = process.cwd(), strictRoot = false } = {}) {
-  const portable = JSON.parse(await regularFile(join(root, 'plugin.json')));
-  if (portable.$schema !== 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json' ||
-      typeof portable.name !== 'string' || portable.name !== 'agentflow' ||
+  const portable = JSON.parse(await regularFile(join(root, '.codex-plugin', 'plugin.json')));
+  if (typeof portable.name !== 'string' || portable.name !== 'agentflow' ||
       !NAME.test(portable.name) || portable.name.length > 64 ||
       !SEMVER.test(portable.version || '')) {
     throw new Error('Invalid portable ChatGPT plugin identity, schema or semantic version');
@@ -106,8 +105,10 @@ export async function validateChatGPTPackage({ root = process.cwd(), strictRoot 
     optionalUrl(portable.author.url, 'author.url', 2048);
   }
   optionalUrl(portable.homepage, 'homepage', 2048);
-  const extension = portable.extensions?.['com.openai'];
-  const ui = extension?.interface;
+  if (portable.skills !== './skills/' || portable.extensions !== undefined) {
+    throw new Error('ChatGPT plugin must declare root skills and top-level interface');
+  }
+  const ui = portable.interface;
   if (!ui || typeof ui !== 'object') throw new Error('Missing ChatGPT interface metadata');
   required(ui.displayName, 30, 'displayName');
   required(ui.shortDescription, 30, 'shortDescription');
@@ -148,14 +149,14 @@ export async function validateChatGPTPackage({ root = process.cwd(), strictRoot 
     if (!Array.isArray(ui.screenshots)) throw new Error('Invalid ChatGPT screenshots');
     for (const item of ui.screenshots) await imageFile(root, item);
   }
-  if (extension.onboardingSkill !== undefined) {
-    const path = extension.onboardingSkill;
+  if (portable.onboardingSkill !== undefined) {
+    const path = portable.onboardingSkill;
     if (typeof path !== 'string' || !/^\.\/skills\/[a-z0-9-]+\/SKILL\.md$/.test(path)) {
       throw new Error('Invalid ChatGPT onboardingSkill path');
     }
     await regularFile(join(root, path.slice(2)));
   }
-  if (extension.apps !== undefined || extension.hooks !== undefined || portable.apps !== undefined ||
+  if (portable.apps !== undefined || portable.hooks !== undefined ||
       portable.mcpServers !== undefined) {
     throw new Error('ChatGPT public skills-only package must not include app mappings or lifecycle hooks');
   }
@@ -164,11 +165,16 @@ export async function validateChatGPTPackage({ root = process.cwd(), strictRoot 
     throw new Error('ChatGPT public skills-only package must not contain MCP, app or hooks files');
   }
   if (strictRoot) {
-    const allowed = ['plugin.json', 'skills', 'assets'];
+    const allowed = ['.codex-plugin', 'skills', 'assets'];
     const extras = entries.filter(name => !allowed.includes(name));
     if (extras.length || allowed.some(name => !entries.includes(name))) {
       throw new Error('ChatGPT submission archive has unexpected or missing root entries: ' + extras.join(', '));
     }
+    const manifestEntries = await readdir(join(root, '.codex-plugin'));
+    if (manifestEntries.length !== 1 || manifestEntries[0] !== 'plugin.json') {
+      throw new Error('ChatGPT package must contain only .codex-plugin/plugin.json in the manifest directory');
+    }
+    await cleanTree(join(root, '.codex-plugin'));
     await cleanTree(join(root, 'assets'));
     await cleanTree(join(root, 'skills'));
   }

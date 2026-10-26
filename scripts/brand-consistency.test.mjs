@@ -25,15 +25,18 @@ test('website catalog derives the router and ten specialists from canonical meta
 test('plugin and marketplace metadata use the same product messaging', async () => {
   const plugin = await json('plugin.json');
   const claude = await json('.claude-plugin/plugin.json');
+  const codex = await json('.codex-plugin/plugin.json');
   const claudeMarket = await json('.claude-plugin/marketplace.json');
   const codexMarket = await json('.agents/plugins/marketplace.json');
   const copy = 'Better judgment for AI agents. One decision router and ten portable engineering specialist skills.';
-  for(const description of [plugin.description, claude.description,
+  for(const description of [plugin.description, claude.description, codex.description,
     claudeMarket.description, claudeMarket.plugins[0].description]) {
     assert.equal(description, copy);
   }
   assert.equal(plugin.name, 'agentflow');
   assert.equal(claude.name, 'agentflow');
+  assert.equal(codex.name, 'agentflow');
+  assert.equal(codex.interface.displayName, 'Agentflow');
   assert.equal(claudeMarket.name, 'agentflow');
   assert.equal(codexMarket.name, 'agentflow');
   assert.equal(codexMarket.interface.displayName, 'Agentflow');
