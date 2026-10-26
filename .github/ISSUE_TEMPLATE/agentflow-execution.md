@@ -45,6 +45,7 @@ Evidence is a report of **actually observed** code/test results, not proof merel
 
 ## Resume pointer
 - Active PR and branch: <!-- URL/branch or none -->
+- Execution phase: PLANNED
 - Latest inspected HEAD SHA: UNKNOWN
 - CI evidence assessed for SHA: UNRUN
 - Next requirement: AF-001

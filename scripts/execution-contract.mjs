@@ -3,6 +3,7 @@
 const REQUIREMENT_ID = /^AF-\d{3,}$/;
 const DECISION_ID = /^DEC-\d{3,}$/;
 const VALID_STATES = new Set(['PENDING', 'IMPLEMENTED_UNVERIFIED', 'VERIFIED', 'BLOCKED']);
+const EXECUTION_PHASES = new Set(['PLANNED', 'IMPLEMENTING', 'VERIFYING', 'NEEDS_REPAIR', 'BLOCKED', 'ACCEPTED']);
 const SHA = /^[0-9a-f]{40}$/i;
 const incomplete = value => !value || /<!--|-->|^\s*(?:TBD|TODO|—|-)\s*$/i.test(value);
 
@@ -113,6 +114,8 @@ export function validateExecutionContract(body) {
     } else errors.push('Invalid research disposition: ' + id);
   }
 
+  const phase = field(body, 'Execution phase');
+  if (phase !== null && !EXECUTION_PHASES.has(phase)) errors.push('Invalid execution phase: ' + phase);
   const next = field(body, 'Next requirement');
   const head = field(body, 'Latest inspected HEAD SHA');
   const ci = field(body, 'CI evidence assessed for SHA');
@@ -133,6 +136,13 @@ export function validateExecutionContract(body) {
   if (incomplete(blockers)) errors.push('Missing blocker field');
   if (requirements.some(row => row[3] === 'BLOCKED') && blockers && blockers.toLowerCase() === 'none') {
     errors.push('BLOCKED requirement must appear in open blockers');
+  }
+  if (phase === 'ACCEPTED') {
+    if (unresolved.length || next !== 'DONE') errors.push('ACCEPTED requires all requirements VERIFIED and Next requirement: DONE');
+    if (!blockers || blockers.toLowerCase() !== 'none') errors.push('ACCEPTED cannot have open blockers');
+    if (!ci || !/\bsha=[0-9a-f]{40}\b/i.test(ci) || !/\brun=https:\/\/github\.com\/[^\s]+\/actions\/runs\/\d+\b/.test(ci)) {
+      errors.push('ACCEPTED requires a HEAD SHA and linked CI run (structure is not actual CI verification)');
+    }
   }
   for (const [id, , , state, , verification] of requirements) {
     if (state === 'VERIFIED') {
