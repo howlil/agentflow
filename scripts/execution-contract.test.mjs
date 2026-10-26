@@ -119,3 +119,10 @@ test('M2 ignores fields outside Resume pointer', () => {
     '- Latest inspected HEAD SHA: ' + OLD + '\n\n## Resume pointer');
   assert.equal(validateExecutionContract(body).valid, true);
 });
+
+test('M2 rejects duplicate authoritative sections and repository identities', () => {
+  invalid(good() + '\n\n## Resume pointer\n- Next requirement: DONE', 'Duplicate authoritative section: Resume pointer');
+  invalid(good().replace('Repository: org/repo', 'Repository: org/repo\n- Repository: attacker/repo'),
+    'Repository and baseline must have exactly one Repository field');
+  invalid(good().replace('Repository: org/repo', 'Repository: INVALID'), 'Invalid repository identity');
+});

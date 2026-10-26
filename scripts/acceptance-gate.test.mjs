@@ -25,8 +25,9 @@ const makeBody = (state = 'VERIFIED', phase = 'VERIFYING') => [
   '- Next requirement: ' + (state === 'VERIFIED' ? 'DONE' : 'AF-001'),
   '- Next concrete action: Confirm acceptance.', '- Open blockers: none'
 ].join('\n');
-const run = { id:42, head_sha:sha, status:'completed', conclusion:'success', name:'CI', repository:{full_name:repo} };
-const jobs = [{name:'verify',status:'completed',conclusion:'success'}];
+const run = { id:42, head_sha:sha, status:'completed', conclusion:'success',
+  name:'CI', event:'push', head_branch:'master', repository:{full_name:repo} };
+const jobs = [{name:'verify',status:'completed',conclusion:'success',run_id:42}];
 const make = () => ({body:makeBody(),repository:repo,issueNumber:36,expectedSha:sha,branchSha:sha,run,jobs});
 const reject = (input, pattern) => {
   const result = checkAcceptance(input);
@@ -74,4 +75,14 @@ test('authoritative fields outside Resume pointer never satisfy the gate', () =>
     '- CI evidence assessed for SHA: UNRUN');
   reject({...make(),body:body + '\n\n## Appendix\n- CI evidence assessed for SHA: sha=' +
     sha + '; run=https://github.com/' + repo + '/actions/runs/42'}, 'CI run link must belong');
+});
+
+test('only this Issue repository and master push CI may satisfy the gate', () => {
+  reject({...make(),body:makeBody().replace('- Repository: ' + repo, '- Repository: attacker/repo')},
+    'Issue Repository field differs from target repository');
+  reject({...make(),body:makeBody() + '\n\n## Resume pointer\n- Execution phase: ACCEPTED'},
+    'Duplicate authoritative section');
+  reject({...make(),run:{...run,event:'pull_request'}},'master push');
+  reject({...make(),run:{...run,head_branch:'feature/same-sha'}},'master push');
+  reject({...make(),jobs:[{...jobs[0],run_id:99}]},'Required verify job');
 });

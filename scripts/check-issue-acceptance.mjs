@@ -42,6 +42,7 @@ async function main() {
   const result = checkAcceptance({ body: latestIssue.body || '', repository: repo, issueNumber,
     expectedSha: sha, branchSha: latestBranch.commit.sha, run, jobs: page.jobs });
   if (!result.valid) throw new Error('Acceptance rejected: ' + result.diagnostics.join('; '));
-  console.log('Acceptance verified: Issue #' + issueNumber + ', SHA ' + sha + ', CI run ' + id);
+  console.log('Read-only evidence gate passed for Issue #' + issueNumber + ', SHA ' + sha +
+    ', master CI run ' + id + '. This does not change Issue state or prove host E2E.');
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });

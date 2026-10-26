@@ -17,6 +17,18 @@ function section(body, name) {
   return end < 0 ? after : after.slice(0, end);
 }
 
+export function parseIssueRepository(body) {
+  const baseline = typeof body === 'string' ? section(body, 'Repository and baseline') : null;
+  const matches = (baseline || '').split('\n')
+    .map(line => line.trim().match(/^- Repository:\s*(.+)$/))
+    .filter(Boolean);
+  const diagnostics = [];
+  if (matches.length !== 1) diagnostics.push('Repository and baseline must have exactly one Repository field');
+  const name = matches.length === 1 ? matches[0][1].trim() : '';
+  if (name && !/^[\w.-]+\/[\w.-]+$/.test(name)) diagnostics.push('Invalid repository identity: ' + name);
+  return { name, diagnostics };
+}
+
 function tables(body, name, columns, errors) {
   const content = section(body, name);
   if (content === null) { errors.push('Missing section: ' + name); return []; }
@@ -76,8 +88,12 @@ export function validateExecutionContract(body) {
     return { valid: false, diagnostics: ['Issue body must be nonempty text'], requirements: [] };
   }
   for (const name of ['Objective', 'Repository and baseline', 'Scope and invariants', 'Research decision traceability', 'Acceptance contract', 'Requirement evidence ledger', 'Resume pointer']) {
-    if (section(body, name) === null) errors.push('Missing section: ' + name);
+    const normalized = body.replace(/\r\n/g, '\n');
+    const count = normalized.split('\n').filter(line => line === '## ' + name).length;
+    if (count === 0) errors.push('Missing section: ' + name);
+    if (count > 1) errors.push('Duplicate authoritative section: ' + name);
   }
+  errors.push(...parseIssueRepository(body).diagnostics);
   for (const name of ['Objective', 'Scope and invariants']) {
     const content = section(body, name);
     if (!content || !content.split('\n').some(line => line.trim() && !incomplete(line.trim()))) {

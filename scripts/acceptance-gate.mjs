@@ -1,10 +1,12 @@
-import { validateExecutionContract, parseResumePointer } from './execution-contract.mjs';
+import { validateExecutionContract, parseResumePointer, parseIssueRepository } from './execution-contract.mjs';
 
 export function checkAcceptance({ body, repository, issueNumber, expectedSha, branchSha, run, jobs }) {
   const structural = validateExecutionContract(body);
   const errors = [...structural.diagnostics];
   const resume = parseResumePointer(body);
+  const identity = parseIssueRepository(body);
   const field = name => resume.fields[name] ?? '';
+  if (identity.name !== repository) errors.push('Issue Repository field differs from target repository');
   const phase = field('Execution phase');
   const cited = field('CI evidence assessed for SHA');
   const runRef = cited.match(/\brun=https:\/\/github\.com\/([^/\s]+\/[^/\s]+)\/actions\/runs\/(\d+)\b/);
@@ -26,10 +28,12 @@ export function checkAcceptance({ body, repository, issueNumber, expectedSha, br
   if (!runRef || runRef[1] !== repository || !Number.isSafeInteger(id)) errors.push('CI run link must belong to the repository');
   if (!run || run.id !== id) errors.push('Observed run ID does not match cited CI run');
   if (!run || run.head_sha !== expectedSha || run.conclusion !== 'success' ||
-      run.status !== 'completed' || run.repository?.full_name !== repository || run.name !== 'CI') {
-    errors.push('Observed CI must be completed SUCCESS for this SHA, workflow and repository');
+      run.status !== 'completed' || run.repository?.full_name !== repository || run.name !== 'CI' ||
+      run.event !== 'push' || run.head_branch !== 'master') {
+    errors.push('Observed CI must be completed SUCCESS for master push, this SHA, workflow and repository');
   }
-  if (!Array.isArray(jobs) || !jobs.some(j => j.name === 'verify' && j.status === 'completed' && j.conclusion === 'success')) {
+  if (!Array.isArray(jobs) || !jobs.some(j => j.name === 'verify' && j.status === 'completed' &&
+      j.conclusion === 'success' && (j.run_id === undefined || j.run_id === run?.id))) {
     errors.push('Required verify job must actually have passed');
   }
   return { valid: errors.length === 0, diagnostics: errors };
