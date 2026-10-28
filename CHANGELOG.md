@@ -2,6 +2,23 @@
 
 Agentflow releases track the canonical `skills/*/SKILL.md` library, website and optional native plugin manifests. The private root package is **not** an npm CLI. Updates to this changelog are part of a reviewed release request.
 
+## v0.7.0
+
+**Agentflow v0.7.0 — GitHub delivery alignment across ChatGPT conversations**
+
+### Changes
+
+- **Cross-chat GitHub delivery discipline (PR #43):** recover the real default branch and work-item identity; reuse active Issues/PRs; align approved delivery targets and optional parent/Milestone links; model data, decision, ordering and write-conflict dependencies; reconcile concurrent writes and changed contracts without claiming a lock or an autonomous worker.
+- **Optional coordination metadata:** extend the existing Issue contract template, router policy, and ChatGPT Web recipe without introducing another requirement ledger or mandatory Git ceremony for trivial work.
+- **GitHub Actions maintenance (PRs #39 and #38):** update `actions/upload-artifact` to v7 and `actions/download-artifact` to v8 for the existing package/release workflows; preserve the reviewed artifact ZIP and fail-closed release gates.
+- Synchronize v0.7.0 across the private root package/lockfile, Claude and Codex manifests, portable listing metadata and release trigger. No npm publication is performed.
+
+### Acceptance and distribution limits
+
+M1 source-contract requirements are verified in [Issue #42](https://github.com/howlil/agentflow/issues/42), with successful master CI for commit `9786b66b7f2282da2dad874ac3d41b033c05dfea`. The optional manual `Agentflow Issue Acceptance` dispatch has not been observed yet. This release request itself must pass its own PR checks before approval/merge.
+
+A GitHub Release ZIP does **not** install or update the current ChatGPT plugin. Genuine installed-version activation, fresh-conversation resume, concurrent-chat conflicts and host-level E2E remain unverified in [Issue #34](https://github.com/howlil/agentflow/issues/34). No backend, AI worker, API key, forced branch protection, automation service or additional runtime is introduced.
+
 ## v0.6.1
 
 **Agentflow v0.6.1 — ChatGPT package-format compatibility**
