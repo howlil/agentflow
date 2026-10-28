@@ -13,9 +13,15 @@ labels: []
 - Base branch and initial commit: <!-- actual branch / SHA -->
 - Related research / ADR: <!-- links/paths or N/A with explanation -->
 - Active Issue / PR (if continuing): <!-- existing URL or none -->
+- Delivery target / GitHub Milestone: <!-- existing link or plain target; N/A if no milestone -->
+- Parent / related Issues: <!-- existing Issue links or none; avoid duplicates -->
+- Depends on / blocks: <!-- real Issue references, native relation only if actually configured; none if independent -->
+- Related active PRs checked: <!-- PR links or none, with inspected revision/date -->
 
 ## Scope and invariants
 <!-- Required behavior, preserved behavior, explicit exclusions, and consequential failure states. -->
+<!-- Coordination: affected files/interfaces and shared state owner; current accountable work owner; potential write/decision/ordering conflicts. These pointers are NOT a second requirement ledger or an exclusive lock. -->
+<!-- For cross-chat continuation, reconcile current Milestone/parent intent and open PRs against these invariants before editing. -->
 
 ## Research decision traceability
 Record each **approved, actionable** research conclusion exactly once. Its disposition is INCLUDE (mapped to one or more requirement IDs), EXCLUDE, or DEFER (both require an explicit reason). These are research decisions, not a second requirement-status ledger. Do not copy an entire research transcript here. If the task has no approved research decisions, replace the **entire decision table (header, divider, and rows)** with the single line: N/A: no approved research decisions.
