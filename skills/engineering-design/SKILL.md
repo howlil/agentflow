@@ -5,6 +5,9 @@ description: Turn a product contract or architecture-changing request into a min
 
 # Engineering Design
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 A system is not a stack diagram. It is a graph of responsibilities that preserves required product behavior under real constraints.
 
 ```text
@@ -565,42 +568,5 @@ The amount of design follows architectural risk, not line count.
 
 ---
 
-## The Pipeline
-
-```text
-INPUT
-  → "What product behavior and constraints must the system guarantee?"
-      → read product contract; establish engineering context
-
-  → "What already exists?"
-      → reconstruct only the affected current subgraph
-
-  → "What responsibilities are required?"
-      → derive R without choosing technology
-
-  → "Who owns each meaningful state and invariant?"
-      → define S and source of truth
-
-  → "Where are explicit agreements required?"
-      → define boundaries and contracts
-
-  → "Which runtime paths determine correctness?"
-      → trace critical flows
-
-  → "What must remain true under relevant failure/load/security conditions?"
-      → define G: material guarantees
-
-  → "What architecture choice is actually forced by those properties?"
-      → make the smallest viable decisions
-
-  → "Will this decision matter months later?"
-      → ADR only when consequential
-
-  → "Can every required behavior traverse the graph without a gap?"
-      → prove the system contract
-
-  → .agents/engineering.md
-      → hand the system contract to design-thinking
-```
-
-**If an architectural element does not trace to required behavior, state ownership, a boundary, or a guarantee, it does not belong in the system.**
+## AI and data work
+When applicable, read [AI and data guidance](references/ai-data-contracts.md).

@@ -1,0 +1,5 @@
+# AI and data test-engineering
+
+Use when model, prompt, retrieval or data semantics affect this specialist’s responsibility.
+
+Define the observable property and representative evaluation population, including material failure slices. Version evaluation data and avoid training/tuning leakage into held-out acceptance examples. Compare a baseline; choose metrics, thresholds and tolerable errors from product risk rather than inventing scores. Account for nondeterminism with repeated observations or uncertainty estimates when needed; one plausible output is not acceptance. Inspect judge bias if using model-based scoring and calibrate against human/domain judgments. For pipelines prove schema, quality, freshness, idempotency and backfill behavior at the actual boundary. Record model, prompt, index/data versions, configuration and cost/latency with results; mocked providers prove orchestration only. Real-model quality evaluations require authorized data and an appropriate environment; do not launch external AI workers by default.

@@ -62,6 +62,7 @@ export default defineConfig({
           label: 'Recipes',
           items: [
             'recipes/build-a-feature',
+            'recipes/delivery-loop',
             'recipes/redesign-a-ui-flow',
             'recipes/production-incident',
           ],

@@ -20,7 +20,7 @@ Start with one question:
 | Is this implementation correct and maintainable? | [code-review](/skills/code-review/) |
 | Did trust, authority, or sensitive data become unsafe? | [security-review](/skills/security-review/) |
 | Would bounded delegation materially improve the work? | [graph-protocol](/skills/graph-protocol/) |
-| Is a known relationship easier to understand visually? | [call-graph-output](/skills/call-graph-output/) |
+| How does a verified change reach production safely? | [release-engineering](/skills/release-engineering/) |
 
 ## The important boundary
 

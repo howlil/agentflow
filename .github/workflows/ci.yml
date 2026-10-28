@@ -119,16 +119,16 @@ jobs:
           if-no-files-found: error
       - name: Validate Claude plugin
         if: ${{ needs.classify.outputs.full_required == 'true' }}
-        run: npx --yes @anthropic-ai/claude-code@latest plugin validate . --strict
+        run: npx --yes @anthropic-ai/claude-code@2.1.312 plugin validate . --strict
       - name: Validate Codex plugin
         if: ${{ needs.classify.outputs.full_required == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes @openai/codex@latest plugin marketplace add .
-          npx --yes @openai/codex@latest plugin add agentflow@agentflow
-          npx --yes @openai/codex@latest plugin list | grep -q agentflow
-          npx --yes @openai/codex@latest plugin remove agentflow@agentflow
+          npx --yes @openai/codex@0.165.0 plugin marketplace add .
+          npx --yes @openai/codex@0.165.0 plugin add agentflow@agentflow
+          npx --yes @openai/codex@0.165.0 plugin list | grep -q agentflow
+          npx --yes @openai/codex@0.165.0 plugin remove agentflow@agentflow
 
   # One stable required check; never let a skipped/failed matrix count as green.
   merge-gate:

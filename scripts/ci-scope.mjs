@@ -12,7 +12,7 @@ export function classifyPaths(paths) {
     p.startsWith('.codex-plugin/') || ['plugin.json', 'package.json', 'package-lock.json',
       '.node-version', 'RELEASE_VERSION', '.github/workflows/ci.yml',
       '.github/scripts/cross-agent-candidate.sh', 'scripts/generate-skills.mjs',
-      'scripts/plugin-manifests.mjs', 'scripts/chatgpt-package.mjs'].includes(p)
+      'scripts/plugin-manifests.mjs', 'scripts/chatgpt-package.mjs', 'scripts/skill-integrity.mjs'].includes(p)
   );
   const full = portable || paths.some(p => !QUICK_DOCS.has(p));
   return { full_required: full, portable_required: portable, scope: !full ? 'root-docs-only' : portable ? 'distribution' : 'source-or-site' };

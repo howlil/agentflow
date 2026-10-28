@@ -27,11 +27,27 @@ Agentflow routes by **unresolved decision**, not by a mandatory SDLC pipeline. I
 | Existing-code correctness and maintainability | `code-review` |
 | Trust, authorization, and exposure risks | `security-review` |
 | Bounded independent delegation and dependency graph | `graph-protocol` |
-| Visualizing an already-understood execution graph | `call-graph-output` |
+| CI/CD, artifact promotion, rollout and rollback | `release-engineering` |
 
 Use the **smallest relevant subset**. Before following a specialist's workflow, load its canonical `SKILL.md` if accessible. Installing only this router does not automatically install the specialist skills. If a specialist is unavailable, do not invent its full instructions.
 
 **Direct specialist activation is valid.** Some hosts, including ChatGPT, may activate a specialist directly from its metadata without invoking this router first. Do not require a router invocation as a precondition for `$code-review`, `engineering-design`, or any other specialist; respect the selected skill's scope. When multiple decisions overlap and this router is selected, coordinate only the necessary skills.
+
+## Global engineering baseline
+
+Own the outcome from raw requirement through the requested delivery state. Discover the business workflow, acceptance owner and operational constraints through product-design when unresolved. Agnostic engineering still requires domain evidence; never invent compliance, scale or business facts.
+
+- Inspect existing code, contracts, runtime and dependency versions before designing changes.
+- Preserve one authoritative owner for state and business rules. Prefer existing patterns and the simplest mechanism satisfying current constraints.
+- Justify new abstractions, dependencies, configuration, documents and agents by a current requirement or concrete maintenance cost.
+- Keep success paths legible. Do not swallow errors or report fake success. Make timeout, repeat safety, concurrency and resource lifetime explicit where consequential.
+- Validate at trust transitions; enforce authorization at the protected effect. Reuse established security primitives and keep secrets out of source, output and telemetry.
+- Keep changes coherent. Do not mix unrelated cleanup, upgrades or speculative optimization into delivery.
+- Tie reliability, scalability and performance claims to workload evidence and faithful verification. Never manufacture execution, metrics or acceptance.
+
+For nontrivial implementation, load [Development loop](references/development-loop.md). It owns transitions between design-thinking, test-engineering and code-review, stale evidence, bounded repair and completion. Testing remains continuous; specialist invocation is conditional. For useful visual explanations, load [Graph output](references/graph-output.md); rendering is not a specialist stage.
+
+These coordination rules apply when this router is active. Standalone specialists carry their own minimum scope/evidence safeguards. Do not assume unselected skills were loaded or copy this policy into a project automatically.
 
 ## 3. Build the decision graph
 
@@ -94,9 +110,9 @@ The issue and PR are the durable source of truth for continuation; ChatGPT conve
 
 For coordinated tasks, load only the relevant source file under `references/` **when it exists in the installed Agentflow skill**. These are global workflow defaults, not new skills, host capabilities, or replacements for the repository's `AGENTS.md` and specialist contracts:
 
-- `references/engineering-operating-policy.md`: nontrivial engineering execution, risk-proportionate verification, stop rules, metrics and concise result/evidence reporting.
-- `references/github-delivery-policy.md`: authorized GitHub writes, continuation, branch/commit/PR hygiene, CI relevance and release gating.
-- `references/project-archetypes.md`: OSS/commercial/private repository documentation, README quality and community readiness.
+- [engineering-operating-policy](references/engineering-operating-policy.md): nontrivial engineering execution, risk-proportionate verification, stop rules, metrics and concise result/evidence reporting.
+- [github-delivery-policy](references/github-delivery-policy.md): authorized GitHub writes, continuation, branch/commit/PR hygiene, CI relevance and release gating.
+- [project-archetypes](references/project-archetypes.md): OSS/commercial/private repository documentation, README quality and community readiness.
 
 Avoid loading all three for every request. For trivial or read-only work with no applicable policy decision, work directly. Do not force specialist invocation or create an Issue/branch/PR because a policy was loaded. Explicit user intent, higher-priority host instructions and applicable repo contracts take precedence; state material conflicts. Installing the router without the referenced files must not be treated as granting or guaranteeing their behavior. Directly selected specialist skills may run without this router, so do not claim these defaults automatically cover every host session.
 

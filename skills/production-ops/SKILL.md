@@ -5,6 +5,9 @@ description: Design and operate the minimum production health, observability, al
 
 # Production Ops
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 Production operations is not "add monitoring." It is the ability to know whether the workload is healthy, understand meaningful degradation, restore service or data when it is not, and prove recovery.
 
 ```text
@@ -677,42 +680,5 @@ detectable
 
 ---
 
-## The Pipeline
-
-```text
-WORKLOAD / CHANGE / INCIDENT
-  → "Which critical runtime outcome matters?"
-      → identify the affected operational subgraph
-
-  → "What does healthy, degraded, and unhealthy mean?"
-      → define H from observable outcomes
-
-  → "What tells us WHAT is broken?"
-      → derive detection signals
-
-  → "What evidence tells us WHY?"
-      → add only required diagnostic signals
-
-  → "Does this condition require immediate human action?"
-      → alert only when actionable
-
-  → "How do we stop impact and restore valid state?"
-      → define mitigation and recovery
-
-  → "How do we prove recovery?"
-      → re-check the original health outcome and invariants
-
-  → "Can important state be recovered?"
-      → test restore/rebuild when data risk requires it
-
-  → before production-sensitive launch/change
-      → prove only the affected readiness paths
-
-  → during incident
-      → assess → mitigate → recover → verify → learn
-
-  → .agents/operations.md
-      → compact operational context; executable config remains truth
-```
-
-**If production can fail in a material way and you cannot detect it or prove recovery from it, the operational design is incomplete.**
+## AI and data work
+When applicable, read [AI and data guidance](references/ai-data-health.md).

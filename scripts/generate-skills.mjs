@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateSkillIntegrity } from './skill-integrity.mjs';
 
 export const EXPECTED = [
   'agentflow',
@@ -13,7 +14,7 @@ export const EXPECTED = [
   'code-review',
   'security-review',
   'graph-protocol',
-  'call-graph-output',
+  'release-engineering',
 ];
 
 // The canonical skill contract uses flat, single-line YAML scalars only.
@@ -133,6 +134,8 @@ export async function generateSkills({ root = process.cwd(), expected = EXPECTED
     );
   }
 
+  await validateSkillIntegrity(root, expected);
+
   // Validate the entire input set before removing any existing generated files.
   const outputs = await Promise.all(expected.map(async (directory) => {
     const file = join(skillsDir, directory, 'SKILL.md');
@@ -158,7 +161,7 @@ editUrl: false
 
 > Generated at build time from [\`${sourcePath}\`](https://github.com/howlil/agentflow/blob/master/${sourcePath}). Do not edit this page directly.
 
-${stripLeadingTitle(skill.body)}
+${stripLeadingTitle(skill.body).replace(/\[([^\]]*)\]\((references\/[^)]+)\)/g, (_, label, target) => '[' + label + '](https://github.com/howlil/agentflow/blob/master/skills/' + directory + '/' + target + ')')}
 `,
       directory,
     };

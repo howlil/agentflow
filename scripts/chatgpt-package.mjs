@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EXPECTED, parseFrontmatter } from './generate-skills.mjs';
 import sharp from 'sharp';
+import { validateSkillIntegrity } from './skill-integrity.mjs';
 
 const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -188,6 +189,7 @@ export async function validateChatGPTPackage({ root = process.cwd(), strictRoot 
     const parsed = parseFrontmatter(await regularFile(path), path);
     if (parsed.name !== name) throw new Error('ChatGPT skill directory/frontmatter mismatch: ' + name);
   }
+  await validateSkillIntegrity(root, EXPECTED);
   return { version: portable.version, count: EXPECTED.length };
 }
 

@@ -1,0 +1,11 @@
+[
+  {"id":"mechanical","prompt":"Fix a spelling error in a comment. Keep runtime behavior unchanged."},
+  {"id":"local-bug","prompt":"A duplicate webhook delivery creates two receipts. Fix it using the existing storage contract and verify the change."},
+  {"id":"concurrency","prompt":"Two concurrent requests can reserve the same slot. The application uses a real SQL transaction. Design and implement the fix and proof."},
+  {"id":"ai-release","prompt":"The customer wants to replace the model and retrieval index in an invoice extraction workflow. Existing unit tests pass. Prepare the change for production; quality acceptance and rollback compatibility are not yet established."},
+  {"id":"migration","prompt":"Deploy a schema change while old application instances are still running. The proposed rollback restores only the old binary; the migration deletes a column."},
+  {"id":"incident","prompt":"After a rollout, accepted jobs stop completing. Restore service using the existing authorized runbook; preserve evidence and confirm recovery."},
+  {"id":"stale-proof","prompt":"Tests passed on revision A. A review fix changes the timeout and retry behavior in revision B. Decide what can be claimed complete and what remains to verify."},
+  {"id":"no-progress","prompt":"Two attempts to repair a failing integration test have produced the same failure without new evidence. The proposed next step is to skip the assertion and rerun until green."},
+  {"id":"standalone-review","prompt":"Review this change only. Report evidence-backed findings and leave the code unchanged."}
+]

@@ -5,6 +5,9 @@ description: Turn a product behavior contract into an explicit interface graph o
 
 # Design Graph
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 Design Graph turns required product behavior into an interface a person can actually navigate and operate.
 
 ```text
@@ -844,53 +847,3 @@ Depth follows interaction risk, not number of components.
 Do not create a large UX specification when one local state transition is enough.
 
 ---
-
-## The Pipeline
-
-```text
-PRODUCT CONTRACT / KNOWN BEHAVIOR
-        ↓
-"What must the person accomplish?"
-        → preserve the product job
-
-        ↓
-"What surfaces expose that behavior?"
-        → identify meaningful surfaces/units
-
-        ↓
-"What moves connect them?"
-        → model user/system transitions
-
-        ↓
-"What primary content/actions exist?"
-        → define C
-
-        ↓
-"What meaningful rendered variants can occur?"
-        → define V
-
-        ↓
-"What prerequisites make each move/surface valid?"
-        → define N
-
-        ↓
-"What interaction semantics make edges reachable?"
-        → focus / keyboard / pointer / announcements / async states
-
-        ↓
-"How does environment change the projection?"
-        → viewport / modality / connectivity / platform constraints
-
-        ↓
-"Can required product behavior still complete under relevant contexts?"
-        → proof
-
-        ↓
-"Does implementation expose all consequential states and moves explicitly?"
-        → verify build projection
-
-        ↓
-INTERFACE
-```
-
-**Every consequential rendered state and user move should trace to the interface graph. If implementation exposes a meaningful state or move the graph cannot explain, either the graph or the implementation is incomplete.**

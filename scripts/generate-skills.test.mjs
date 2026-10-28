@@ -121,3 +121,15 @@ test('rejects unquoted YAML special scalars before external installers silently 
     /Quote YAML-special/,
   );
 });
+
+
+test('generated site links target packaged reference source, not a missing site route', async () => {
+  await withFixture(async (root, skillDir) => {
+    await mkdir(join(skillDir, 'references'));
+    await writeFile(join(skillDir, 'references/topic.md'), '# Detail');
+    await writeFile(join(skillDir, 'SKILL.md'), source('example') + '[Detail](references/topic.md)');
+    await generateSkills({ root, expected: ['example'] });
+    const page = await readFile(join(root, 'src/content/docs/reference/example.md'), 'utf8');
+    assert.ok(page.includes('[Detail](https://github.com/howlil/agentflow/blob/master/skills/example/references/topic.md)'));
+  });
+});

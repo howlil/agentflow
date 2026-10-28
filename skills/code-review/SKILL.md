@@ -5,6 +5,9 @@ description: Review an existing code change, pull request, commit, or implementa
 
 # Code Review
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 A review is not a checklist. It is a comparison between the behavior the change is supposed to preserve and the behavior the code actually creates.
 
 ```text
@@ -599,36 +602,5 @@ The main reviewer remains responsible for integrating cross-boundary findings an
 
 ---
 
-## The Pipeline
-
-```text
-CHANGE
-  → "What is this supposed to accomplish?"
-      → establish intent and relevant contracts
-
-  → "What actually changed?"
-      → scope the delta and affected edges
-
-  → "What behavior/state/dependency graph does the code now create?"
-      → reconstruct the actual graph
-
-  → "Where does actual differ from required?"
-      → identify concrete mismatches
-
-  → "What can go wrong because of that mismatch?"
-      → establish impact and severity
-
-  → "Can I prove this from code or a targeted check?"
-      → require evidence; falsify weak suspicions
-
-  → "Are changed behaviors protected by meaningful tests?"
-      → assess verification gaps
-
-  → "Is any new complexity actually required?"
-      → reject unnecessary machinery, not stylistic differences
-
-  → FINDINGS
-      → actionable, evidence-backed, severity-ordered
-```
-
-**If you cannot trace a finding from changed code to a concrete consequence, it is not a finding.**
+## Development-loop handoff
+For an implementation task, review the actual candidate revision and complete acceptance contract. Deduplicate findings and close each with a fix plus evidence, a falsification, or an authorized deferral with consequences. Re-review affected behavior after repair. Do not keep reopening unrelated polish. A same-agent pass is self-review; report unavailable independent review honestly.

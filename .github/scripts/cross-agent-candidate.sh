@@ -25,14 +25,14 @@ printf 'Other publisher\n' > "$PROJECT_DIR/unrelated/SKILL.md"
 assert_installed() {
   local target="$1" reference
   cmp "$REPO/skills/agentflow/SKILL.md" "$target/SKILL.md"
-  for reference in engineering-operating-policy.md github-delivery-policy.md project-archetypes.md; do
+  for reference in engineering-operating-policy.md github-delivery-policy.md project-archetypes.md development-loop.md graph-output.md; do
     cmp "$REPO/skills/agentflow/references/$reference" "$target/references/$reference"
   done
 }
 assert_removed() {
   local target="$1" reference
   test ! -e "$target/SKILL.md"
-  for reference in engineering-operating-policy.md github-delivery-policy.md project-archetypes.md; do
+  for reference in engineering-operating-policy.md github-delivery-policy.md project-archetypes.md development-loop.md graph-output.md; do
     test ! -e "$target/references/$reference"
   done
 }

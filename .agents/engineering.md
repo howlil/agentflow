@@ -49,3 +49,6 @@ CI validates skills, static site generation, native plugin manifests and portabl
 
 ## Constraints
 No `packages/cli`, custom lockfile, proprietary installer, backend, forced native plugin installation, mandatory pipeline, or claim that `$agentflow` is invoked identically across all agents. Respect explicitly selected skills and existing steering documents. Keep single source of truth and clear responsibility boundaries.
+
+## End-to-end delivery contract
+The router coordinates a bounded implementation/testing/review loop with revision-bound evidence and no-progress repair limits. design-thinking retains its identity. release-engineering owns CI/CD and deployment transitions; graph rendering is an optional router reference. Field discovery and conditional AI/data references extend existing domain owners without adding an AI runtime. Structural CI does not prove agent behavior or customer acceptance.

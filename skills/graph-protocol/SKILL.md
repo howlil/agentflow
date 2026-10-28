@@ -5,6 +5,9 @@ description: Orchestrate delegated engineering work as an adaptive execution DAG
 
 # Graph Protocol
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 Graph Protocol is orchestration only.
 
 It decides:
@@ -770,54 +773,3 @@ what remains blocked/risky
 ```
 
 ---
-
-## The Protocol Pipeline
-
-```text
-TASK
-  ↓
-"Should this even be delegated?"
-  → delegation-value gate
-  → direct execution if coordination is not worth it
-
-  ↓
-"What outcomes can be isolated?"
-  → define contracted nodes
-
-  ↓
-"What does each node consume and produce?"
-  → define I / O / V
-
-  ↓
-"What dependencies, ordering, decisions, or conflicts exist?"
-  → build execution DAG
-
-  ↓
-"What nodes are ready now?"
-  → all predecessors satisfied
-  → no conflicting writer active
-
-  ↓
-run independent work as soon as it becomes ready
-
-  ↓
-worker verifies local result
-  ↓
-collect changes + decisions + evidence + deviations
-
-  ↓
-"Did discovery invalidate this node or downstream assumptions?"
-  ├─ yes → stop affected work → replan affected DAG
-  └─ no  → continue
-
-  ↓
-integrate dependent outputs
-
-  ↓
-cross-node / end-to-end verification
-
-  ↓
-FINAL RESULT
-```
-
-**Every delegated node must produce its required outcome with evidence. If implementation materially deviates from the delegated contract, surface the deviation and re-evaluate the affected graph before integration.**

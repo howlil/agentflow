@@ -5,6 +5,9 @@ description: Review a code change or security-sensitive implementation by tracin
 
 # Security Review
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 Security Review exists to find meaningful security failures introduced or exposed by a change.
 
 ```text
@@ -997,3 +1000,6 @@ Frameworks and scanners are inputs.
 Reachable security properties and evidence determine findings.
 
 ---
+
+## AI and data work
+When applicable, read [AI and data guidance](references/ai-data-security.md).

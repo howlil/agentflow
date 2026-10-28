@@ -130,3 +130,11 @@ test('reject missing skills declaration and legacy nested listing', async () => 
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /root skills and top-level interface/);
   });
 });
+
+
+test('an archive missing required workflow references cannot pass packaging', async () => {
+  await fixture(async root => {
+    await rm(join(root, 'skills/agentflow/references/development-loop.md'));
+    await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /Missing packaged reference/);
+  });
+});

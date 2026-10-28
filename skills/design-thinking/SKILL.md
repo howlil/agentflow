@@ -5,19 +5,12 @@ description: Turn an engineering contract or local implementation request into a
 
 # Design Thinking
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 Design Thinking turns a known engineering contract into an implementation graph.
 
-```text
-X → Implementation Graph → Program<A, E, R>
-│                              │     │  │  │
-│                              │     │  │  └─ contextual capabilities (§5)
-│                              │     │  └──── expected failures        (§4)
-│                              │     └─────── successful values/flow  (§2)
-│                              │
-│                              └─ Effect<A, E, R> when Effect is used
-│
-└─ engineering contract or local implementation task
-```
+Model the implementation as values and state flowing through operations, with expected failures, contextual dependencies, execution policies and resource lifetimes. Use framework-specific notation only when it helps the actual project.
 
 ```text
 §1  Shapes        domain records, IDs, variants, errors
@@ -29,7 +22,7 @@ X → Implementation Graph → Program<A, E, R>
 §7  Policies      retry, timeout, caching, tracing, limits, recovery
 §8  Scope         resource and child-work lifetime
 §9  Verification  smallest faithful proof
-§10 Effect        project graph onto the installed Effect version when applicable
+§10 Projection    use framework-specific guidance only when applicable
 §11 Code          implementation paths should trace back to the graph
 ```
 
@@ -630,115 +623,9 @@ that faithfully proves
 the actual risk.
 ```
 
-## 10. Project to Effect only when Effect is actually used
+## 10. Framework-specific projection
 
-The graph model is language/framework-neutral.
-
-Use Effect-specific projection only when:
-
-```text
-the repository uses Effect
-or
-the task explicitly requests Effect-style implementation
-```
-
-Before writing Effect API-specific code:
-
-```text
-inspect package.json / lockfile
-        ↓
-identify installed Effect version
-        ↓
-use matching repository APIs/docs/patterns
-```
-
-Do not write APIs from another Effect version.
-
-### A / E / R projection
-
-When applicable:
-
-```text
-A
-→ success value/data flow
-
-E
-→ expected typed failure
-
-R
-→ contextual capabilities required to run
-```
-
-Defects and interruption are not simply extra variants of `E`; reason about the runtime/Cause model appropriate to the installed version.
-
-### `Effect.gen`
-
-Use `Effect.gen` when it makes sequential success flow clearer.
-
-Do not impose:
-
-```text
-gen body = all A
-outer pipe = all E
-```
-
-as a correctness invariant.
-
-Better rule:
-
-```text
-Keep the happy path visually dominant.
-
-Handle an expected failure at the narrowest boundary
-that owns its recovery policy.
-```
-
-Examples:
-
-```text
-uniform recovery for the whole workflow
-→ outer composition may be appropriate
-
-operation-specific fallback
-→ local handling around that operation
-
-boundary error translation
-→ handle at the boundary
-
-caller-owned failure
-→ propagate in E
-```
-
-### `.pipe()`
-
-`.pipe()` is composition syntax, not proof that the graph is unchanged.
-
-Combinators inside a pipe may alter:
-
-```text
-A
-E
-R
-execution count
-timing
-concurrency
-cancellation
-resource behavior
-```
-
-Use `.pipe()` where it improves composition/readability, while reasoning about the real semantics of each combinator.
-
-### `Layer`
-
-Use Layer/provisioning to satisfy contextual capabilities and service-construction dependencies where appropriate.
-
-Do not expose construction dependencies in service interfaces when they can be discharged during provisioning.
-
-### `Stream`
-
-Use Stream for incremental/multi-emission computations when its semantics are actually needed.
-
-Do not convert every collection or paginated result into Stream by default.
+Keep the implementation model language-neutral: successful values, expected failures, contextual dependencies, execution and resource lifetime. When the repository uses Effect or the task explicitly requests it, read [Effect projection](references/effect.md) and inspect installed versions before selecting APIs. Otherwise use the language's established idioms.
 
 ## 11. Write code that traces to the graph
 
@@ -875,55 +762,5 @@ Use only the parts that can change correctness or maintainability.
 
 ---
 
-## The Pipeline
-
-```text
-ENGINEERING CONTRACT / LOCAL TASK
-        ↓
-"What values exist?"
-        → define only meaningful shapes
-
-        ↓
-"What successful transformation must happen?"
-        → draw A: implementation/call graph
-
-        ↓
-"What ordering, cardinality, concurrency, or interruption matters?"
-        → execution semantics
-
-        ↓
-"What expected failures exist?"
-"What defects/interruption matter?"
-        → E / runtime failure model
-
-        ↓
-"What contextual capabilities are required?"
-        → R / provisioning
-
-        ↓
-"Where does external data cross trust boundaries?"
-        → decode ingress / encode egress
-
-        ↓
-"What runtime policies change semantics?"
-        → retry / timeout / cache / recovery / limits
-
-        ↓
-"What resources or child work have lifetimes?"
-        → scope / finalization
-
-        ↓
-"What is the smallest faithful proof?"
-        → targeted verification
-        → test-engineering only if proof itself is non-trivial
-
-        ↓
-"Does this repo actually use Effect?"
-        ├─ no  → preserve language-native implementation
-        └─ yes → inspect installed version and project graph to Effect
-
-        ↓
-CODE
-```
-
-**Every consequential implementation path should trace to the graph. If code introduces behavior, dependency, failure, concurrency, boundary, or lifetime semantics that the graph cannot explain, either the implementation or the graph is incomplete.**
+## Development-loop handoff
+Own production code and obvious tests. During internal review remediation, fix only evidenced findings within scope, rerun affected proof and return the changed diff for review. Never weaken acceptance to make a test pass. If two repair attempts add no evidence or reduce no uncertainty, change the hypothesis or report the blocker. Tag evidence with the assessed revision and invalidate affected results after edits. When coordinated by agentflow, use its development-loop contract; standalone use requires no sibling installation.

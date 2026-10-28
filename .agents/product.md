@@ -28,3 +28,5 @@ No custom npm installer, second skill registry, backend, API-key-driven external
 
 ## Acceptance
 The current checkout discovers all eleven canonical skills; five-host portable installation tests verify accurate bytes and safe removal, and host-native manifests remain independently validated. ChatGPT mode documents the trust and execution boundaries and preserves requirements and verification state without inventing access. Static checks verify instruction consistency; **real ChatGPT-hosted execution, cross-conversation resume, and publication require separate manual host acceptance**.
+## End-to-end delivery contract
+The router coordinates a bounded implementation/testing/review loop with revision-bound evidence and no-progress repair limits. design-thinking retains its identity. release-engineering owns CI/CD and deployment transitions; graph rendering is an optional router reference. Field discovery and conditional AI/data references extend existing domain owners without adding an AI runtime. Structural CI does not prove agent behavior or customer acceptance.

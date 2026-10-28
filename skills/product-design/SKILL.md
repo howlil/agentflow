@@ -5,6 +5,9 @@ description: Turn raw app or feature ideas, or changes to an existing product, i
 
 # Product Design
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 A product is not a feature list. It is a behavior graph that moves a person from a real trigger or problem to a useful outcome.
 
 ```text
@@ -309,36 +312,5 @@ Omit empty or irrelevant sections. The artifact is project memory, not a form to
 
 ---
 
-## The Pipeline
-
-```text
-INPUT
-  → "Who is trying to do what, and what triggers it?"
-      → establish context; separate evidence from assumptions
-
-  → "What outcome are they actually trying to reach?"
-      → define J: job and desired outcome
-
-  → "What is the smallest successful observable behavior?"
-      → draw B: product behavior graph
-
-  → "Where can that behavior meaningfully break?"
-      → annotate only material edge/failure states
-
-  → "What facts constrain valid behavior?"
-      → apply real constraints
-
-  → "What can be removed without breaking the job?"
-      → cut to the smallest complete scope
-
-  → "What observable result proves this works?"
-      → define P: acceptance traces / outcome proof
-
-  → "Does interaction structure need explicit modeling?"
-      → invoke design-graph only when needed
-
-  → .agents/product.md
-      → the product contract IS the graph projected into project context
-```
-
-**If a behavior does not trace to the job or its proof, it does not belong in the product.**
+## Customer delivery
+For raw customer requirements, sector discovery, pilots, acceptance ownership or adoption, read [Field discovery](references/field-discovery.md). For AI-assisted behavior, specify acceptable errors and human fallback before delegating technical evaluation.

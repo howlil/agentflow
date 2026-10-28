@@ -5,6 +5,9 @@ description: "Turn a meaningful software behavior, invariant, failure mode, or r
 
 # Test Engineering
 
+## Standalone safeguards
+Respect the requested scope, current repository contracts and existing authorization. Inspect actual artifacts before changing them; report only observed execution and evidence. Missing required proof remains unverified. Direct activation does not imply that the router or other specialists ran.
+
 Testing exists to reduce uncertainty about meaningful behavior.
 
 ```text
@@ -915,36 +918,8 @@ subject to the proof still being faithful.
 
 ---
 
-## The Pipeline
+## Development-loop handoff
+Return the property, faithful boundary, setup, assertions and observed result to the implementer. Classify product, proof and environment failures separately. Show that a regression detects the original defect when feasible. Do not weaken proof to fit a wrong implementation. Evidence identifies the tested revision/configuration; changed semantics invalidate affected results.
 
-```text
-BEHAVIOR / RISK
-  → "What exactly can be wrong?"
-      → define P: property/invariant/regression
-
-  → "Where does that correctness actually live?"
-      → choose B: smallest faithful boundary
-
-  → "What state and dependencies must be controlled?"
-      → deterministic setup
-
-  → "How do we exercise the real behavior?"
-      → stimulate success/failure/race/compatibility path
-
-  → "What observable outcome proves correctness?"
-      → define O: result/state/invariant/side effect
-
-  → "Am I mocking the semantics I am trying to prove?"
-      → replace with real/ephemeral dependency when necessary
-
-  → "Can this fail deterministically for the bug/property?"
-      → validate test efficacy
-
-  → "Does it remain useful after harmless refactors?"
-      → remove implementation-detail coupling
-
-  → EXECUTABLE PROOF
-      → run at the cheapest lifecycle point where it preserves confidence
-```
-
-**Choose the smallest test that faithfully proves the actual risk.**
+## AI and data work
+When applicable, read [AI and data guidance](references/ai-data-evaluation.md).
