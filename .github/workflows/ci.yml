@@ -130,6 +130,28 @@ jobs:
           npx --yes @openai/codex@latest plugin list | grep -q agentflow
           npx --yes @openai/codex@latest plugin remove agentflow@agentflow
 
+  # One stable required check; never let a skipped/failed matrix count as green.
+  merge-gate:
+    name: merge-gate
+    needs: [classify, verify, cross-agent-compatibility]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Require all applicable verification results
+        env:
+          CLASSIFY_RESULT: ${{ needs.classify.result }}
+          VERIFY_RESULT: ${{ needs.verify.result }}
+          PORTABLE_REQUIRED: ${{ needs.classify.outputs.portable_required }}
+          PORTABLE_RESULT: ${{ needs.cross-agent-compatibility.result }}
+        run: node scripts/merge-gate.mjs
+
   cross-agent-compatibility:
     needs: classify
     if: ${{ needs.classify.result == 'success' && needs.classify.outputs.portable_required == 'true' }}
