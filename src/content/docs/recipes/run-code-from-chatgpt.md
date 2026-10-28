@@ -21,6 +21,38 @@ This is a host-dependent workflow: if ChatGPT's current GitHub integration does 
 7. Read **actual** CI statuses/logs for the **commit under review** from GitHub. Do not treat a green result on an older SHA as proof of the latest changes. Record evidence for each requirement, including explicitly unrun tests. Merge or release only after applicable gates and user approval.
 
 
+## Coordinate multiple chats and features without duplicating work
+
+For a nontrivial request, distinguish the following before creating GitHub objects:
+
+| Object | Owns | Create when |
+| --- | --- | --- |
+| Milestone or parent Issue | Delivery target, outcome boundaries and exit criteria | Multiple independent outcomes share an approved target; use a plain target when native Milestones are unavailable |
+| Issue | One outcome contract, dependencies, requirement evidence ledger and resume pointer | The work needs continuation, tracking or coordination |
+| Branch | Temporary isolated implementation of that outcome | Actual changes need a reviewable boundary |
+| PR | The bounded integration and review diff for the Issue | Code is ready for collaborative verification, including draft changes |
+| CI | Evidence for specific properties at an exact revision | Existing relevant checks must run, with additional checks only for actual risks |
+| Release | Approved distribution of verified source/artifact | A separate release decision exists |
+
+**Before opening any new Issue/branch/PR:** search open and relevant recently completed work for the same observable result, check the actual default branch and steering files, inspect the current parent/Milestone and approved exclusions, compare the active PRs' overlapping file and interface scope, and identify blocking issue links. A new chat is not a reason for a new work item. Keep Issue and PR links current. Do not infer GitHub-native dependency or Milestone links from plain text.
+
+**Choose integration order based on dependencies, not chat identity.** An upstream API/schema decision before its consumer is a data or decision edge. Two PRs editing one shared persistence boundary are a potential write-conflict edge even if Git reports no textual conflict. Serialize, repartition, or give one owner to that shared change. Independent, nonconflicting outcomes can proceed in parallel. `graph-protocol` may model those edges; it is not a job scheduler or a background AI worker.
+
+**Before each remote write:** refresh the affected blob or branch HEAD, re-read the current Issue body and relevant PR diff, and compare approved requirements to the current state. If optimistic concurrency is unavailable on the Issue write operation, admit this limitation and read back after updating; never describe advisory assignees or labels as a lock. On conflicting changes, pause the affected edit and reconcile rather than overwriting. Before merge, compare against current base, re-evaluate impacted contracts and verify that the required checks refer to the revision GitHub actually evaluates.
+
+**When the product or milestone scope drifts:** record an explicit decision under the existing Issue's Decisions and deviations, update its requirements/evidence only with authorization, and flag dependent PRs for revalidation. No independent second status checklist is maintained in the Milestone, PR body or conversation.
+
+### Example: two ChatGPT conversations, one repository
+
+- Chat A owns Issue #A for payment idempotency and its active PR. Chat B asks to implement webhook retries.
+- Chat B first checks the open Issue/PR inventory. If retry semantics already belong to Issue #A, it continues that work. Otherwise it creates a distinct Issue only when the retry outcome is independently verifiable.
+- If webhook retry relies on idempotency behavior changed in PR A, mark an upstream dependency and wait for compatible integration. If there is no shared dependency or write conflict, proceed separately.
+- When either chat resumes, it re-reads GitHub. A previous chat's “done” message is never completion evidence.
+
+### Lean CI and merge policy
+
+Keep one stable required verification status that **fails when relevant validation fails**; do not make a skipped workflow appear to satisfy a required gate. Use the smallest faithful tests for the changed risk, and run additional integration, platform or release checks only when justified. Measure actual workflow duration, queue wait, repeated runs, and failure classes **before** removing jobs or introducing a complex path classifier. A check green for an older SHA is stale, and a successfully compiled Windows program is not proof of real desktop behavior. GitHub administrator-managed rulesets and native Milestone/dependency features must be confirmed, not assumed from a Markdown policy.
+
 ## Compile research into acceptance without dropping decisions
 
 For nontrivial implementation work, identify **approved actionable research conclusions**, not every brainstormed alternative. In the Issue template's research decision table, assign one stable `DEC-###` for each approved conclusion, record its real source, and assign exactly one disposition:
