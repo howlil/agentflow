@@ -111,7 +111,7 @@ jobs:
           node scripts/chatgpt-package.mjs --check "$extracted"
           # The shipped archive is the source of truth for acceptance; never
           # validate only the checkout while publishing a different ZIP.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ needs.classify.outputs.full_required == 'true' }}
         with:
           name: agentflow-chatgpt-package
