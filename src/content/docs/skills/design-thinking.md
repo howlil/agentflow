@@ -1,47 +1,59 @@
 ---
 title: Design Thinking
-description: Turn a known engineering contract into a focused implementation model.
+description: Turn a known contract into an implementation graph, then code that passes explicit quality gates.
 ---
 
 `design-thinking` owns:
 
 > **How should this known behavior and system contract become code?**
 
+## Input and output
+
+```text
+In:   .agents/engineering.md (K, R, S, contracts + compat, flows, G#, F#, DEC, D)
+      + interface graph (U, M, ST, UG) + .agents/product.md (B#, X#, P#) + the repo
+Out:  code + an implementation note in the task or PR (≤ 15 lines)
+      durable consequences (D#, DEC, verification commands) → engineering.md
+Next: test-engineering
+```
+
 ## Use when
 
-Implementation reasoning is non-trivial around data shapes, execution order, errors, dependencies, trust boundaries, concurrency, runtime policy, or resource lifecycle.
+Implementing, building, refactoring, or fixing anything non-trivial: an endpoint, service, script, job, migration, or the code behind an interface.
 
 ## Don't use when
 
-Do not reopen settled product or architecture decisions without evidence that they are contradictory or impossible.
+Product behavior, system architecture, interface graph, test strategy, diff review, or release mechanics are still unresolved.
 
 ## Model
 
 ```text
-known contract
-   ↓
-domain/data shapes
-   ↓
-execution graph
-   ↓
-errors + dependencies
-   ↓
-runtime boundaries
-   ↓
-implementation
-   ↓
-targeted proof
+T    shape (types, IDs, variants, expected errors)
+O    operation in the success flow, citing an R# or flow
+FL   failure: expected, defect, or interruption, handled at its owner
+CAP  capability: argument vs injected dependency vs construction
+PL   policy: retry, timeout, cache, instrumentation
+LF   lifetime: acquire → scope → use → child work → release
+VER  proof, with the stage it belongs to
 ```
+
+Every consequential path must trace upstream. Decode at every trust boundary; deny by default; never build commands or queries by string concatenation.
+
+## Ready gate
+
+Done only if:
+
+- every O, FL, and PL traces upstream, and no consequential path is unexplained;
+- the CQ gate, AI-code gate, and F# rules pass in CI;
+- every FL, PL, and P# has a VER at the right fidelity and stage;
+- shortcuts are recorded as D#;
+- no `[blocking]` A# is open.
 
 ## Try it
 
 ```text
-Use $design-thinking to implement recurring-task expansion
-against the existing scheduling contract.
+Use $design-thinking to implement recurring-task expansion against
+the existing scheduling contract, and show me the O/FL/VER trace.
 ```
-
-If verification becomes a separate hard problem, hand it to `test-engineering`.
-
-## Canonical runtime reference
 
 [Read the complete `design-thinking` instructions](/reference/design-thinking/).

@@ -14,7 +14,7 @@ async function fixture(run) {
   for (const folder of ['.claude-plugin', '.codex-plugin', '.agents/plugins', 'skills', 'assets']) {
     await mkdir(join(root, folder), { recursive: true });
   }
-  const paths = ['package.json', 'package-lock.json', 'plugin.json', '.codex-plugin/plugin.json',
+  const paths = ['package.json', 'bun.lock', 'plugin.json', '.codex-plugin/plugin.json',
     '.claude-plugin/plugin.json', '.claude-plugin/marketplace.json',
     '.agents/plugins/marketplace.json', 'assets/agentflow.svg'];
   for (const path of paths) {
@@ -31,7 +31,7 @@ async function fixture(run) {
 
 test('current manifests have one plugin identity and canonical skill source', async () => {
   const result = await validatePluginDistribution({ root: repo });
-  assert.equal(result.count, 11);
+  assert.equal(result.count, 8);
   assert.equal(result.version, packageVersion);
 });
 
@@ -44,17 +44,14 @@ test('version drift is detected and can be synchronized without modifying other 
     await assert.rejects(syncPluginVersions({ root }), /version .* differs/);
     await syncPluginVersions({ root, write: true });
     assert.deepEqual(JSON.parse(await readFile(path, 'utf8')), original);
-    assert.deepEqual(await validatePluginDistribution({ root }), { version: packageVersion, count: 11 });
+    assert.deepEqual(await validatePluginDistribution({ root }), { version: packageVersion, count: 8 });
   });
 });
 
-test('package-lock drift blocks version publishing even when manifests match', async () => {
+test('missing canonical lockfile blocks version publishing even when manifests match', async () => {
   await fixture(async root => {
-    const path = join(root, 'package-lock.json');
-    const lock = JSON.parse(await readFile(path, 'utf8'));
-    lock.packages[''].version = '9.9.9';
-    await writeFile(path, JSON.stringify(lock));
-    await assert.rejects(syncPluginVersions({ root, write: true }), /package-lock root version differs/);
+    await rm(join(root, 'bun.lock'), { force: true });
+    await assert.rejects(syncPluginVersions({ root, write: true }), /ENOENT|bun\.lock/);
   });
 });
 

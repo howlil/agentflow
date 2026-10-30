@@ -2,7 +2,7 @@
 
 **Better judgment for AI agents.**
 
-Agentflow is an open-source engineering skill library: **one decision router and ten focused specialists** for product behavior, architecture, UI, implementation, testing, review, security, and operations. It helps an AI coding host choose the reasoning a task actually needs rather than forcing every change through a fixed pipeline.
+Agentflow is an open-source engineering skill library: **one decision router and seven focused specialists** for product behavior, architecture, UI, implementation, testing, review, and release. It helps an AI coding host choose the reasoning a task actually needs rather than forcing every change through a fixed pipeline.
 
 [![CI](https://github.com/howlil/agentflow/actions/workflows/ci.yml/badge.svg)](https://github.com/howlil/agentflow/actions/workflows/ci.yml) [![Skills ecosystem](https://skills.sh/b/howlil/agentflow)](https://skills.sh/howlil/agentflow)
 
@@ -11,7 +11,7 @@ Agentflow is an open-source engineering skill library: **one decision router and
 For portable coding hosts, use the independent [skills CLI](https://github.com/vercel-labs/skills). The tested version is `skills@1.7.4` with Node.js 22.20+.
 
 ```bash
-# See the eleven available skills
+# See the eight available skills
 npx skills@1.7.4 add howlil/agentflow --list
 
 # Install for Codex; select the router and specialists interactively
@@ -22,9 +22,9 @@ Then ask your coding host:
 
 > Use Agentflow to review the race condition in booking creation. Inspect the affected code, identify any unresolved design or verification decisions, and use only the relevant skills.
 
-The host must have the repository/files and tools needed for the requested action. A skill is **instructional guidance**, not a separate code-executing agent. Installing only `agentflow` does not automatically install its ten specialists.
+The host must have the repository/files and tools needed for the requested action. A skill is **instructional guidance**, not a separate code-executing agent. Installing only `agentflow` does not automatically install its seven specialists.
 
-For other hosts and install modes: [installation guide](src/content/docs/start/install.md), [five-host compatibility](src/content/docs/start/cross-agent-compatibility.md), and [native Claude/Codex plugins](src/content/docs/start/native-plugins.md). Use one installation method per host; portable copies are updated manually.
+For other hosts and install modes: [installation guide](src/content/docs/start/install.md), [five-host compatibility](src/content/docs/start/cross-agent-compatibility.md), [upgrade and migration](src/content/docs/start/upgrade-and-migration.md), and [native Claude/Codex plugins](src/content/docs/start/native-plugins.md). Use one installation method per host; portable copies are updated manually.
 
 ## What it does
 
@@ -39,7 +39,7 @@ Engineering task
 
 A simple rename does not need a design workflow. A concurrency bug may need implementation reasoning and a targeted concurrency test; those are selected only when they resolve a real uncertainty.
 
-[Browse all eleven skills and their responsibilities](src/content/docs/start/choose-a-skill.md).
+[Browse all eight skills and their responsibilities](src/content/docs/start/choose-a-skill.md).
 
 ## ChatGPT Web + GitHub (optional)
 
@@ -60,10 +60,10 @@ The repository's CI produces a candidate plugin ZIP. A passing package check or 
 ## Development
 
 ```bash
-npm ci
-npm run plugins:check
-npm test
-npm run build
+bun install --frozen-lockfile
+bun run plugins:check
+bun run test
+bun run build
 ```
 
 The root `package.json` is **private** and is used for the documentation site, plugin metadata and validation—not a new Agentflow npm installer. Canonical skill instructions live in `skills/<name>/SKILL.md`. See [distribution](src/content/docs/start/distribution.md) and [release process](src/content/docs/start/release-and-rollback.md).

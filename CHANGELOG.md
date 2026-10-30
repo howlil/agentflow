@@ -2,6 +2,31 @@
 
 Agentflow releases track the canonical `skills/*/SKILL.md` library, website and optional native plugin manifests. The private root package is **not** an npm CLI. Updates to this changelog are part of a reviewed release request.
 
+## Unreleased
+
+### Changed
+
+- **Chain contract in the router:** specialists now own IDs, a ready gate, and a handoff (`J/B/X/P` → `R/S/K` → `U/M/ST` → `T/O/FL` → `RK/PF` → `RV` → `RL`). The router carries those IDs, returns a failed gate to its owner, and treats release as a separate decision from merge.
+- **`AGENTS.md` bootstrap:** the router creates a root `AGENTS.md` with durable operating rules only when it is missing, and points to `.agents/` instead of duplicating it.
+- **Skill catalog reduced to eight:** one router plus seven specialists. Product, architecture, interface, implementation, test, review, and release documents were rewritten against the current contracts.
+- **Budget aligned with the test stage map:** at most `ci`, `release`, and `nightly` workflows; automated assertions per proof plus one manual acceptance pass at release.
+
+### Removed
+
+- `graph-protocol` and `call-graph-output` — provisioning policy lives in the router references; a compact graph is rendered inline when useful.
+- `production-ops` — replaced by `release-engineering`; daily operations and incident command are outside the catalog.
+- `security-review` — trust, authorization, and release-integrity risks are reviewed by `code-review`.
+
+### Migration
+
+- Users with an installed copy must run `skills check`, `skills update -g`, remove the old names, and install the current set. Renames and removals are not applied silently.
+- Native plugins require a version bump before the host refreshes; ChatGPT plugins require resubmission.
+- Full procedure: [upgrade and migration](src/content/docs/start/upgrade-and-migration.md).
+
+### Deprecation policy
+
+- Add the new name, keep the old one for at least one minor release with a pointer, document the change here, then remove it in a release that states the removal. Never reuse a published name for different content.
+
 ## v0.7.0
 
 **Agentflow v0.7.0 — GitHub delivery alignment across ChatGPT conversations**

@@ -1,0 +1,81 @@
+name: Installation or upgrade problem
+description: The portable installer, a native plugin, or the upgrade path did not work.
+title: "[install] "
+labels:
+  - install
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read [install, update, and remove](https://github.com/howlil/agentflow/blob/master/src/content/docs/start/install.md) and [upgrade and migration](https://github.com/howlil/agentflow/blob/master/src/content/docs/start/upgrade-and-migration.md) first.
+        Remove secrets and private paths before posting.
+  - type: dropdown
+    id: host
+    attributes:
+      label: Host
+      options:
+        - pi
+        - Codex CLI
+        - Claude Code
+        - Gemini CLI
+        - Cursor
+        - OpenCode
+        - ChatGPT Web
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: route
+    attributes:
+      label: Installation route
+      options:
+        - Portable install, project scope
+        - Portable install, global scope
+        - Claude Code plugin
+        - Codex plugin
+        - ChatGPT Web plugin
+        - Upgrade from an older skill set
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node.js version, and installer version.
+      placeholder: Windows 11, Node 22.23.4, skills@1.7.4
+    validations:
+      required: true
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands run
+      description: The exact commands and their sanitized output.
+      render: shell
+      placeholder: |
+        npx skills@latest add howlil/agentflow -g -a codex
+        npx skills@latest list -g
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed versus expected
+      description: What the installer printed or left on disk, and what you expected.
+    validations:
+      required: true
+  - type: input
+    id: installed
+    attributes:
+      label: Installed skill names
+      description: Paste the names from `npx skills@latest list -g`, so stale or duplicate copies are visible.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I use one installation route per host, with no native and portable duplicate.
+          required: true
+        - label: I removed secrets and private paths from the output.
+          required: true

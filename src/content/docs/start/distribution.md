@@ -18,13 +18,13 @@ Requires Node.js 22.20+ for tested `skills@1.7.4`.
 
 ```bash
 npx skills@1.7.4 add howlil/agentflow --list
-# Select all eleven skills interactively for router + specialists
+# Select all eight skills interactively for router + specialists
 npx skills@1.7.4 add howlil/agentflow -g -a codex
 # Minimal router-only installation
 npx skills@1.7.4 add howlil/agentflow --skill agentflow -a codex --copy --yes
 ```
 
-Installing the router only **does not install** the ten specialists. Install all eleven when you need the router to load any relevant specialist.
+Installing the router only **does not install** the seven specialists. Install all eight when you need the router to load any relevant specialist.
 
 ## Update and remove
 
@@ -35,6 +35,27 @@ npx skills@1.7.4 remove -g howlil/agentflow
 ```
 
 Updates are **not automatic** for portable copies. Read [installation lifecycle](/start/install/) and [host-specific paths](/start/cross-agent-compatibility/).
+
+## Host matrix
+
+| Host | `--agent` | Portable global path | Native route |
+| --- | --- | --- | --- |
+| Claude Code | `claude-code` | `~/.claude/skills/` | Marketplace |
+| Codex | `codex` | `~/.agents/skills/` | Marketplace |
+| pi | none (reads the shared path) | `~/.agents/skills/` | Not applicable |
+| Gemini CLI | `gemini-cli` | `~/.agents/skills/` | Not applicable |
+| Cursor | `cursor` | `~/.agents/skills/` | Not applicable |
+| OpenCode | `opencode` | `~/.agents/skills/` | Not applicable |
+
+One global install under `~/.agents/skills/` serves pi, Codex, Gemini CLI, Cursor, and OpenCode. Claude Code reads `~/.claude/skills/` for portable installs or its own marketplace plugin. Install with `-a codex` to target the shared path; do not use `-a '*'` unless you want copies in every agent directory.
+
+## Verify your install
+
+```bash
+npx skills@1.7.4 list -g
+```
+
+Expected: `agentflow` plus seven specialists, with none of `production-ops`, `security-review`, `graph-protocol`, or `call-graph-output`. Two copies of one skill on the same host, or a stale name that survives an update, is a support problem: remove it by name.
 
 ## Registry versus source
 

@@ -67,8 +67,8 @@ test('README, hero, documentation and sidebar keep a truthful installation path'
   assert.ok(config.includes("'start/distribution'"));
 });
 
-test('canonical runtime count is unchanged and generated discovery output is ignored in Git', async () => {
-  assert.equal(EXPECTED.length, 11);
+test('canonical runtime count is eight and generated discovery output is ignored in Git', async () => {
+  assert.equal(EXPECTED.length, 8);
   assert.ok((await read('.gitignore')).includes('public/llms.txt'));
   assert.ok((await read('scripts/generate-skills.mjs')).includes('formatDiscoveryIndex(outputs.map'));
 });
@@ -83,7 +83,7 @@ test('brand and README describe capabilities without claiming a separate runtime
     assert.ok(copy.includes('Better judgment for AI agents.'), 'Primary tagline drift');
   }
   assert.match(hero, /Better judgment[\s\S]*for AI agents\./);
-  assert.ok(readme.includes('one decision router and ten focused specialists'));
+  assert.ok(readme.includes('one decision router and seven focused specialists'));
   assert.ok(readme.includes('not a separate code-executing agent'));
   assert.ok(readme.includes('CONTRIBUTING.md'));
   assert.ok(readme.includes('SECURITY.md'));

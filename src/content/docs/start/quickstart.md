@@ -3,7 +3,7 @@ title: Quickstart
 description: Learn the three ways Agentflow skills are selected and composed.
 ---
 
-Agentflow provides a router and ten specialist skills so you do **not** need to memorize their names before doing useful work. [Install Agentflow](/start/install/) first.
+Agentflow provides a router and seven specialist skills so you do **not** need to memorize their names before doing useful work. [Install Agentflow](/start/install/) first.
 
 ## 1. Ask the router when the owning decision is unclear
 
@@ -12,7 +12,7 @@ Use agentflow to select the smallest relevant set of engineering skills
 for this task, based on the unresolved decisions.
 ```
 
-Each AI agent controls its own invocation syntax. Installing the router alone does not install its specialists. Select all eleven if you need the full routing catalog.
+Each AI agent controls its own invocation syntax. Installing the router alone does not install its specialists. Select all eight if you need the full routing catalog.
 
 ## 2. Describe the task
 

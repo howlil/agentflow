@@ -1,6 +1,6 @@
 {
   "name": "agentflow",
-  "description": "Better judgment for AI agents. One decision router and ten portable engineering specialist skills.",
+  "description": "Better judgment for AI agents. One decision router and seven portable engineering specialist skills.",
   "owner": {
     "name": "howlil",
     "url": "https://github.com/howlil"
@@ -9,7 +9,7 @@
     {
       "name": "agentflow",
       "source": "./",
-      "description": "Better judgment for AI agents. One decision router and ten portable engineering specialist skills."
+      "description": "Better judgment for AI agents. One decision router and seven portable engineering specialist skills."
     }
   ]
 }

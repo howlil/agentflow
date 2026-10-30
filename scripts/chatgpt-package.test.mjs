@@ -27,7 +27,7 @@ async function mutate(root, transform) {
 test('an extracted archive validates without website or marketplace files', async () => {
   await fixture(async root => {
     assert.deepEqual((await readdir(root)).sort(), ['.codex-plugin', 'assets', 'skills']);
-    assert.deepEqual(await validateChatGPTPackage({ root, strictRoot: true }), { version, count: 11 });
+    assert.deepEqual(await validateChatGPTPackage({ root, strictRoot: true }), { version, count: 8 });
   });
 });
 
@@ -45,7 +45,7 @@ test('archives with unexpected files or symlinks fail before distribution', asyn
 test('optional onboarding skill is allowed only when it points to a packaged skill', async () => {
   await fixture(async root => {
     await mutate(root, p => { p.onboardingSkill = './skills/agentflow/SKILL.md'; });
-    assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 11);
+    assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 8);
     await mutate(root, p => { p.onboardingSkill = '../outside/SKILL.md'; });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /onboardingSkill path/);
   });
@@ -54,7 +54,7 @@ test('optional onboarding skill is allowed only when it points to a packaged ski
 test('developer identity is not hardcoded to a single account name', async () => {
   await fixture(async root => {
     await mutate(root, p => { p.interface.developerName = 'Verified Engineering Studio'; });
-    assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 11);
+    assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 8);
   });
 });
 
@@ -96,7 +96,7 @@ test('screenshots may be rectangular while icons must be square', async () => {
     await writeFile(join(root, 'assets', 'wide.svg'),
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"></svg>');
     await mutate(root, p => { p.interface.screenshots = [screenshot]; });
-    assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 11);
+    assert.equal((await validateChatGPTPackage({ root, strictRoot: true })).count, 8);
     await mutate(root, p => { p.interface.logo = screenshot; });
     await assert.rejects(validateChatGPTPackage({ root, strictRoot: true }), /square and at least 48x48/);
   });

@@ -7,60 +7,55 @@ description: Turn unclear product intent into a minimal, testable behavior contr
 
 > **What must the product observably enable and guarantee?**
 
+## Input and output
+
+```text
+In:   raw idea / business request / change to an existing product
+Out:  .agents/product.md  (J1, B#, X#, C#, Q#, P#, A#)
+Next: design-graph (only if interface structure matters) → engineering-design
+```
+
 ## Use when
 
-- the user problem is unclear
-- a feature idea needs refinement
-- behavior or scope is changing
-- acceptance outcome is ambiguous
+- the user problem, job, or scope is unclear
+- a feature needs refinement before architecture
+- behavior, breaks, or constraints are changing
+- the proof of a product outcome is unclear
 
 ## Don't use when
 
-The product behavior is already explicit and the unresolved question is architecture, interface mechanics, or implementation.
+Behavior is already explicit and the unresolved question is architecture, interface mechanics, or implementation.
 
 ## Model
 
 ```text
-actor + trigger
-   ↓
-job / outcome
-   ↓
-observable behavior
-   ↓
-meaningful breaks
-   ↓
-constraints
-   ↓
-smallest complete scope
-   ↓
-acceptance proof
+J1  job and desired outcome
+B#  observable behavior edges/states
+X#  material breaks the person can hit
+C#  constraints that narrow valid behavior
+Q#  measurable quality targets
+P#  proof: which B/X/Q it covers
+A#  assumption, tagged [blocking] or [non-blocking]
 ```
 
-## Input → output
+Ask only when the answer changes J1, B, or scope. Otherwise assume, record `A#`, continue.
 
-```text
-raw idea / product change / constraints
-            ↓
-       product-design
-            ↓
-job + behavior graph + scope + proof
-```
+## Ready gate
+
+All must hold before `engineering-design`:
+
+- J1 is one sentence and names no mechanism;
+- every B# and X# has at least one P#;
+- no `[blocking]` A# is open;
+- Q is filled, or an A# says it is undefined;
+- Out lists anything with real scope-creep risk.
 
 ## Try it
 
 ```text
-Use $product-design to define recurring-task behavior.
-Keep the scope to the smallest complete user loop.
+Use $product-design to turn "recurring tasks" into a product contract.
+Name the job, the observable behavior, the breaks, and the proof.
+Do not choose architecture.
 ```
-
-## Common handoff
-
-```text
-product-design
-  → design-graph when interface structure becomes non-trivial
-  → engineering-design when system guarantees need architecture
-```
-
-## Canonical runtime reference
 
 [Read the complete `product-design` instructions](/reference/product-design/).

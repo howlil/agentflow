@@ -25,7 +25,7 @@ npx skills@1.7.4 check
 npx skills@1.7.4 update -g
 ```
 
-Select all eleven when you require the router and ten specialists. Router-only installation cannot load unavailable specialist instructions.
+Select all eight when you require the router and seven specialists. Router-only installation cannot load unavailable specialist instructions.
 
 CI tests the current checkout for each listed agent ID with a temporary HOME and project. It checks install/list/remove, canonical byte equality, and preservation of unrelated skills and `AGENTS.md`. Native Claude and Codex marketplace metadata are tested separately.
 

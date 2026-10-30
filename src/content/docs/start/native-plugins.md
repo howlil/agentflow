@@ -3,7 +3,7 @@ title: Native plugins
 description: Install and manage Agentflow through Claude Code and Codex marketplaces.
 ---
 
-Agentflow bundles **one router and ten specialist skills** from a single canonical root. Both plugin manifests use the positioning **“Better judgment for AI agents.”** Native plugins are managed subscriptions: use **either** a native marketplace install **or** the editable [skills.sh installation](/start/install/) for a given agent, not both.
+Agentflow bundles **one router and seven specialist skills** from a single canonical root. Both plugin manifests use the positioning **“Better judgment for AI agents.”** Native plugins are managed subscriptions: use **either** a native marketplace install **or** the editable [skills.sh installation](/start/install/) for a given agent, not both.
 
 The native marketplace manifests are included in the public default branch and immutable versioned GitHub releases. Managed refresh still depends on each client's configuration.
 
@@ -72,7 +72,7 @@ Removing a marketplace does **not** automatically mean every previously installe
 
 ## ChatGPT Web (skills-only)
 
-The official `.codex-plugin/plugin.json` contains top-level OpenAI listing metadata and the release ZIP includes that manifest, `skills/`, and `assets/`. See [ChatGPT Web plugin](/start/chatgpt-web/) for submission packaging, safety/permission boundaries and the manual acceptance matrix. Installing a skill is not authorization to use tools or write to a repository.
+The official `.codex-plugin/plugin.json` contains top-level OpenAI listing metadata and the release ZIP includes that manifest, `skills/`, and `assets/`. See [ChatGPT Web plugin](/start/chatgpt-web/) for submission packaging, safety and permission boundaries. Installing a skill is not authorization to use tools or write to a repository.
 
 ## Editable skills for other coding agents
 
@@ -84,10 +84,10 @@ The private root `package.json` owns native plugin release metadata and website 
 
 ```bash
 npm version patch --no-git-tag-version
-npm run plugins:sync
-npm run plugins:check
-npm test
-npm run build
+bun run plugins:sync
+bun run plugins:check
+bun run test
+bun run build
 ```
 
 For a reviewed release, also update `CHANGELOG.md` and `RELEASE_VERSION` to the matching `vX.Y.Z`. After the PR is merged, that request triggers the GitHub Release workflow. A manual tag is an alternative, not an additional required step:

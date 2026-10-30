@@ -15,10 +15,10 @@ export async function syncPluginVersions({ root = process.cwd(), write = false }
   const pkg = await readJson(root, 'package.json');
   if (!SEMVER.test(pkg.version)) throw new Error('package.json version must be semantic versioning');
 
-  const lock = await readJson(root, 'package-lock.json');
-  if (lock.version !== pkg.version || lock.packages?.['']?.version !== pkg.version) {
-    throw new Error('package-lock root version differs from package.json; run npm install --package-lock-only');
-  }
+  // bun.lock (text) is the canonical lockfile. It does not duplicate the root
+  // version, so version parity is enforced across package.json and the native
+  // manifests below; `bun install --frozen-lockfile` protects lock drift in CI.
+  await readFile(join(root, 'bun.lock'), 'utf8');
 
   for (const path of VERSIONED_MANIFESTS) {
     const content = await readJson(root, path);
@@ -26,7 +26,7 @@ export async function syncPluginVersions({ root = process.cwd(), write = false }
     if (content.version !== pkg.version) {
       if (!write) {
         throw new Error(path + ' version ' + content.version + ' differs from package.json ' + pkg.version +
-          '; run npm run plugins:sync');
+          '; run bun run plugins:sync');
       }
       content.version = pkg.version;
       await writeFile(join(root, path), JSON.stringify(content, null, 2) + '\n');

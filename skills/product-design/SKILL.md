@@ -1,344 +1,161 @@
 ---
 name: product-design
-description: Turn raw app or feature ideas, or changes to an existing product, into a minimal testable product contract by modeling the user problem, job, observable behavior, scope, constraints, edge cases, and proof before engineering design or implementation. Use for greenfield product definition, feature brainstorming or refinement, and product-level review. Do not choose technical architecture or implementation; use design-graph only when interface surfaces or interaction need explicit modeling.
+description: Turn a raw idea, business request, client need, or change to an existing product into a minimal testable product contract (job, behavior, scope, constraints, proof) before any engineering design or code. Use this whenever the user describes an app, feature, workflow, side project, or business problem to build or change, asks what to build, how to scope an MVP, or to refine or review requirements, even if they never say "product" or "PRD". Output is `.agents/product.md`. Does not choose architecture or implementation; hands off to `design-graph` (only if UI structure needs modeling) and then `engineering-design`.
 ---
 
 # Product Design
 
-A product is not a feature list. It is a behavior graph that moves a person from a real trigger or problem to a useful outcome.
+A product is a behavior graph from a real trigger to a useful outcome. Keep only what the outcome requires. If a behavior does not trace to J or P, cut it.
 
 ```text
-X → Graph → Product<J, B, P>
-│              │      │  │  │
-│              │      │  │  └─ proof that the outcome is reached (§7)
-│              │      │  └──── observable product behavior       (§3)
-│              │      └─────── job / outcome the user needs      (§2)
-│              │
-│              └─ nodes = meaningful states, edges = user/system moves
-│
-└─ the context: who is trying to do what, when, and why
+Idea → Graph → Product<J, B, P>
+                       │  │  └─ proof the outcome is reached   (§7)
+                       │  └──── observable behavior            (§3)
+                       └─────── job and desired outcome        (§2)
+
+In:   raw idea | business request | change to existing product
+Out:  .agents/product.md          (§10)
+Next: design-graph (only if UI) → engineering-design
 ```
+
+## IDs
+
+Every node gets an ID. Downstream skills cite these instead of restating them.
 
 ```text
-§1  Context      actor, trigger, current behavior, problem
-§2  J            job and desired outcome
-§3  B            happy path as observable behavior graph
-§4  Breaks       meaningful edge and failure states
-§5  Constraints  facts that limit the product behavior
-§6  Scope        smallest behavior that closes the job
-§7  P            acceptance traces and outcome proof
-§8  Interface    hand interaction detail to design-graph when needed
-§9  Contract     persist the result in .agents/product.md
+J1  job          B1..  behavior edge/state     X1..  break/failure
+C1..  constraint   Q1..  quality bar            P1..  proof (cites the B/X/Q it covers)
+A1..  assumption, tagged [blocking] or [non-blocking]
 ```
 
-Read the problem. Draw the behavior that gets the user to the outcome. Keep only what the outcome requires. If a behavior does not trace to the job or its proof, cut it.
+## 1. Context
 
-## 1. Establish the context
+Name only what changes a product decision.
 
-Name only what changes the product decision.
+- **Actor**: who is trying to get something done. No invented personas. For a personal project, the actor is the user.
+- **Acceptor**: who decides it is done, if not the actor (client, stakeholder).
+- **Trigger**: what causes the need now.
+- **Current behavior**: how the job is done today.
+- **Problem**: what blocks, slows, or complicates the outcome.
+- **Evidence**: observed facts, user-provided facts, existing product behavior. Everything else is an assumption (A#).
 
-- **Actor** — the person or role trying to get something done. Do not invent a persona.
-- **Trigger** — what causes the need now.
-- **Current behavior** — how the job is done today, if known.
-- **Problem** — what prevents, slows, or complicates the desired outcome.
-- **Evidence** — observed facts, research, existing product behavior, or user-provided facts.
+If the input starts as a feature, back up to the job. Judge whether the feature is needed.
 
-Separate evidence from assumptions. If something is plausible but unverified, mark it as an assumption instead of turning it into product truth.
+If the product already exists, read its current behavior first (repo, docs, UI) and treat that as evidence. Model only the changed subgraph plus the states it connects to.
 
-If the input starts with a proposed feature, back up until the underlying job and problem are clear enough to judge whether the feature is necessary.
+**Ask or assume.** Ask only when the answer would change J, B, or scope, max 3 questions per round. Otherwise assume, record A#, and continue. An A# that would change J, B, or scope if wrong is `[blocking]`.
 
-## 2. Define J: the job and outcome
-
-Ask what the actor is actually trying to accomplish.
+## 2. J: job and outcome
 
 ```text
-Trigger
-  ↓
-Job
-  ↓
-Desired outcome
+J1: When <situation>, I want <motivation>, so I can <outcome>.
 ```
 
-Write the job in terms of the result the user wants, not the mechanism the product might use.
-
-Bad:
+Describe the result, not the mechanism. The product may change; the job should not.
 
 ```text
-User needs an AI dashboard.
+Bad:  User needs an AI dashboard.
+Good: J1: After a work session, I want to reconstruct where my computer time went, so I can report it without logging manually.
 ```
 
-Better:
+Add engagement, retention, automation, or AI as goals only if they are part of the actual problem or a stated constraint.
+
+## 3. B: behavior graph
+
+Draw the smallest successful path. Nodes are meaningful product states; edges are observable user or system moves.
 
 ```text
-After a work session, the user needs to reconstruct where their computer time went without manually logging every activity.
+Need exists --user acts--> product responds --> new state --> ... --> J1 done
 ```
 
-The product may change. The job should remain meaningful.
+Each edge answers: what does the user do, what does the product do, what is true next. Describe behavior only. No database, API, queue, framework, component, or deployment terms.
 
-Do not add goals such as engagement, retention, virality, automation, or AI unless they are part of the actual problem or constraints.
+## 4. X: material breaks
 
-## 3. Think B first
-
-Map the smallest successful product behavior before thinking about screens or architecture.
-
-```text
-State
-  ↓ user action
-System response
-  ↓
-Next state
-  ↓
-Outcome
-```
-
-Example shape:
-
-```text
-Need exists
-  ↓ user starts
-Product accepts intent
-  ↓
-Product performs the required behavior
-  ↓
-User sees or receives the result
-  ↓
-Job completed
-```
-
-Nodes are meaningful product states. Edges are observable user or system moves.
-
-For each edge, be able to answer:
-
-```text
-What does the user do?
-What does the product do in response?
-What becomes true next?
-```
-
-Describe behavior, not implementation.
-
-Do not introduce:
-
-```text
-database
-API
-service
-queue
-cache
-framework
-component tree
-deployment
-```
-
-Those belong to engineering design or implementation.
-
-If the product already exists, model only the changed subgraph plus the existing states it connects to. Do not redesign the whole product for a local feature.
-
-## 4. Mark where the product behavior breaks
-
-Add only edge cases that materially change what the user experiences or what the product must guarantee.
-
-Typical examples:
-
-```text
-required input missing
-invalid action
-nothing exists yet
-permission denied
-operation interrupted
-conflicting action
-result unavailable
-destructive action needs confirmation
-```
-
-Model them on the same graph:
+Add only breaks that change what the user experiences or what the product must guarantee.
 
 ```text
 Action
  ├─ valid   → expected result
- ├─ invalid → recoverable state
- └─ denied  → unavailable path
+ ├─ invalid → recoverable state        (X1)
+ └─ denied  → unavailable path         (X2)
 ```
 
-Do not enumerate theoretical edge cases by ritual. If an edge case would not change product behavior or engineering requirements, leave it out.
+Typical: missing input, nothing exists yet, permission denied, interrupted operation, conflicting action, result unavailable, destructive action needing confirmation. Skip theoretical cases that change nothing.
 
-## 5. Apply real constraints
+## 5. C and Q: constraints and quality bar
 
-Constraints are facts that narrow valid product behavior.
+**C**: facts that narrow valid behavior (offline, data stays local, specific role, existing workflow, platform, legal/privacy). A preference is not a constraint.
 
-Examples:
+**Q**: measurable quality targets (availability, latency, scale, data sensitivity, accessibility). Record only targets that are stated or marked as assumption. If a target would change the design and nothing is stated, ask (§1) or record `A#: Q undefined [blocking|non-blocking]`. Never invent numbers, market facts, user behavior, or business targets; research them or record them as assumptions.
+
+## 6. Scope
+
+Scope is the minimum graph from trigger to outcome with no broken path. For every capability or branch: does removing it prevent J1 from completing correctly? If no, cut or defer.
+
+- Greenfield: the smallest coherent product loop.
+- Existing product: only what is added, changed, or removed.
+- Keep an Out item only when it prevents an obvious misunderstanding. No backlog in the contract.
+
+## 7. P: proof
+
+Every B, X, and Q needs observable proof, stated as what must be true, not how to build it.
 
 ```text
-must work offline
-must keep data local
-must support a specific role
-must preserve an existing workflow
-must fit a platform restriction
-must meet a legal or privacy requirement
+P1 (B1-B3): Given <state>, when <action>, then <observable outcome>.
+P2 (X1):    Given <state>, when <invalid action>, then <recoverable state>.
+P3 (Q1):    <measurable condition under stated load/conditions>.
 ```
 
-Do not turn preferences into constraints.
+Use product metrics only when measurement is part of the decision.
 
-Do not invent market facts, user behavior, scale, business targets, or success metrics. When a claim materially affects the design and is not established, either research it or record it as an assumption.
+## 8. Ready gate
 
-## 6. Cut to the smallest complete scope
+The contract is ready for `engineering-design` only if all hold:
 
-Scope is the minimum graph that takes the user from trigger to outcome without a broken path.
+- J1 is one sentence and names no mechanism.
+- Every B and X has at least one P.
+- No `[blocking]` assumption is open.
+- Q is filled, or an A# states it is undefined.
+- Out lists anything with real scope-creep risk.
 
-For every capability or branch ask:
+If a check fails, fix the contract. Do not pass the gap downstream.
 
-```text
-Does removing this prevent the job from being completed correctly?
-```
+## 9. Handoff
 
-If no, remove or defer it.
+- `engineering-design` consumes J, B, X, C, Q, Scope, P, and open A#.
+- `design-graph` (only when interface structure needs explicit modeling) consumes J, B, C, P and owns surfaces, moves between them, content/void states, focus, and responsive behavior. If modeling it exposes a contradiction in B, fix B here.
 
-Keep a non-goal only when it prevents an obvious misunderstanding or scope expansion. Do not build a backlog inside the product contract.
+## 10. Persist
 
-For greenfield work, define the smallest coherent product loop.
+Write or update `.agents/product.md`. No separate PRD, requirements, journey, or strategy docs unless asked.
 
-For an existing product, define only the behavior being added, changed, or removed.
-
-## 7. Define P: prove the product behavior
-
-Every important path needs observable proof.
-
-Prefer acceptance traces:
-
-```text
-Given <meaningful starting state>
-When <user action or trigger>
-Then <observable product outcome>
-```
-
-or a compact graph:
-
-```text
-Trigger → Action → Product response → Result
-```
-
-Proof should describe what must be true, not how engineers must implement it.
-
-Use product metrics only when measurement is part of the decision. Do not invent numeric targets to make the document look complete.
-
-A product contract is ready for engineering when the core job, behavior, material breaks, scope, and proof can be understood without guessing the intended experience.
-
-## 8. Hand interface detail to Design Graph
-
-When the behavior is human-facing and surface or interaction structure matters, use `design-graph`.
-
-Pass it:
-
-```text
-Job
-+
-Behavior graph
-+
-Constraints
-+
-Product proof
-```
-
-`design-graph` owns:
-
-```text
-surfaces
-moves between surfaces
-content and void states
-interaction boundaries
-attention/focus behavior
-responsive surface behavior
-```
-
-Product Design owns what the product must enable and guarantee. Design Graph owns how that behavior is expressed through the interface.
-
-Do not duplicate Design Graph inside this skill.
-
-If interface modeling exposes a contradiction in the product behavior, fix the product graph rather than hiding the mismatch in the UI.
-
-## 9. Persist the product contract
-
-When working in a project, write or update:
-
-```text
-.agents/product.md
-```
-
-Do not create separate PRD, requirements, scope, journey, or product-strategy documents unless the task explicitly requires them.
-
-If `.agents/product.md` already exists:
-
-1. read it first;
-2. preserve still-valid product decisions;
-3. update only the affected subgraph;
-4. remove contradictions created by the new decision;
-5. do not rewrite unrelated product context.
-
-Use the smallest structure that makes the contract unambiguous:
+If it exists: read it first, preserve valid decisions, update only the affected subgraph, remove contradictions the change creates, leave unrelated context alone. Edit in place and keep it near 150 lines by condensing, not by adding files.
 
 ```markdown
 # Product
 
 ## Problem
-Actor:
-Trigger:
-Problem:
-Desired outcome:
+Actor / Acceptor / Trigger / Problem:
+J1: When ..., I want ..., so I can ...
 
 ## Behavior
-<product behavior graph>
+B1 → B2 → B3 → J1 done
+X1 (at B2): ...
 
 ## Constraints
-- ...
+C1: ...
+Q1: ...
 
 ## Scope
-In:
-- ...
-
-Out:
-- ...
+In: ...
+Out: ...
 
 ## Proof
-- Given ..., when ..., then ...
+P1 (B1-B3): Given ..., when ..., then ...
 
 ## Assumptions
-- ... only unresolved assumptions that matter
+A1 [blocking]: ...
 ```
 
-Omit empty or irrelevant sections. The artifact is project memory, not a form to complete.
-
----
-
-## The Pipeline
-
-```text
-INPUT
-  → "Who is trying to do what, and what triggers it?"
-      → establish context; separate evidence from assumptions
-
-  → "What outcome are they actually trying to reach?"
-      → define J: job and desired outcome
-
-  → "What is the smallest successful observable behavior?"
-      → draw B: product behavior graph
-
-  → "Where can that behavior meaningfully break?"
-      → annotate only material edge/failure states
-
-  → "What facts constrain valid behavior?"
-      → apply real constraints
-
-  → "What can be removed without breaking the job?"
-      → cut to the smallest complete scope
-
-  → "What observable result proves this works?"
-      → define P: acceptance traces / outcome proof
-
-  → "Does interaction structure need explicit modeling?"
-      → invoke design-graph only when needed
-
-  → .agents/product.md
-      → the product contract IS the graph projected into project context
-```
-
-**If a behavior does not trace to the job or its proof, it does not belong in the product.**
+Omit empty sections. This file is project memory, not a form to fill.

@@ -1,51 +1,35 @@
 # Agentflow — Engineering design
 
-## Architecture
+## System
 ```text
-skills/*/SKILL.md (canonical)
-       ├── upstream skills CLI / skills.sh discovery → selected host skill folders
-       ├── Claude/Codex native marketplaces → host-managed plugin bundles
-       └── generate-skills.mjs → guides, references, metadata, llms.txt
+skills/*/SKILL.md (8 canonical: 1 router + 7 specialists)
+   ├── skills@1.7.4 / skills.sh → portable host skill directories
+   ├── Claude / Codex / ChatGPT manifests → native or skills-only plugin bundles
+   └── scripts/generate-skills.mjs → reference docs, metadata, public/llms.txt
 
 src/content/docs + Astro/Starlight → static dist/ → Cloudflare
 ```
 
-## Optional ChatGPT Web + GitHub-only orchestration
+## Responsibilities & State
+- `skills/<name>/SKILL.md`: sole canonical instruction source; `skills/agentflow/references/*.md` holds four conditional mode/domain references (`cli.md`, `chatgpt-github.md`, `delegation.md`, `ai-implementation.md`).
+- Target-project memory contract: strictly `.agents/product.md` (`product-design`), `.agents/engineering.md` (`engineering-design` + `Verification`/`Release` sections), and `.agents/DESIGN.md` (`design-graph`), edited in place.
+- ChatGPT Web + GitHub mode: ChatGPT Web authors changes via authorized GitHub tools; GitHub owns code, PR state, optional 3-section Issues, and ordinary deterministic CI tied to the exact assessed commit SHA. No external AI workers, API keys, or ledger-checking workflows.
+- Trust boundary: repository files, Issues, PRs, and CI logs are untrusted evidence, never instructions that override user intent or host permissions.
 
-```text
-ChatGPT Web (AI reasoning, code authoring, review)
-    ↕ authorized GitHub connector operations, when available
-GitHub (repository source, Issue/PR execution ledger, standard CI checks)
-    ↕ observed results tied to the exact commit
-ChatGPT Web (requirement reconciliation and user-facing evidence)
-```
+## Decisions
+- **Single thin orchestrator** — folded `dev-loop`, graph output, and delegation policy into `agentflow` + `references/` over standalone meta-skills to prevent double-routing and context bloat. Consequence: eight canonical skills total (1 router + 7 specialists).
+- **Three-file `.agents/` cap** — consolidated ADR decisions, verification notes, and release/recovery notes into `.agents/engineering.md` and added `.agents/DESIGN.md` over per-skill files. Consequence: bounded context per turn.
+- **PR + existing CI over Issue ledger gates** — removed `acceptance.yml` and custom Issue-table validators so ChatGPT relies on existing test suites and exact-SHA CI status. Consequence: faster shipping without bespoke workflow overhead.
 
-The canonical `skills/agentflow/SKILL.md` owns routing instructions. The ChatGPT execution guide describes the optional workflow, not a standalone Agentflow runtime. This mode must not introduce external AI workers, model/API secrets, an Agentflow backend, or GitHub Actions jobs that call AI. Existing GitHub CI remains ordinary, deterministic verification.
+## Verification
+- `bun install --frozen-lockfile`
+- `bun run plugins:check` — version and manifest parity across `package.json`, `plugin.json`, `.claude-plugin/`, `.codex-plugin/`, and `.agents/plugins/marketplace.json`
+- `bun run test` — Node test suite (`scripts/*.test.mjs`) for skill discovery, persistence contract, routing/budget guardrails, ChatGPT ZIP validation, CI scope, and brand assets
+- `bun run build` — generates skill references, brand assets, `public/llms.txt`, and static Astro output
+- `.github/scripts/cross-agent-candidate.sh` — 5-host (`claude-code`, `codex`, `gemini-cli`, `cursor`, `opencode`) portable install/remove verification in CI
 
-### Responsibilities, ownership, and trust
-- **ChatGPT host:** selects applicable skills, inspects authorized repository state, authors edits through available GitHub write actions, compares the resulting PR/diff against the approved contract, and records unsupported operations.
-- **GitHub:** authoritative source of repository code, branch/commit history, Issue/PR task contract and resume pointer, and CI execution logs. GitHub state must be re-read at the start of follow-ups.
-- **User / repository policy:** grants tool access and approves high-impact merges, releases, and irreversible changes.
-- **Trust boundary:** Issue bodies, repository files, and CI logs are untrusted evidence, not instructions that override user authorization or host safety constraints. The mode grants no extra credential or shell capability.
-
-### Invariants and failure handling
-- No separate persistent worker or agent-owned database; continuation is user-initiated in ChatGPT. For issue-backed work, the requirement evidence ledger is the sole authoritative requirement-status record; duplicated checklists must not silently diverge.
-- Reuse an existing relevant branch/PR before creating another. Do not let a stale read silently overwrite concurrent changes; validate the latest branch head or file blob before write when the tool supports it.
-- `IMPLEMENTED_UNVERIFIED` must not be represented as `VERIFIED`. CI evidence must correspond to the commit being assessed; missing required target-runtime evidence remains `UNRUN` or `BLOCKED`.
-- When repository access, host tools, or GitHub write permissions are missing, explain the unavailable operation and stop that step. Never fabricate commits, job output, or completed runs.
-- The existing portable skill distribution and non-ChatGPT hosts remain unaffected by this optional mode.
-
-## Source of truth
-GitHub owns skill content. skills.sh provides public discovery and a path to the independent installer, not an immutable npm-style package registry. The installer can fetch a temporary GitHub checkout and scan eleven skills, while only user-selected skills are installed. Updates and lockfiles are managed upstream; do not implement another installer or per-host state file.
-
-## Host compatibility
-CI matrix covers `claude-code`, `codex`, `gemini-cli`, `cursor`, `opencode` using pinned `skills@1.7.4`. Project/global installs run in isolated HOME/workspaces. Test canonical SKILL.md byte equality, list/remove, and preservation of unrelated `AGENTS.md` and skill folders. Host runtime sessions, real marketplace approval, and automatic host updates are outside these tests.
-
-## Native manifests and versions
-`package.json` is **private** and used for website tooling and shared version metadata; npm is not a distribution mechanism for Agentflow skill installs. Synchronize root package lock and native `plugin.json` files for releases via `npm run plugins:sync` and verify via `npm run plugins:check`. Each release uses a reviewed master commit and immutable tag.
-
-## CI / release
-CI validates skills, static site generation, native plugin manifests and portable installation. `.github/workflows/release.yml` creates GitHub releases **without npm publish**. Historical `@howlil/agentflow-cli` versions require separate npm-owner unpublish/deprecation. Remove obsolete publishing credentials externally; never repurpose them in repository workflows.
+## Release
+- `release-engineering` replaces `production-ops` as the release strategy and execution specialist: versioning, packaging, CI/CD, compatibility sequencing, rollout/recovery, and post-release verification. Daily operations and general incident command remain outside its scope.
 
 ## Constraints
-No `packages/cli`, custom lockfile, proprietary installer, backend, forced native plugin installation, mandatory pipeline, or claim that `$agentflow` is invoked identically across all agents. Respect explicitly selected skills and existing steering documents. Keep single source of truth and clear responsibility boundaries.
+Private root `package.json` is build/validation tooling only; `.github/workflows/release.yml` creates immutable `vX.Y.Z` GitHub Releases and ChatGPT ZIP artifacts without publishing to npm.

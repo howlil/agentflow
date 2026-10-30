@@ -9,7 +9,7 @@ export function classifyPaths(paths) {
     return { full_required: true, portable_required: true, scope: 'unknown' };
   const portable = paths.some(p =>
     p.startsWith('skills/') || p.startsWith('assets/') || p.startsWith('.claude-plugin/') ||
-    p.startsWith('.codex-plugin/') || ['plugin.json', 'package.json', 'package-lock.json',
+    p.startsWith('.codex-plugin/') || ['plugin.json', 'package.json', 'bun.lock',
       '.node-version', 'RELEASE_VERSION', '.github/workflows/ci.yml',
       '.github/scripts/cross-agent-candidate.sh', 'scripts/generate-skills.mjs',
       'scripts/plugin-manifests.mjs', 'scripts/chatgpt-package.mjs'].includes(p)

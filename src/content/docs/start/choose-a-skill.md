@@ -16,11 +16,9 @@ Start with one question:
 | How should the interface expose the behavior? | [design-graph](/skills/design-graph/) |
 | How should the known contract become code? | [design-thinking](/skills/design-thinking/) |
 | How can this behavior be proven faithfully? | [test-engineering](/skills/test-engineering/) |
-| How do we know production is healthy and recover it? | [production-ops](/skills/production-ops/) |
+| How do we version, publish/deploy, and recover this release safely? | [release-engineering](/skills/release-engineering/) |
 | Is this implementation correct and maintainable? | [code-review](/skills/code-review/) |
-| Did trust, authority, or sensitive data become unsafe? | [security-review](/skills/security-review/) |
-| Would bounded delegation materially improve the work? | [graph-protocol](/skills/graph-protocol/) |
-| Is a known relationship easier to understand visually? | [call-graph-output](/skills/call-graph-output/) |
+| Did trust, authority, or sensitive data become unsafe? | [code-review](/skills/code-review/) |
 
 ## The important boundary
 

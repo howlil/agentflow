@@ -7,8 +7,8 @@ const root = new URL('../', import.meta.url);
 const read = file => readFile(new URL(file, root), 'utf8');
 const json = async file => JSON.parse(await read(file));
 
-test('website catalog derives the router and ten specialists from canonical metadata', async () => {
-  assert.equal(EXPECTED.length, 11);
+test('website catalog derives the router and seven specialists from canonical metadata', async () => {
+  assert.equal(EXPECTED.length, 8);
   const grid = await read('src/components/SkillGrid.astro');
   assert.match(grid, /skills\.map\(/);
   assert.match(grid, /card\.skill === 'agentflow'/);
@@ -28,7 +28,7 @@ test('plugin and marketplace metadata use the same product messaging', async () 
   const codex = await json('.codex-plugin/plugin.json');
   const claudeMarket = await json('.claude-plugin/marketplace.json');
   const codexMarket = await json('.agents/plugins/marketplace.json');
-  const copy = 'Better judgment for AI agents. One decision router and ten portable engineering specialist skills.';
+  const copy = 'Better judgment for AI agents. One decision router and seven portable engineering specialist skills.';
   for(const description of [plugin.description, claude.description, codex.description,
     claudeMarket.description, claudeMarket.plugins[0].description]) {
     assert.equal(description, copy);

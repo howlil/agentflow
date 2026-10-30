@@ -9,11 +9,8 @@ export const EXPECTED = [
   'design-graph',
   'design-thinking',
   'test-engineering',
-  'production-ops',
+  'release-engineering',
   'code-review',
-  'security-review',
-  'graph-protocol',
-  'call-graph-output',
 ];
 
 // The canonical skill contract uses flat, single-line YAML scalars only.
@@ -88,7 +85,7 @@ export function formatDiscoveryIndex(skills) {
   const intro = [
     '# Agentflow',
     '',
-    '> Portable software-engineering decision skills: one routing skill and ten specialists. Canonical instructions live in skills/<name>/SKILL.md.',
+    '> Portable software-engineering decision skills: one routing skill and seven specialists. Canonical instructions live in skills/<name>/SKILL.md.',
     '',
     'File-based installation is delegated to skills@1.7.4; native Claude and Codex plugins are optional alternate installation routes. Installing the router alone does not install all specialists. Host activation syntax varies.',
     '',

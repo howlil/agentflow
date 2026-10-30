@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/howlil/agentflow/security/policy
+    about: Report a vulnerability privately. Do not post exploit details or credentials in an issue.
+  - name: Install, update, and remove
+    url: https://github.com/howlil/agentflow/blob/master/src/content/docs/start/install.md
+    about: Commands, scopes, and lifecycle for the portable installer.
+  - name: Upgrade and migration
+    url: https://github.com/howlil/agentflow/blob/master/src/content/docs/start/upgrade-and-migration.md
+    about: Renamed or removed skills, native plugin refresh, and ChatGPT resubmission.
+  - name: Support guide
+    url: https://github.com/howlil/agentflow/blob/master/SUPPORT.md
+    about: What to include in a report, and what support is available.

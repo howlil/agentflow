@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "agentflow",
   "version": "0.7.0",
-  "description": "Better judgment for AI agents. One decision router and ten portable engineering specialist skills.",
+  "description": "Better judgment for AI agents. One decision router and seven portable engineering specialist skills.",
   "author": {
     "name": "howlil",
     "url": "https://github.com/howlil"
@@ -22,7 +22,7 @@
       "interface": {
         "displayName": "Agentflow",
         "shortDescription": "Engineering skills that fit",
-        "longDescription": "Better judgment for AI agents. Agentflow routes software engineering decisions to a focused set of eleven portable skills covering product design, architecture, implementation, interface modeling, testing, security, operations and code review. It provides guidance and workflows, not automatic repository access or a separate execution service.",
+        "longDescription": "Better judgment for AI agents. Agentflow routes software engineering decisions to a focused set of eight portable skills covering product design, architecture, implementation, interface modeling, testing, release and code review. It provides guidance and workflows, not automatic repository access or a separate execution service.",
         "developerName": "howlil",
         "category": "Developer Tools",
         "capabilities": [

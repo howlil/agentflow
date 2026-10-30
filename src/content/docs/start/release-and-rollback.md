@@ -7,8 +7,8 @@ Agentflow ships portable `SKILL.md` files from GitHub and optional Claude/Codex 
 
 ## Publish
 
-1. Prepare a reviewed release PR updating `package.json`, `package-lock.json`, the two native plugin manifests, `CHANGELOG.md`, and the one-line `RELEASE_VERSION` request (for example `v0.4.0`).
-2. Run `npm ci`, `npm run plugins:check`, `npm test` and `npm run build`; CI verifies all five portable hosts and both native manifests.
+1. Prepare a reviewed release PR updating `package.json`, `bun.lock`, the two native plugin manifests, `CHANGELOG.md`, and the one-line `RELEASE_VERSION` request (for example `v0.4.0`).
+2. Run `bun install --frozen-lockfile`, `bun run plugins:check`, `bun run test` and `bun run build`; CI verifies all five portable hosts and both native manifests.
 3. Merge that PR into `master` **only after checks pass**. A change to `RELEASE_VERSION` triggers the protected `Publish Agentflow Release` workflow, which checks tag/version equality, changelog entry and reviewed master ancestry.
 4. After the workflow passes, the release job creates the immutable `vX.Y.Z` GitHub tag/Release and copies only that version's section from `CHANGELOG.md` into release notes. If the Release already exists, it exits without replacing it.
 5. Alternatively, manually dispatch the same workflow on `master` with the matching version, or push a matching annotated tag. All routes run the same checks. No workflow publishes npm packages.

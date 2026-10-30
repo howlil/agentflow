@@ -49,3 +49,38 @@ test('distribution guide documents portable lifecycle and limitations', async ()
   assert.match(guide, /not automatic/i);
   assert.match(guide, /vary by AI agent/i);
 });
+
+test('upgrade guide covers every route, migration, and deprecation', async () => {
+  const guide = await readFile(join(root, 'src/content/docs/start/upgrade-and-migration.md'), 'utf8');
+  for (const trace of [
+    'npx skills@latest check',
+    'npx skills@latest update -g',
+    'npx skills@latest list -g',
+    'production-ops',
+    'release-engineering',
+    'security-review',
+    'graph-protocol',
+    'call-graph-output',
+    'Native plugins',
+    'ChatGPT Web',
+    'Deprecation policy'
+  ]) assert.ok(guide.includes(trace), 'upgrade guide missing: ' + trace);
+  const config = await readFile(join(root, 'astro.config.mjs'), 'utf8');
+  assert.ok(config.includes("'start/upgrade-and-migration'"), 'sidebar must expose the upgrade guide');
+  const readme = await readFile(join(root, 'README.md'), 'utf8');
+  assert.ok(readme.includes('upgrade-and-migration'), 'README must link the upgrade guide');
+  const contributing = await readFile(join(root, 'CONTRIBUTING.md'), 'utf8');
+  assert.match(contributing, /keep the old one for at least one minor release/i);
+  const changelog = await readFile(join(root, 'CHANGELOG.md'), 'utf8');
+  assert.match(changelog, /## Unreleased/);
+  assert.match(changelog, /upgrade and migration/);
+});
+
+test('distribution matrix and verification are documented', async () => {
+  const guide = await readFile(join(root, 'src/content/docs/start/distribution.md'), 'utf8');
+  for (const trace of ['Host matrix', 'Verify your install', '~/.agents/skills/', '~/.claude/skills/']) {
+    assert.ok(guide.includes(trace), 'distribution guide missing: ' + trace);
+  }
+  const upgrade = await readFile(join(root, 'src/content/docs/start/install.md'), 'utf8');
+  assert.ok(upgrade.includes('/start/upgrade-and-migration/'), 'install guide must link the upgrade page');
+});

@@ -1,0 +1,76 @@
+name: Host compatibility
+description: A skill is not discovered, does not load, or behaves differently on a specific host.
+title: "[host] "
+labels:
+  - host-compatibility
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Compatibility notes live in [cross-agent compatibility](https://github.com/howlil/agentflow/blob/master/src/content/docs/start/cross-agent-compatibility.md).
+        A host may expose skills through a file path, a plugin marketplace, or neither; state which one you used.
+  - type: dropdown
+    id: host
+    attributes:
+      label: Host
+      options:
+        - pi
+        - Codex CLI
+        - Claude Code
+        - Gemini CLI
+        - Cursor
+        - OpenCode
+        - ChatGPT Web
+        - Another host
+    validations:
+      required: true
+  - type: input
+    id: host_version
+    attributes:
+      label: Host version and OS
+    validations:
+      required: true
+  - type: dropdown
+    id: route
+    attributes:
+      label: Route
+      options:
+        - Portable file install
+        - Native plugin marketplace
+        - Skills-only plugin package
+        - Direct file copy
+    validations:
+      required: true
+  - type: input
+    id: path
+    attributes:
+      label: Install path
+      description: Where the host reads the skill from, if known.
+      placeholder: ~/.agents/skills/agentflow
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What the host does
+      description: Which skill is affected, how you invoked it, and what the host did instead.
+      placeholder: |
+        Expected: the router loads specialists from .../skills/agentflow/references.
+        Observed: ...
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Sanitized skill list, session output, or a screenshot description. Mark anything not tested.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I verified the installed skill names and did not test with two routes on one host.
+          required: true
+        - label: I removed secrets and private content from this report.
+          required: true

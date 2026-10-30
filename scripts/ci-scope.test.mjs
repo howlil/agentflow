@@ -17,17 +17,17 @@ test('M3 README changes retain installation and product contract verification', 
   });
 });
 test('M3 Issue contracts, website and source changes keep full verification', () => {
-  for (const p of ['.github/ISSUE_TEMPLATE/agentflow-execution.md',
-    'src/content/docs/start/chatgpt-web.md','scripts/execution-contract.mjs',
-    'scripts/execution-contract.test.mjs','AGENTS.md']) {
+  for (const p of ['src/content/docs/recipes/run-code-from-chatgpt.md',
+    'src/content/docs/start/chatgpt-web.md','scripts/persistence.test.mjs',
+    '.agents/DESIGN.md','AGENTS.md']) {
     assert.deepEqual(classifyPaths([p]), {
       full_required: true, portable_required: false, scope: 'source-or-site'
     }, p);
   }
 });
 test('M3 skill/manifest/installer changes still require portable matrix', () => {
-  for (const p of ['skills/agentflow/SKILL.md','skills/agentflow/references/github-delivery-policy.md',
-    'assets/agentflow.svg','plugin.json','.claude-plugin/plugin.json','.codex-plugin/plugin.json','package-lock.json',
+  for (const p of ['skills/agentflow/SKILL.md','skills/agentflow/references/chatgpt-github.md','skills/agentflow/references/cli.md',
+    'assets/agentflow.svg','plugin.json','.claude-plugin/plugin.json','.codex-plugin/plugin.json','bun.lock',
     'scripts/generate-skills.mjs','scripts/chatgpt-package.mjs',
     '.github/scripts/cross-agent-candidate.sh','.github/workflows/ci.yml','RELEASE_VERSION']) {
     assert.deepEqual(classifyPaths([p]), {
@@ -40,7 +40,7 @@ test('M3 missing baseline or mixed changes never bypass safety checks', () => {
     full_required: true, portable_required: true, scope: 'unknown'
   });
   assert.deepEqual(classifyPaths([]), classifyPaths(null));
-  assert.deepEqual(classifyPaths(['README.md','scripts/execution-contract.mjs']), {
+  assert.deepEqual(classifyPaths(['README.md','scripts/persistence.test.mjs']), {
     full_required: true, portable_required: false, scope: 'source-or-site'
   });
   assert.deepEqual(classifyPaths(['README.md','skills/agentflow/SKILL.md']), {

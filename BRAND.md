@@ -17,7 +17,7 @@ These are the messaging guidelines for the Agentflow website, README, developer 
 
 ## Product truth
 
-Agentflow has **one routing skill** (`agentflow`) and **ten specialist skills**. It is a portable collection of `SKILL.md` instructions. The router helps select a skill when engineering decisions are unclear, and specialist skills provide bounded guidance. When the next step is deterministic, the agent should act directly.
+Agentflow has **one routing skill** (`agentflow`) and **seven specialist skills**. It is a portable collection of `SKILL.md` instructions. The router helps select a skill when engineering decisions are unclear, and specialist skills provide bounded guidance. When the next step is deterministic, the agent should act directly.
 
 Agentflow is **not** a workflow automation service, multi-agent runtime, custom package manager, autonomous coding guarantee, or mandatory SDLC pipeline. Installing only the router does not install the specialists. Host activation, slash commands, updates and plugin refresh policies vary.
 
@@ -27,14 +27,14 @@ Agentflow is **not** a workflow automation service, multi-agent runtime, custom 
 
 - Eyebrow: Agentic engineering skills
 - Headline: Better judgment for AI agents.
-- Supporting line: The right skill for every engineering decision. One router and ten specialists help coding agents focus on the reasoning a task needs.
+- Supporting line: The right skill for every engineering decision. One router and seven specialists help coding agents focus on the reasoning a task needs.
 - Primary action: Install Agentflow
 - Secondary action: Explore skills
 
 ### Developer-facing copy
 
 - Start with the decision, not the skill name.
-- One router. Ten specialists.
+- One router. Eight specialists.
 - Only the reasoning the task needs.
 - Portable by design.
 
@@ -55,9 +55,9 @@ Do not imply measured performance, error reduction, cost savings, or security im
 - **Avoid:** autonomous swarm, universal intelligence, zero-error coding, guaranteed outcomes, flow automation.
 - Prefer concrete examples and scoped technical claims over generic AI hype.
 
-## Visual identity — single source of truth
+## Visual guardrails
 
-The active visual identity is defined by the M2 token table below. Do not revive the old blue accents, placeholder letter-A favicon, heavy shadows, or inconsistent card styles. The logo must be sourced from `public/favicon.svg`, including documentation and social sharing use.
+The active visual identity is defined by the token table below (`BRAND.md` and `.agents/DESIGN.md`). Do not revive old blue accents, placeholder letter-A favicons, heavy shadows, or inconsistent card styles. The logo must be sourced from `public/favicon.svg`, including documentation and social sharing use.
 
 ## Brand architecture
 
@@ -70,10 +70,7 @@ Agentflow                 master brand
   design-thinking         specialist
   test-engineering        specialist
   code-review             specialist
-  security-review         specialist
-  production-ops          specialist
-  graph-protocol          specialist
-  call-graph-output       specialist
+  release-engineering     specialist
 ```
 
 Keep the specialist names unchanged in the UI, source folders, installation instructions and runtime references.
@@ -82,7 +79,7 @@ Keep the specialist names unchanged in the UI, source folders, installation inst
 
 The public GitHub repository is the canonical skill source. The skills.sh ecosystem and external `skills` CLI are the default distribution path. Claude Code and Codex native plugins are optional **alternatives**; they do not need to be installed alongside portable skills. Do not describe skills.sh as a private immutable Agentflow registry or describe npm website build tooling as an Agentflow CLI.
 
-## Visual identity — M2
+## Visual identity
 
 ### Mark: one input, two routes, one chosen path
 
@@ -111,15 +108,15 @@ Keep a flat, high-contrast composition with quiet technical motion and rounded c
 - `src/assets/brand-mark.svg`: generated Starlight logo copy. Never edit manually.
 - `public/social-card.template.svg`: source for 1200×630 social design. Placeholder is filled from the canonical SVG.
 - `public/social-preview.svg`, `public/og.png`: generated outputs. Do not commit or hand-edit.
-- `npm run brand:assets`: produces the vectors and PNG; it also runs as part of dev/build.
+- `bun run brand:assets`: produces the vectors and PNG; it also runs as part of dev/build.
 
 The website exposes `og:image` and `twitter:image` **only when `PUBLIC_SITE_URL` is configured with the actual canonical production origin**. This avoids publishing incorrect social URLs for temporary deploys. After deployment, verify live metadata, favicon rendering at 16/32 px, and social card appearance in platform debuggers; CI proves file generation, not social crawler ingestion.
 
-## Product consistency — M3
+## Product consistency
 
 ### Documentation components
 
-The homepage and Starlight documentation share the same routed-node mark. The skills catalog shows **one router** distinctly from the **ten specialists**, using guide metadata generated from canonical `SKILL.md` sources. Do not duplicate skill descriptions or manually maintain a parallel list in UI components. Cards use responsive layouts, visible keyboard focus, no drop shadows, and theme-aware neutral/violet tokens.
+The homepage and Starlight documentation share the same routed-node mark. The skills catalog shows **one router** distinctly from the **seven specialists**, using guide metadata generated from canonical `SKILL.md` sources. Do not duplicate skill descriptions or manually maintain a parallel list in UI components. Cards use responsive layouts, visible keyboard focus, no drop shadows, and theme-aware neutral/violet tokens.
 
 The mobile landing header keeps **Install** and **Explore skills** visible; the GitHub icon has an accessible label when its visible text is hidden.
 
@@ -127,7 +124,7 @@ The mobile landing header keeps **Install** and **Explore skills** visible; the 
 
 Keep all distribution identifiers exactly `agentflow` and maintain identical description across the root Agent Plugin manifest and Claude plugin + marketplace metadata:
 
-> Better judgment for AI agents. One decision router and ten portable engineering specialist skills.
+> Better judgment for AI agents. One decision router and seven portable engineering specialist skills.
 
 Codex marketplace display name is `Agentflow`. Its category and install policies remain host-owned. A metadata revision on the default branch **is not** an official marketplace listing or released native plugin version. The next release requires a separately reviewed version bump and immutable tag.
 

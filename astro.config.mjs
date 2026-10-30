@@ -43,7 +43,9 @@ export default defineConfig({
             'start/distribution',
             'start/quickstart',
             'start/install',
+            'start/upgrade-and-migration',
             'start/native-plugins',
+            'start/chatgpt-web',
             'start/cross-agent-compatibility',
             'start/release-and-rollback',
             'start/choose-a-skill',
@@ -63,7 +65,8 @@ export default defineConfig({
           items: [
             'recipes/build-a-feature',
             'recipes/redesign-a-ui-flow',
-            'recipes/production-incident',
+            'recipes/safe-release',
+            'recipes/run-code-from-chatgpt',
           ],
         },
         {

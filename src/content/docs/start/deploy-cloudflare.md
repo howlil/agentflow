@@ -7,9 +7,9 @@ Agentflow is fully pre-rendered by Astro/Starlight. The build output is `dist/`.
 
 ## Which Cloudflare project do I have?
 
-**Cloudflare Pages:** The build runs `npm run build`, and Pages publishes `dist/` automatically. There is no deploy command.
+**Cloudflare Pages:** The build runs `bun run build`, and Pages publishes `dist/` automatically. There is no deploy command.
 
-**Cloudflare Workers Builds:** The build runs `npm run build`, followed by `npx wrangler deploy`. This is the same hosting family as `howlil-app` (Workers Static Assets), but Agentflow has no Worker API.
+**Cloudflare Workers Builds:** The build runs `bun run build`, followed by `npx wrangler deploy`. This is the same hosting family as `howlil-app` (Workers Static Assets), but Agentflow has no Worker API.
 
 If your logs include **"Executing user deploy command: npx wrangler deploy"**, you are using **Workers Builds**, not Pages. For this existing project, the root `wrangler.jsonc` prevents Wrangler from trying to reconfigure Astro and adding an unnecessary SSR adapter.
 
@@ -22,7 +22,7 @@ In the Cloudflare dashboard, open the **agentflow** Worker → **Settings → Bu
 | Git repository | `howlil/agentflow` |
 | Production branch | `master` |
 | Root directory | Repository root |
-| Build command | `npm run build` |
+| Build command | `bun run build` |
 | Deploy command | `npx wrangler deploy` |
 | Node version | `22.23.4` (see `.node-version`) |
 
@@ -48,8 +48,8 @@ The build/deployment path becomes:
 ```text
 Push to master
   → Workers Builds
-  → npm run build
-    → generate 10 skill references
+  → bun run build
+    → generate 9 skill references
     → Astro + Starlight produce dist/
   → wrangler deploy
     → upload dist/ as static assets
@@ -67,7 +67,7 @@ If you specifically want Cloudflare **Pages**, create a **Pages** project using 
 | --- | --- |
 | Framework | Astro |
 | Production branch | `master` |
-| Build command | `npm run build` |
+| Build command | `bun run build` |
 | Build output directory | `dist` |
 | Root directory | Repository root |
 | Deploy command | **None** (Pages handles publishing) |
@@ -77,9 +77,9 @@ Pages deploys to a `*.pages.dev` address and handles preview builds. The `wrangl
 ## Verify locally
 
 ```bash
-npm ci
-npm test
-npm run build
+bun install --frozen-lockfile
+bun run test
+bun run build
 ```
 
 Ensure `dist/index.html`, `dist/404.html`, and skill/reference HTML pages exist.
@@ -94,7 +94,7 @@ Ensure `dist/index.html`, `dist/404.html`, and skill/reference HTML pages exist.
 
 ## Social preview configuration
 
-The build generates a favicon, documentation logo and a 1200×630 PNG social card from `public/favicon.svg` and `public/social-card.template.svg`. The command `npm run brand:assets` is part of `prebuild` and `predev`; generated files are not committed.
+The build generates a favicon, documentation logo and a 1200×630 PNG social card from `public/favicon.svg` and `public/social-card.template.svg`. The command `bun run brand:assets` is part of `prebuild` and `predev`; generated files are not committed.
 
 For production social crawlers, configure `PUBLIC_SITE_URL` as the **real, verified origin** of your deployed website, e.g. `https://your-confirmed-domain.example`, in the Cloudflare build environment before building. Do not use a preview-domain guess. Without this setting, the build still emits `dist/og.png`, but does not advertise an incorrect absolute `og:image` URL.
 

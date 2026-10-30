@@ -10,7 +10,7 @@ Agentflow is not primarily a catalog. It is a **routing product**.
 The user's job is not:
 
 ```text
-learn ten internal skill names
+learn seven internal skill names
 ```
 
 It is:
@@ -39,10 +39,11 @@ Every skill page answers:
 What decision does this skill own?
 When should I use it?
 When should I not use it?
-What goes in?
-What comes out?
-What prompt can I try?
+Which upstream IDs go in?
+Which IDs and artifact come out?
+What is its ready gate?
 Where can it hand off?
+Which prompt can I try?
 ```
 
 ### Recipes

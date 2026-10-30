@@ -1,896 +1,199 @@
 ---
 name: design-graph
-description: Turn a product behavior contract into an explicit interface graph of surfaces, user/system moves, primary content/actions, meaningful rendered variants, prerequisites, interaction semantics, and environment-specific projections. Use when designing, reviewing, auditing, or implementing a non-trivial screen, flow, form, dashboard, navigation structure, or interactive component. Do not redefine product behavior; consume it from product-design or the task. Do not treat client-side validation as a security trust boundary, force 1:1 symmetry with design-thinking, or require every surface/state/context to share one identical graph.
+description: 'Turn a product behavior contract into an explicit interface graph (surfaces, moves, state ownership, rendered variants, prerequisites, interaction semantics, environment projections) and a frontend structure, then build UI that passes quality gates (accessibility, performance, anti-generic visual defaults). Use this whenever the user builds, changes, reviews, or audits any UI: a screen, page, landing page, form, dashboard, navigation, interactive component, responsive layout, or frontend app, or asks for "tampilan", "UI", "frontend", state management, or a DESIGN.md, even if they never say "design". Reads .agents/product.md and .agents/engineering.md when present; reads and maintains .agents/DESIGN.md. Does not redefine product behavior (product-design), system architecture (engineering-design), or code-level patterns (design-thinking).'
 ---
 
 # Design Graph
 
-Design Graph turns required product behavior into an interface a person can actually navigate and operate.
+Turn required product behavior into an interface a person can navigate and operate, built on a frontend whose state, structure, and visual defaults are explicit. Do not reopen product scope; if the interface exposes a contradiction in B, return it to `product-design`.
 
 ```text
-Job + Product Behavior
-          ↓
-    Interface Graph
-          ↓
-   Surface<C, V, N>
-          │
-          ├─ C = primary content and actions
-          ├─ V = meaningful rendered variants
-          └─ N = prerequisites to enter/use the surface
+In:   .agents/product.md (J, B, X, P, Q) + .agents/engineering.md (Structure, F, G) + .agents/DESIGN.md
+Out:  interface graph (in the task or PR) + .agents/DESIGN.md (durable preferences only)
+Next: design-thinking
 
-Environment
-→ viewport
-→ input modality
-→ connectivity
-→ reduced motion
-→ platform capability
-
-Interaction semantics
-→ focus
-→ keyboard
-→ pointer
-→ announcement
-→ pending/optimistic/conflict behavior
+B → M → U → ST/V/N → Structure → Gates → Proof
 ```
+
+## IDs
 
 ```text
-§1  Surfaces      addressable interface places and units
-§2  Moves         user/system transitions between states/surfaces
-§3  C             primary content and actions
-§4  V             meaningful rendered variants
-§5  N             prerequisites for entering/using a surface
-§6  Input         early interface feedback without confusing trust boundaries
-§7  Interaction   focus, keyboard, pointer, announcements, async transitions
-§8  Environment   responsive/platform projection without changing product intent
-§9  Attention     focus-owning surfaces vs notification surfaces
-§10 Proof         product behavior remains completable under relevant contexts
-§11 Build         implementation exposes modeled states/moves explicitly
+U  surface    M  move (cites B#)    V  variant    N  prerequisite
+ST state entry (owner per state)    UG UI gate (quality target)
+A  assumption (continues numbering; [blocking] if it changes B, scope, or visual direction)
 ```
 
-Read the product behavior first. Then model how that behavior is exposed through the interface.
+## 1. Context
 
-Do not reopen product scope unless the interface reveals a contradiction that makes the product behavior impossible or ambiguous.
+Read product.md for B, X, P, Q; engineering.md for Structure and F rules; DESIGN.md for tokens and conventions. With no product contract, infer only the minimum behavior the task clearly establishes and mark the rest A#.
 
-## 1. Start from the product contract
+**Ask or assume.** Ask only when the answer changes J, B, scope, or visual direction that cannot be guessed; max 3 questions. Otherwise assume, record A#, continue.
 
-Preferred input:
+## 2. Surfaces (U)
+
+A surface is a place the person can encounter that owns content, interaction, state, navigation, or attention: screen, route, pane, dialog, drawer, menu, form, list, detail, status region. Do not split every visual group into one. A step with one trivial in-edge and out-edge may merge, unless it owns distinct state, attention, or interaction.
+
+- A surface that can be deep-linked, bookmarked, or reached with Back **must have a route**.
+- Repeated look is evidence for reuse, not proof. Share a component only when responsibility, interaction contract, and reuse are all stable.
+- Cardinality shapes the surface: one item (identity, state, primary actions); many (design 0, 1, normal volume; a stress case only when evidence requires it); live data (decide whether updates may move things under the person: update in place, batch with "new items", freeze while interacting, or manual refresh).
+
+## 3. Moves (M)
+
+A move is a user or system transition: open, select, edit, submit, cancel, dismiss, navigate, retry, undo, refresh. Map the successful path first.
 
 ```text
-product-design
-      ↓
-Job
-Behavior graph
-Constraints
-Proof
-      ↓
-design-graph
+M1 (B1): U1 --select--> U2 --edit--> U2[editing] --save--> U2[saved]
 ```
 
-Design Graph owns:
+Each edge answers: what triggers it, what changes, what becomes reachable. Add no screen because convention suggests one.
+
+## 4. State (ST)
+
+Every piece of state that matters gets one owner, chosen by category, never one store for everything.
 
 ```text
-surfaces
-moves
-rendered states
-interaction boundaries
-responsive/environment projection
-accessibility-relevant interaction semantics
+ST1: <state> | owner: server | url | form | ui-local | derived | workflow
 ```
 
-Product Design owns:
+| Owner | Rule |
+|---|---|
+| server | Held by a server-state cache (query library or router loader). Never mirrored into a client store without an offline or workflow reason |
+| url | Filters, tabs, page, selected item that should survive reload or be shared. The URL owns it; do not duplicate it in component state |
+| form | Dirty, touched, submit lifecycle stays local to the form, not global |
+| ui-local | Open/closed, active tab. Lift only when shared |
+| derived | Computed, never stored |
+| workflow | Only for multi-step flows with guards. Model it as an explicit state machine |
+
+Each async resource declares its variants (§5). A state with two owners is a defect.
+
+## 5. Variants (V) and prerequisites (N)
+
+**V** = rendered variants that change what the person sees, understands, can do, or must do next: empty, loading, partial, error, denied, editing, dirty, submitting, pending, optimistic, saved, stale, conflict, selected, expanded, disabled, read-only. Model only those the product can reach; every X from product.md needs a V the person can recover from. Do not build a state taxonomy that never affects interaction.
+
+**N** = conditions to enter or use a surface or move: selected record, authenticated actor, permission, completed prior step, available data. Viewport, reduced motion, and connectivity are environment (§7), not N.
 
 ```text
-what the user must be able to accomplish
-what behavior the product guarantees
-what is in/out of scope
+Move --requires--> N --satisfied?--> yes: target | no: unavailable or alternate path
 ```
 
-Do not silently invent a new feature, workflow, requirement, or success condition while designing the interface.
+Permission affordance: an action the actor can never use is hidden; one that is temporarily unavailable but meaningful is disabled with a reason ("Complete required fields first"). UI visibility is never the authorization control; the trusted boundary enforces it.
 
-If no formal product contract exists, infer only the minimum behavior clearly established by the task and mark uncertainty instead of expanding scope.
+Client-side validation is early feedback, not trust. Show format errors at the field, preserve input after a recoverable failure, and treat everything that crosses to the backend as untrusted.
 
-## 2. Name surfaces and moves
+## 6. Interaction semantics
 
-Before styling, identify what the person can actually encounter and do.
+Some behavior is decoration (hover polish). Other behavior decides whether an edge is reachable at all: focus, keyboard, pointer, announcements, Escape, pending, optimistic, conflict. Treat the second kind as graph semantics.
 
-### Surfaces
+For each move: can the person discover it, reach it, operate it, and perceive the result?
 
-Examples:
+- **Focus**: after a transition focus lands somewhere valid; an exit exists; closing returns focus to a valid origin.
+- **Announcements**: important state changes without navigation need a visible status, focus move, live announcement, or changed label. None for decorative change.
+- **Async**: decide whether the action can repeat while pending, whether the previous state stays visible, whether optimistic state is allowed, what happens when the server rejects or conflicts, and how to retry.
+- **Focus-owning surfaces** (modal, menu, interactive popover, some drawers): intentional focus entry, a defined close path, valid focus restoration. **Notification surfaces** (toast, status, non-interactive banner): inform without taking focus. If a notification holds required actions it is interactive; model it so. Classify by interaction, not by shape.
+
+## 7. Environment
+
+Viewport, input modality, reduced motion, connectivity, and platform may change composition, navigation edges, and simultaneous visibility (desktop: list and detail together; mobile: list → detail route). Never hardcode "small screen → drawer". The invariant is not the same graph; it is that required product behavior stays completable in every supported context. Do not design for platforms or modes not in scope.
+
+## 8. Frontend structure
+
+Layers, with dependencies pointing downward only:
 
 ```text
-screen
-route
-pane
-dialog
-drawer
-menu
-form
-list
-detail
-toolbar
-row
-field
-control
-status region
+ui       render-only, stateless; props in, events out; no fetching or side effects
+feature  container: state, effects, calls data access; composes ui
+data     the only layer that knows API shapes; owns fetching and cache wiring
+domain   pure rules, no framework (only if rules exist)
 ```
 
-A surface is meaningful when it owns some combination of:
+- Feature modules are organized by product capability and layered inside. A feature imports another feature only through its public entry, never its internals.
+- Components never call the API directly. `ui` never imports `feature`.
+- Map these to `engineering.md` Structure and propose F# rules there (ui ↛ feature, no cross-feature internals, no direct API calls from components). With no `engineering.md` on a small frontend-only project, keep five lines of this in DESIGN.md until engineering-design absorbs them.
+- A component boundary is a decision informed by the graph, not derived mechanically. No consequential state may exist only as an accidental conditional; no consequential move may exist without an interaction path.
 
-```text
-content
-interaction
-state
-navigation
-attention
-```
+## 9. Gates (UG)
 
-Do not split every visual group into a surface.
+**Visual and copy: anti-generic gate.** Direction comes from the brief and DESIGN.md. Where the brief pins a look, follow it; where it leaves an axis free, do not spend it on a default.
 
-### Units
+1. **Tokens only** (automatable, add as F#): no raw color, size, or radius values in components.
+2. **Tell checklist**: reject by default unless the brief asks: cream background with serif and terracotta accent; near-black with one neon accent; newspaper layout; identical rounded cards sharing one radius and shadow; ALL-CAPS eyebrow above headings; numbered markers on non-sequences; a single accented word in a headline; fade-slide entrances on every section; hover motion on every card.
+3. **Specificity test**: before building, would this plan be produced for any similar brief? If yes, revise it and say what changed. Spend boldness in one element; keep the rest quiet.
+4. **Copy**: real content, no filler. Buttons are specific verbs ("Save changes", not "Submit"); one action keeps one name through the whole flow; errors say what went wrong and how to fix it; empty states point to the next action.
 
-Units are repeated or locally meaningful pieces inside a surface:
+Aesthetic direction (palette, type, composition) is delegated to `frontend-design` when available. This skill owns the gate and records the chosen result in DESIGN.md.
 
-```text
-row
-field
-metric
-card
-tab
-control group
-```
+**Quality targets.** Take UG from product.md Q first. Otherwise use these published defaults and record them as A# when applied.
 
-Repeated appearance is evidence for reuse, not proof that a shared component should exist.
+| UG | Default | Design consequence | Verified by |
+|---|---|---|---|
+| Web performance (public web only) | LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 at p75 field data | Reserve space for media and embeds, keep interactions responsive | release-engineering (field), test-engineering (lab) |
+| Accessibility | WCAG 2.2 AA: text contrast 4.5:1, UI and non-text 3:1, targets ≥ 24×24 px, focus never fully hidden by sticky UI, a non-drag alternative for every drag, no cognitive-test-only authentication | Each M has a keyboard path; drag has an alternative | test-engineering |
+| Task outcome | Each P is one task: completable without error | Each P has a UI path | test-engineering (e2e), walkthrough for small projects |
 
-A shared component boundary is stronger when there is:
+Scale: internal tools and personal projects need accessibility and task success only. SUS or HEART only with real users and research budget; read task success with time and error rate, never alone. For a quick heuristic pass check system status visibility, error prevention and recovery, and consistency.
 
-```text
-stable responsibility
-+
-stable interaction contract
-+
-meaningful reuse
-```
+## 10. Proof and ready gate
 
-Do not abstract merely because two things look similar.
+Prove completability under the contexts that apply, not identical graphs: empty data, partial or error state, least-privileged role, representative density, supported small and large viewport, keyboard-only, reduced motion if motion exists, slow or offline if supported, stale or conflicting data if the product allows it. Do not invent scale, offline support, or touch-only use. Per context: can the person understand the state, reach the allowed action, recover, and finish the job?
 
-### Moves
+Ready for `design-thinking` only if all hold:
 
-Moves are user/system transitions:
+- every B has an M, and every M reaches a U;
+- every X has a V the person can recover from;
+- every ST has exactly one owner;
+- every addressable surface has a route;
+- the plan passes the tell checklist and the specificity test;
+- UG is filled, or an A# says it is undefined;
+- DESIGN.md exists or is created in this task;
+- no `[blocking]` A# is open.
 
-```text
-open
-select
-edit
-submit
-save
-cancel
-dismiss
-expand
-navigate
-retry
-undo
-refresh
-sync
-```
+If a check fails, fix the graph. Do not pass the gap downstream.
 
-Each important edge should answer:
+## 11. Persist: `.agents/DESIGN.md`
 
-```text
-What triggers it?
-What changes?
-What becomes reachable next?
-```
+One file, near 100 lines, only durable rules that every future surface must follow. No per-screen specs; those live in the task or PR. If it exists, read it first and follow it; update only what a durable decision changed. If it does not, create a minimal one before the second surface is built (the first surface may derive it). When tokens live in code, point to that source instead of copying values.
 
-## 3. Model C: primary content and actions
+Format: YAML front matter for machine-readable tokens, then short prose for rationale (the pattern of Google Labs' DESIGN.md, which is alpha: use a conservative subset, keep keys mappable to W3C design tokens, and check its spec when generating tokens).
 
-Map the successful interface path first.
-
-```text
-Surface A
-   ↓ move
-Surface B
-   ↓ move
-Surface C
-   ↓
-Job complete
-```
-
-For each surface define only the primary content/actions needed for the product behavior.
-
-Example:
-
-```text
-Task list
-  ↓ select
-Task detail
-  ↓ edit
-Edit state
-  ↓ save
-Updated detail
-```
-
-Do not add a screen because navigation convention suggests one.
-
-A node with one trivial incoming edge and one trivial outgoing edge may not need to be a separate surface.
-
-But do not collapse a step merely to reduce screen count if it owns distinct state, attention, or interaction semantics.
-
-## 4. Model cardinality without inventing scale
-
-Cardinality affects interface shape, but scale requirements must come from evidence.
-
-Useful categories:
-
-```text
-one item
-many items
-incrementally/live-updating items
-```
-
-### One
-
-A detail surface may emphasize:
-
-```text
-identity
-important attributes
-current state
-primary actions
-```
-
-Do not assume every detail view needs one primary CTA or a specific layout.
-
-### Many
-
-Design for:
-
-```text
-0 items
-1 item
-representative normal volume
-known upper-bound / stress case when evidence requires it
-```
-
-Do not invent arbitrary requirements such as:
-
-```text
-must support 10,000 rows
-```
-
-unless product/system constraints establish that scale.
-
-### Live / changing data
-
-For data that changes while being read, decide:
-
-```text
-Can updates change spatial position?
-Would that interrupt the current interaction?
-Does immediacy matter more than spatial stability?
-```
-
-Possible strategies:
-
-```text
-update in place
-batch updates
-show "new items"
-re-sort immediately
-freeze while interacting
-manual refresh
-```
-
-Choose from product semantics, not a universal rule.
-
-## 5. Model V: meaningful rendered variants
-
-`V` means **rendered variants**, not merely void/absence.
-
-Model only states that materially change what the person:
-
-```text
-sees
-understands
-can do
-needs to do next
-```
-
-Possible variants include:
-
-```text
-empty
-loading
-partial
-error
-denied
-
-editing
-dirty
-submitting
-pending
-optimistic
-saved
-stale
-conflict
-syncing
-
-selected
-expanded
-disabled
-read-only
-```
-
-Do not require every surface to implement every variant.
-
-Example:
-
-```text
-Edit form
-  ├─ clean
-  ├─ dirty
-  ├─ submitting
-  ├─ save error
-  ├─ saved
-  └─ conflict
-```
-
-A variant is worth modeling when it changes behavior, affordance, interpretation, or recovery.
-
-Do not create decorative state taxonomies that never affect interaction.
-
-## 6. Model N: prerequisites separately from environment
-
-`N` contains conditions required to enter or use a surface/move.
-
-Examples:
-
-```text
-selected record
-authenticated actor
-required permission
-completed prior step
-available data
-supported capability
-```
-
-Model:
-
-```text
-Move
-  ↓ requires
-N
-  ↓ satisfied?
-  ├─ yes → target surface/action
-  └─ no  → unavailable / alternate path
-```
-
-Do not put viewport, reduced motion, or network quality in the same category as authorization/data prerequisites.
-
-Those are environment/context dimensions, handled separately.
-
-### Permission affordances
-
-Do not use a universal "always hide" or "always disable" rule.
-
-Prefer:
-
-```text
-unauthorized or irrelevant action
-→ usually hide
-
-temporarily unavailable but still meaningful
-→ disabled + reason when that improves understanding/recovery
-```
-
-Examples:
-
-```text
-normal user
-→ admin delete action
-→ hide
-
-Publish
-→ disabled
-→ "Complete required fields first"
-
-Export
-→ disabled
-→ "Available on Pro plan"
-```
-
-Security authorization must still be enforced by the trusted system boundary. UI visibility is never the security control.
-
-## 7. Separate interface feedback from system trust
-
-The interface should give feedback as early as useful.
-
-Example:
-
-```text
-user input
-   ↓
-field-level feedback
-   ↓
-submit
-   ↓
-server/system boundary
-   ↓
-authoritative validation
-   ↓
-domain operation
-```
-
-Good interface behavior:
-
-```text
-show format errors close to the field
-explain missing required input before unnecessary round trips
-preserve user input after recoverable failure
-```
-
-But:
-
-```text
-client validation ≠ trust boundary
-```
-
-Client-controlled data remains untrusted when it crosses into the backend/system.
-
-Design Graph owns:
-
-```text
-when/how the interface communicates input problems
-```
-
-Design Thinking / system implementation owns:
-
-```text
-authoritative decode/validation at trusted boundaries
-```
-
-Do not describe browser validation as making data "trusted."
-
-## 8. Model interaction semantics as part of the graph
-
-Some behavior is presentation-only:
-
-```text
-decorative motion
-hover styling
-visual polish
-```
-
-Other behavior determines whether an edge is reachable at all:
-
-```text
-focus
-keyboard interaction
-pointer interaction
-screen-reader semantics
-announcements
-Escape behavior
-async pending state
-optimistic updates
-conflict recovery
-```
-
-Treat the second category as graph semantics.
-
-### Reachability invariant
-
-For each meaningful move ask:
-
-```text
-Can the person discover it?
-Can they reach it?
-Can they operate it?
-Can they perceive the resulting state change?
-```
-
-### Keyboard and focus
-
-For interactive surfaces ask only what the flow requires:
-
-```text
-Can keyboard users reach the control?
-Is the control's purpose identifiable?
-Does focus move to a valid place after the transition?
-Can the user exit the interaction?
-```
-
-Example:
-
-```text
-Open dialog
-    ↓
-focus enters dialog
-    ↓
-operate dialog
-    ↓
-close / cancel
-    ↓
-focus returns to a valid origin
-```
-
-### State changes and announcements
-
-When important state changes without navigation, decide whether it must be perceivable through:
-
-```text
-visible status
-focus movement
-live announcement
-changed label/state
-```
-
-Do not add announcements for purely decorative changes.
-
-### Async actions
-
-For asynchronous operations decide the actual interaction semantics:
-
-```text
-Can the action be repeated while pending?
-Is the previous state still visible?
-Is optimistic state allowed?
-Can the server reject after optimistic update?
-What happens on conflict?
-Can the person retry?
-```
-
-Model only states the product can actually reach.
-
-## 9. Project the graph under environment constraints
-
-The same product behavior can be expressed through different interface graphs under different environments.
-
-Environment dimensions may include:
-
-```text
-viewport
-input modality
-reduced motion
-connectivity
-platform capability
-device constraints
-```
-
-Example:
-
-```text
-same Detail behavior
-
-desktop
-→ list + detail visible together
-
-mobile
-→ list → detail route
-```
-
-Do not hardcode universal solutions such as:
-
-```text
-small screen → drawer
-```
-
-The correct projection depends on interaction and content needs.
-
-Environment may legitimately alter:
-
-```text
-surface composition
-navigation edges
-simultaneous visibility
-interaction mechanism
-```
-
-The invariant is not "same interface graph."
-
-The invariant is:
-
-```text
-same required product behavior
-must remain completable
-under relevant supported contexts
-```
-
-Do not design for hypothetical platforms or modes not in scope.
-
-## 10. Distinguish focus-owning and notification surfaces
-
-Do not treat every overlay/message as acquiring attention in the same way.
-
-### Focus-owning surfaces
-
-Examples:
-
-```text
-modal dialog
-menu
-some drawers
-popover with interactive content
-```
-
-They may require:
-
-```text
-intentional focus entry
-contained/restricted interaction when appropriate
-defined close/escape path
-valid focus restoration
-```
-
-Model:
-
-```text
-trigger
-  ↓
-focus-owning surface
-  ↓
-interaction
-  ↓
-close
-  ↓
-focus returns
-```
-
-### Notification surfaces
-
-Examples:
-
-```text
-toast
-status message
-live announcement
-non-interactive banner
-```
-
-Usually:
-
-```text
-inform
-→ do not steal focus
-```
-
-If a notification contains required actions, it may become an interactive surface and must be modeled accordingly.
-
-Do not classify by visual shape alone; classify by interaction semantics.
-
-## 11. Prove the interface under relevant contexts
-
-Do not prove the design by requiring one identical graph under every context.
-
-Instead ask whether required product behavior remains completable.
-
-Challenge only relevant contexts:
-
-```text
-empty data
-partial/error state
-least-permitted role
-representative data density
-supported small/large viewport
-keyboard-only interaction
-reduced motion when motion exists
-slow/offline connectivity when supported
-stale/conflicting data when product behavior allows it
-```
-
-For each context:
-
-```text
-Can the person still understand the state?
-Can they still reach the allowed action?
-Can they recover when recovery is part of the behavior?
-Can they still complete the required product job?
-```
-
-Do not invent:
-
-```text
-year-three scale
-40,000 records
-offline support
-touch-only use
-```
-
-unless those are actual constraints.
-
-A context may legitimately produce a different interface graph.
-
-What must remain stable is the required product behavior, not the visual topology.
-
-## 12. Build with explicit states and transitions
-
-Do not impose:
-
-```text
-component tree = C
-variant system = V
-```
-
-as an implementation invariant.
-
-Frameworks may represent interface state through:
-
-```text
-conditional rendering
-state machines
-reducers
-component composition
-route state
-variant utilities
-async resource primitives
-```
-
-The requirement is:
-
-```text
-modeled states are explicit
-transitions are understandable
-rendering matches the modeled state
-meaningful moves remain reachable
-```
-
-No consequential rendered state should exist only as an accidental conditional that the design cannot explain.
-
-No consequential user move should appear in implementation without a corresponding interaction path.
-
-### Component boundaries
-
-Componentization is an implementation decision informed by the interface graph, not mechanically derived from it.
-
-Repeated surface appearance may suggest reuse.
-
-Extract a shared component when responsibility, interaction contract, and reuse are stable enough that the abstraction reduces complexity rather than merely moving it.
-
-## 13. Relationship to other skills
-
-### `product-design`
-
-```text
-product-design
-→ what the product must enable
-
-design-graph
-→ how that behavior is expressed through interface
-```
-
-Do not reopen product scope during interface modeling.
-
-If interface work reveals contradictory product behavior, return the contradiction to `product-design`.
-
-### `design-thinking`
-
-```text
-design-thinking
-→ computational/runtime implementation graph
-
-design-graph
-→ interaction/interface graph
-```
-
-Both may use:
-
-```text
-nodes
-edges
-state
-requirements
-alternate paths
-proof
-```
-
-They do **not** need isomorphic sections or one-to-one mappings.
-
-Do not mirror:
-
-```text
-Effect/Stream ↔ detail/list/live
-E ↔ V
-R ↔ N
-pipe ↔ motion
-gen/pipe ↔ tree/variants
-```
-
-Those analogies are not reliable enough to be canonical rules.
-
-### `engineering-design`
-
-Engineering Design owns system boundaries, state ownership, contracts, and guarantees.
-
-Design Graph should not infer backend architecture from UI layout.
-
-### `security-review`
-
-UI permission visibility is not authorization.
-
-When interface changes touch sensitive authority or exposure:
-
-```text
-design-graph
-→ interaction/affordance
-
-security-review
-→ verify actual trust/authority property
-```
-
-### `test-engineering`
-
-Use test-engineering only when verifying the interaction requires non-trivial test design.
-
-Obvious interaction behavior can be verified directly at the appropriate level.
-
-## 14. Proportionality
-
-Do not run the full method for every visual change.
-
-```text
-tiny visual/style change
-→ inspect local surface → update → targeted check
-
-simple local interaction
-→ surface + move + relevant variants
-
-form / async interaction / permissions
-→ add prerequisites + interaction semantics + failure/recovery states
-
-multi-surface workflow / responsive navigation / complex state
-→ model the affected interface graph explicitly
-```
-
-Depth follows interaction risk, not number of components.
-
-Do not create a large UX specification when one local state transition is enough.
-
+```markdown
 ---
+colors:     {primary: "#…", surface: "#…", text: "#…"}      # 4–6 named values
+typography: {display: {family: …, size: …}, body: {…}}
+spacing:    {…}
+radius:     {…}
+motion:     {…}
+components: {button: {…}}                                    # only stable ones
+---
+## Direction
+Tone, audience, what to avoid (3–5 lines).
 
-## The Pipeline
+## Guardrails
+Project-specific overrides of the §9 gates.
 
-```text
-PRODUCT CONTRACT / KNOWN BEHAVIOR
-        ↓
-"What must the person accomplish?"
-        → preserve the product job
+## State
+Default owner per category; shared loading, empty, error, permission conventions.
 
-        ↓
-"What surfaces expose that behavior?"
-        → identify meaningful surfaces/units
+## Patterns
+Navigation model, form pattern, when modal vs page.
 
-        ↓
-"What moves connect them?"
-        → model user/system transitions
-
-        ↓
-"What primary content/actions exist?"
-        → define C
-
-        ↓
-"What meaningful rendered variants can occur?"
-        → define V
-
-        ↓
-"What prerequisites make each move/surface valid?"
-        → define N
-
-        ↓
-"What interaction semantics make edges reachable?"
-        → focus / keyboard / pointer / announcements / async states
-
-        ↓
-"How does environment change the projection?"
-        → viewport / modality / connectivity / platform constraints
-
-        ↓
-"Can required product behavior still complete under relevant contexts?"
-        → proof
-
-        ↓
-"Does implementation expose all consequential states and moves explicitly?"
-        → verify build projection
-
-        ↓
-INTERFACE
+## Accessibility
+Requirements beyond the WCAG 2.2 AA baseline.
 ```
 
-**Every consequential rendered state and user move should trace to the interface graph. If implementation exposes a meaningful state or move the graph cannot explain, either the graph or the implementation is incomplete.**
+Omit empty sections. Edit in place; condense instead of splitting files.
+
+## Proportionality
+
+```text
+tiny visual or style change            → inspect the surface, update, targeted check
+simple local interaction               → U + M + relevant V
+form, async, permissions               → add ST, N, interaction semantics, failure and recovery V
+multi-surface flow, responsive nav,
+  complex state, new app               → full method
+```
+
+Depth follows interaction risk, not component count.
+
+## Handoff
+
+`design-thinking` consumes U, M, ST, V, N, structure, UG, and the F# proposals. It owns component internals, effects, error handling, and code-level patterns. If an implementation need contradicts the graph, fix the graph here.

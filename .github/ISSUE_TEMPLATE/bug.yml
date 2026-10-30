@@ -1,0 +1,84 @@
+name: Bug report
+description: Report a defect in a skill's instructions, the documentation site, or packaging.
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include secrets, tokens, private repository content, or exploit details.
+        Security issues go through [SECURITY.md](https://github.com/howlil/agentflow/blob/master/SECURITY.md), not this form.
+        Check the [upgrade guide](https://github.com/howlil/agentflow/blob/master/src/content/docs/start/upgrade-and-migration.md) first if a skill name looks stale.
+  - type: textarea
+    id: observed
+    attributes:
+      label: What happened
+      description: The behavior you observed, including the exact skill or page.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal steps, prompt, or commands. Sanitize paths and data.
+      placeholder: |
+        1. Install with ...
+        2. Ask the host ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: dropdown
+    id: route
+    attributes:
+      label: Installation route
+      options:
+        - Portable install, project scope
+        - Portable install, global scope
+        - Claude Code plugin
+        - Codex plugin
+        - ChatGPT Web plugin
+        - Documentation site
+        - Other or not applicable
+    validations:
+      required: true
+  - type: input
+    id: host
+    attributes:
+      label: Host and version
+      description: Coding agent or browser, plus its version.
+      placeholder: Codex CLI 0.147.0, pi 1.4.0, ChatGPT Web, ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Agentflow version or commit
+      description: Release tag or commit SHA you installed.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Sanitized output, `npx skills@latest list -g` result, or a failing check. State what you did not run.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I removed secrets, credentials, and private data from this report.
+          required: true
+        - label: I checked existing issues and the installation guide.
+          required: true
+        - label: This is not a security vulnerability report.
+          required: true

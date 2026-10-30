@@ -3,13 +3,13 @@ title: Install, update & remove
 description: Manage Agentflow through the ecosystem skills installer.
 ---
 
-Use the external [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md), tested with `skills@1.7.4` and Node.js 22.20+. The eleven canonical skills live under `skills/<name>/SKILL.md`.
+Use the external [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md), tested with `skills@1.7.4` and Node.js 22.20+. The eight canonical skills live under `skills/<name>/SKILL.md`.
 
 ## Discover and install
 
 ```bash
 npx skills@latest add howlil/agentflow --list
-# Interactive project install: select all eleven for router + specialists
+# Interactive project install: select all eight for router + specialists
 npx skills@latest add howlil/agentflow
 # Global install, selected host
 npx skills@latest add howlil/agentflow -g -a codex
@@ -30,6 +30,8 @@ npx skills@latest update -p
 ```
 
 Updates are **not automatic**. The upstream installer owns the lockfiles, sources, and update semantics. Review installed source/scope before updating.
+
+A renamed or removed skill is not replaced silently. Follow [upgrade and migration](/start/upgrade-and-migration/) for the removal and reinstall steps, including native plugin and ChatGPT routes.
 
 ## Remove
 

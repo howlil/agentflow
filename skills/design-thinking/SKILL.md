@@ -1,929 +1,216 @@
 ---
 name: design-thinking
-description: Turn an engineering contract or local implementation request into a concrete implementation graph covering domain shapes, success flow, execution semantics, expected failures, contextual capabilities, trust boundaries, runtime policies, resource lifetimes, targeted verification, and code. Use when deciding how a known system contract becomes implementation. Do not own product behavior, system architecture, code review, security review, production operations, or non-trivial test strategy. Use Effect-specific A/E/R, Layer, Stream, Scope, and API conventions only when the repository actually uses Effect or the task explicitly requests Effect-style modeling; inspect the installed Effect version before generating version-specific code.
+description: Turn an engineering contract or a local implementation request into a concrete implementation graph (shapes, success flow, execution semantics, failures, capabilities, trust boundaries, runtime policies, resource lifetimes, targeted verification) and write code that passes explicit quality gates (complexity, patterns, secure defaults, AI-code checks). Language and framework neutral. Use this whenever the user asks to implement, build, code, refactor, fix a bug, add an endpoint, service, script, job, or migration, or to turn a design into working code, even if they never say "design". Reads .agents/engineering.md, .agents/product.md, and design-graph output when present. Does not own product behavior (product-design), system architecture (engineering-design), interface graph (design-graph), test strategy (test-engineering), diff review (code-review), or release mechanics (release-engineering).
 ---
 
 # Design Thinking
 
-Design Thinking turns a known engineering contract into an implementation graph.
+Turn a known engineering contract into an implementation graph, then write code whose consequential paths the graph explains. Do not redesign the product or the system; if implementation exposes a contradiction, return it upstream.
 
 ```text
-X → Implementation Graph → Program<A, E, R>
-│                              │     │  │  │
-│                              │     │  │  └─ contextual capabilities (§5)
-│                              │     │  └──── expected failures        (§4)
-│                              │     └─────── successful values/flow  (§2)
-│                              │
-│                              └─ Effect<A, E, R> when Effect is used
-│
-└─ engineering contract or local implementation task
+In:   .agents/engineering.md (K, R, S, contracts + compat, flows, G, F, DEC, D)
+      + design-graph output (U, M, ST, UG) + .agents/product.md (B, X, P) + the repo
+Out:  code + an implementation note in the task or PR (≤ 15 lines)
+      durable consequences (D#, DEC, verification commands) → engineering.md
+Next: test-engineering
+
+Contract → T → O → FL → CAP → PL → LF → VER → code
 ```
+
+## IDs
 
 ```text
-§1  Shapes        domain records, IDs, variants, errors
-§2  A             successful transformation / call graph
-§3  Execution     cardinality, ordering, concurrency, interruption
-§4  E / Cause     expected failures, defects, interruption, recovery ownership
-§5  R             contextual capabilities and provisioning
-§6  Boundaries    decode external ingress; encode external egress
-§7  Policies      retry, timeout, caching, tracing, limits, recovery
-§8  Scope         resource and child-work lifetime
-§9  Verification  smallest faithful proof
-§10 Effect        project graph onto the installed Effect version when applicable
-§11 Code          implementation paths should trace back to the graph
+T   shape (type)      O  operation (node in the flow)     FL failure
+CAP capability        PL policy                            LF lifetime
+VER proof
 ```
 
-Read the engineering contract or local task. Model only the implementation semantics that matter. Then write code whose consequential paths can be explained by that graph.
+Upstream IDs (B, X, P, Q, A#, R#, S#, K, G, F, DEC, D, U, M, ST, UG) keep their meaning. Trace: every O cites an R# or flow; every FL cites an X# or G#; every P# has a VER.
 
-Do not redesign the product or system architecture here.
+## 1. Context
 
-## 1. Name the shapes
+Read the upstream contracts and inspect the repo: language, conventions, naming, layout, tooling, existing patterns, installed versions. Follow what exists (detect first); never import APIs or conventions from another version or ecosystem.
 
-Define the values that actually move through the implementation.
+- A violation of an F# rule or a contract is allowed only through a D# or DEC.
+- A contradiction in R, S, K, or contracts goes back to `engineering-design`; in B or scope, to `product-design`; in U, M, or ST, to `design-graph`.
+- Ask only when the answer changes behavior or a contract (max 3 questions); otherwise assume, mark A#, continue.
 
-Typical shapes:
+## 2. Shapes (T)
 
-- **Records** — domain values with meaningful fields.
-- **IDs** — identifiers when identity matters.
-- **Variants** — explicit alternatives or states.
-- **Errors** — expected failure values when callers can meaningfully handle them.
-- **Commands / events** — when behavior is driven by requests or emitted facts.
+Define the values that actually move through the code: records, IDs, variants, expected-failure values, commands or events. Use a stronger type only where it removes real ambiguity or an invalid state. Do not brand every ID or wrap every primitive. The shapes are the nouns; the graph is the behavior between them.
 
-Use stronger types when they remove real ambiguity or invalid states.
+## 3. Flow (O)
 
-Do not require every ID to be branded, every primitive to become a wrapper, or every internal structure to become a named domain type.
-
-Prefer the simplest representation that preserves the important invariant.
-
-Example:
+Map the successful transformation first.
 
 ```text
-BookingRequest
-Booking
-RoomId
-BookingStatus = Pending | Confirmed | Cancelled
-BookingConflict
+Input → O1 → O2 → O3 → Output
 ```
 
-The shapes are the nouns. The graph is the behavior between them.
+Per node: what value comes in and out, what state changes, what external effect occurs. Keep the happy path readable after failure and policy are added. A local function stays local; do not make a service of everything. Preserve the boundaries engineering-design set unless the code proves a contradiction.
 
-## 2. Think A first: successful flow
+## 4. Execution
 
-Map the successful transformation before error handling.
+Cardinality, ordering, concurrency, and freshness are separate concerns.
+
+- **Cardinality**: one result vs incremental results over time. A collection returned once is still one result. Stream only for incremental consumption, continuous emission, or backpressure.
+- **Ordering**: mark edges where order matters (reserve stock → charge payment). Do not parallelize merely because it is possible.
+- **Concurrency**: mark intent (sequential, parallel, bounded, race, background). Ask what may overlap, what ordering must still hold, what state is shared, what a branch failure does, and what parent cancellation does.
+- **Freshness**: caching is a policy (recompute, memoize, TTL, invalidate, dedupe concurrent lookups), allowed only if the contract tolerates stale data.
+
+## 5. Failure (FL)
+
+Retry, fallback, and crash are different outcomes. Model each node as success, expected failure, defect, or interruption.
+
+- **Expected failure** (NotFound, Conflict, PermissionDenied, RateLimited, ValidationError): part of the contract and handleable by callers. Handle at the narrowest boundary that owns the recovery policy (cache miss → local fallback to the database).
+- **Defect** (broken invariant, bug, unrecoverable assumption): let it propagate to the proper boundary. Do not convert every defect into a domain error to make types look complete.
+- **Interruption**: decide what may stop, what must finish, what must be cleaned up, what state may already have changed, and what child work inherits cancellation.
+- **Translation**: convert low-level failures where abstraction ownership changes (SqlError → DatabaseError → BookingFailure → API error). Do not leak implementation failures through a boundary that should hide them.
+
+## 6. Capabilities (CAP)
+
+Separate three kinds of input:
 
 ```text
-Input
-  ↓
-F1
-  ↓
-F2
-  ↓
-F3
-  ↓
-Output
+request or local data              → function arguments
+stable, substitutable capability   → injected dependency (clock, repository, gateway, config)
+dependency needed only to build a
+  service                          → satisfied at construction, not leaked to consumers
 ```
 
-For each node ask:
+Inject only where substitution, lifecycle, configuration, or boundary ownership justifies it. One interface per function is a defect.
+
+## 7. Boundaries and secure defaults
+
+Every external ingress is a trust transition: HTTP, queue payload, third-party response, config, file, CLI, webhook.
 
 ```text
-What value comes in?
-What value comes out?
-What state changes?
-What external effect occurs?
+unknown → decode / parse / validate → domain value        (egress: domain → encode → external contract)
 ```
 
-The happy path should remain easy to read even after failure and runtime policy are added.
+Decoding proves only what the decoder represents. It does not prove authorization, ownership, freshness, business invariants, or transaction safety; those belong to their real owners. Do not force transport, persistence, and domain representations to share one schema just to avoid duplication.
 
-Do not force every operation into a service or abstraction. A local function can stay a local function when that is where the behavior belongs.
+Secure defaults for every ingress and egress:
 
-If the system contract already defines responsibility boundaries, preserve them unless implementation evidence shows a real contradiction that must go back to `engineering-design`.
+- deny by default; authorize on the server and check ownership;
+- allowlist validation; parameterized queries; never build commands by string concatenation;
+- fail safely: generic message outward, detail to the log, every exception handled at its boundary;
+- no secrets in code or logs; run a secret scanner before commit.
 
-## 3. Model execution semantics separately
+## 8. Policies (PL)
 
-Cardinality, execution ordering, concurrency, and freshness are different concerns.
+Retry, timeout, recovery, caching, rate limits, and instrumentation change semantics (execution count, timing, cancellation, resource use). Model their effect; keep them visually separate from the domain flow where that helps.
 
-### Cardinality
-
-Ask whether the computation produces:
+**Retry and timeout defaults:**
 
 ```text
-one result
-or
-incremental / many results over time
+retry   : transient failures only (timeout, 429, 502-504, connection reset); jittered backoff;
+          capped attempts and an overall deadline; honor Retry-After;
+          retry budget or circuit breaker when a dependency is clearly down
+timeout : layered (connect, request, overall); chosen from the dependency's latency percentile
+write   : retry only if idempotent or protected by an idempotency key (key check and action atomic)
+          a timeout means the result is uncertain, not "did not happen": reconcile status
 ```
 
-A collection returned once is still a one-shot result:
+If a write cannot be made safe to repeat: idempotency key, deduplication, status reconciliation, or no automatic retry.
+
+**Observability**: emit the signals engineering.md names (G measurement points, Challenge detection signals). Structured logs with a correlation ID across boundaries. Log an error once, at the boundary that handles it. Alerts and dashboards belong to `release-engineering`.
+
+**Compatibility**: implement the contract's compat rule (code N works with N-1 and N+1; breaking change = expand → migrate → contract, separate releases).
+
+## 9. Lifetimes (LF)
+
+For connections, files, sockets, streams, subprocesses, subscriptions, and background work:
 
 ```text
-Program<ReadonlyArray<User>, ...>
+acquire → owner scope → use → child work → release
 ```
 
-It does not automatically require a stream.
+Make the owner lifecycle explicit so cleanup follows it. Cleanup comes from correct scoped acquisition and finalization in the runtime, not from a type guarantee. For background work ask: does it belong to the parent scope, does interruption cancel it, can it outlive the request, who cleans up? Unowned background work is a lifecycle bug.
 
-Use streaming only when incremental consumption, continuous emission, backpressure, or long-lived flow is actually part of the behavior.
+## 10. Quality gates
 
-### Ordering
+**CQ gate** (enforce with the project's linter or scanner; scan changed functions only; ratchet legacy so no function gets worse):
 
-Mark edges where order matters:
+| Indicator | Default | Note |
+|---|---|---|
+| Cognitive complexity per function | ≤ 15 (new code); review anything > 25 | Reads closer to maintenance effort than cyclomatic |
+| Cyclomatic complexity per function | ≤ 10 (new code) | |
+| Function size, parameters | soft: ≲ 30–50 lines, ≲ 3–5 parameters | Soft limits; split by responsibility, not by line count |
+| New-code duplication | ≤ 3% | Common gate default |
+| New-code coverage | ≥ 80% | Weak alone; assertions must be meaningful |
+
+Reduce nesting with guard clauses and extract-by-responsibility. Do not game the metric with artificial flattening or premature polymorphism. Names follow the codebase convention; a name states what a thing is or does, in domain words.
+
+**Patterns**: a pattern appears only when a named force requires it. Prefer composition over inheritance. Introduce an abstraction at the third duplication, not the second.
+
+| Force | Pattern |
+|---|---|
+| algorithm varies at runtime | strategy |
+| external API shape mismatches the domain | adapter in Data |
+| dependency must be swappable or mockable | port + implementation (dependency inversion) |
+| complex object construction | factory or builder |
+| cross-cutting concern (log, cache, auth) | decorator or middleware |
+| data access | repository behind a port Logic owns |
+
+**AI-code gate** (treat model output as untrusted input):
+
+1. Every new import or dependency is verified to exist in the official registry and pinned by lockfile.
+2. Build, typecheck, lint, and dependency resolution pass before anything is called done.
+3. Spot-check tests: deliberately break the implementation; the tests must fail.
+4. Search the repo before writing a helper or abstraction (reuse before create).
+5. No dead code and no abstraction without a user.
+
+**Shortcuts**: a deliberate shortcut becomes a D# in engineering.md. An unrecorded shortcut is a defect.
+
+## 11. Verification (VER)
+
+Choose the smallest test that faithfully proves the actual risk. Run the `test-engineering` triage (does an existing proof already cover it?) before adding a test, and give every VER a stage: local checks run at `iter`; integration belongs to `pr`, E2E and manual acceptance to `release`, never to a per-change iteration. Pure rule → unit test. Simple bug → regression test. Existing integration pattern covers it → reuse it. Hand off to `test-engineering` when the proof boundary itself needs design (transactions, races, migrations, async or queue semantics, recovery, flaky suites).
+
+Substitute a dependency only when the property under test lives above it; use the real one when correctness lives in its semantics:
 
 ```text
-A
-↓
-B
-↓
-C
+business decision        → fake repository is enough
+retry timing             → controllable clock is enough
+SQL uniqueness, isolation, migration → real database (with concurrency or representative data)
+filesystem, HTTP serialization       → real boundary
 ```
 
-Do not parallelize steps merely because they can technically run concurrently.
+A fake proves only the behavior whose semantics it preserves.
 
-Example:
+## 12. Done
+
+Done only if all hold:
+
+- every O, FL, and PL traces to upstream, and no consequential path is unexplained by the graph (else the code or the graph is incomplete; fix the right side);
+- CQ gate, AI-code gate, and F# rules pass in CI;
+- every FL, PL, and P# has a VER with the right fidelity;
+- shortcuts are recorded as D#;
+- no `[blocking]` A# is open.
+
+**Implementation note** (task or PR, ≤ 15 lines):
 
 ```text
-reserveStock
-    ↓
-chargePayment
+Shapes: T1 …
+Flow:   O1 → O2 → …            (R#/flow cited)
+Failure: FL1 (X#): … handled at …
+Capabilities / policies / lifetimes: only those that change correctness
+Verification: VER1 (P#) [iter|pr|release]: …
+Debt / decisions: D#, DEC#
 ```
-
-may require ordering because the state transition semantics depend on it.
-
-### Concurrency
-
-When independent work may overlap, mark the intended execution explicitly:
-
-```text
-fetchProfile ──┐
-               ├─ parallel → composeUser
-fetchSettings ─┘
-```
-
-Possible execution forms include:
-
-```text
-sequential
-parallel
-bounded concurrency
-race
-background / forked
-```
-
-For concurrent work ask:
-
-```text
-What may run at the same time?
-What ordering must still hold?
-What shared state exists?
-What happens if one branch fails?
-What happens if the parent is cancelled/interrupted?
-```
-
-### Freshness / caching
-
-Caching is a policy axis, not cardinality.
-
-When caching matters define only the semantics required:
-
-```text
-always recompute
-memoized
-TTL
-explicit invalidation
-deduplicate concurrent lookups
-```
-
-Do not add caching because a result is "time-bounded" unless the product/system contract actually permits stale data and benefits from reuse.
-
-## 4. Model failure correctly: E, defects, interruption
-
-Do not treat retry, fallback, and `die` as equivalent kinds of failure.
-
-Model outcomes as:
-
-```text
-Node
- ↓
-Outcome
- ├─ Success A
- │
- ├─ Expected failure E
- │    ├─ propagate
- │    ├─ map
- │    ├─ recover
- │    ├─ retry
- │    └─ fallback
- │
- ├─ Defect
- │    └─ unexpected/programmer/runtime failure
- │
- └─ Interruption
-      └─ cancellation + finalization semantics
-```
-
-### Expected failure
-
-Use `E` for failures that are part of the program's expected contract and can be reasoned about by callers.
-
-Examples:
-
-```text
-BookingConflict
-NotFound
-PermissionDenied
-RateLimited
-ValidationError
-```
-
-For each expected failure decide who semantically owns the policy:
-
-```text
-operation itself
-caller
-service boundary
-transport boundary
-```
-
-Handle it at the narrowest boundary that actually owns the recovery policy.
-
-Example:
-
-```text
-loadCache(id)
-  └─ CacheMiss
-       ↓ local recovery
-     loadDatabase(id)
-```
-
-This local recovery is clearer than forcing every error to an outermost handler.
-
-### Defect
-
-A defect is not just another `E` strategy.
-
-Examples:
-
-```text
-impossible invariant
-unexpected null from trusted code
-bug in implementation
-unrecoverable runtime assumption
-```
-
-Normally allow defects to propagate to the runtime/appropriate boundary unless there is a deliberate containment policy.
-
-Do not convert every defect into a domain error merely to make the type look complete.
-
-### Interruption
-
-When work can be cancelled/interrupted, reason about:
-
-```text
-what may stop
-what must finish
-what must be cleaned up
-what state may already have changed
-what child work inherits cancellation
-```
-
-Interruption semantics matter especially around concurrency and resources.
-
-### Error translation
-
-Translate low-level failures where abstraction ownership changes.
-
-Example:
-
-```text
-SqlError
-  ↓ repository boundary
-DatabaseError
-  ↓ service boundary
-BookingFailure
-  ↓ transport boundary
-API error
-```
-
-Do not leak implementation-specific failures through boundaries that should hide them.
-
-## 5. Model R as contextual capability, not every dependency
-
-`R` represents capabilities required from context to execute the computation.
-
-Good candidates:
-
-```text
-UserRepository
-Clock
-EmailSender
-Config
-PaymentGateway
-FileSystem
-```
-
-Not every value belongs in `R`.
-
-Use ordinary arguments for request/local data:
-
-```text
-findUser(userId)
-```
-
-`userId` is data, not a contextual service.
-
-Distinguish:
-
-```text
-request/local data
-→ function arguments
-
-stable substitutable capability
-→ R / contextual service
-
-dependency required only to construct a service
-→ satisfy during construction / Layer
-```
-
-Do not leak service-construction dependencies into every consumer merely because the implementation happens to need them internally.
-
-Use dependency injection only where substitution, lifecycle, configuration, or boundary ownership makes it useful.
-
-Do not create one service interface per function.
-
-## 6. Decode at every external trust transition
-
-Every external ingress is a trust boundary.
-
-Examples:
-
-```text
-HTTP request
-message queue payload
-third-party response
-environment/config
-file contents
-database data crossing a separately trusted boundary
-CLI input
-webhook
-```
-
-Model:
-
-```text
-unknown / external
-        ↓
-decode / parse / validate
-        ↓
-domain representation
-```
-
-Inside that validated boundary, do not repeatedly parse the same value without a new trust transition.
-
-But decoding proves only the constraints represented by the decoder/schema.
-
-It does not automatically prove:
-
-```text
-authorization
-ownership
-freshness
-business invariants
-cross-record consistency
-transaction safety
-```
-
-Those belong to their actual semantic owners.
-
-At external egress, encode to the external contract when needed:
-
-```text
-domain value
-    ↓
-encode / serialize
-    ↓
-external representation
-```
-
-Reuse one schema only when the semantics are genuinely the same.
-
-Do not force:
-
-```text
-transport representation
-persistence representation
-domain representation
-```
-
-to share one schema merely to avoid duplication.
-
-When the repository uses Effect Schema, use the installed version's decode/encode APIs.
-
-## 7. Compose runtime policies as real semantics
-
-Runtime policies include:
-
-```text
-retry
-timeout
-recovery/fallback
-caching
-logging
-tracing
-rate/concurrency limits
-scheduling
-```
-
-These are not decoration.
-
-They can change:
-
-```text
-A
-E
-R
-control flow
-number of executions
-timing
-cancellation behavior
-resource usage
-```
-
-Keep policies visually separate from the core domain flow when that improves readability, but model their semantic effect.
-
-### Retry safety
-
-Never derive:
-
-```text
-network timeout
-→ retry
-```
-
-automatically.
-
-First ask:
-
-```text
-Can the operation be repeated safely?
-```
-
-Model:
-
-```text
-retry candidate
-    ↓
-repeat-safe / idempotent?
-    ├─ yes → define retry policy
-    └─ no  → define one of:
-             idempotency key
-             deduplication
-             status reconciliation
-             uncertain-result handling
-             no automatic retry
-```
-
-Example:
-
-```text
-chargePayment
-  ↓ response timeout
-```
-
-Blind retry may double-charge unless the operation has a safe repeat strategy.
-
-### Timeouts
-
-Timeouts are semantic choices.
-
-Ask:
-
-```text
-What happens to the underlying work after the caller times out?
-Can it still commit?
-Can the caller retry?
-How is an uncertain result reconciled?
-```
-
-Do not treat timeout as equivalent to "operation did not happen."
-
-### Caching
-
-If caching changes freshness or consistency, make that visible in the graph.
-
-### Logging/tracing
-
-Instrumentation should observe the implementation without becoming the implementation's domain control flow unless the contract actually depends on it.
-
-## 8. Scope resources and child work
-
-For resources such as:
-
-```text
-database connections
-file handles
-sockets
-streams
-child processes
-temporary resources
-subscriptions
-```
-
-model:
-
-```text
-acquire
-  ↓
-owner scope
-  ↓
-use
-  ↓
-child work / fibers
-  ↓
-release/finalization
-```
-
-The implementation must make resource lifetime explicit enough that cleanup follows the intended owner lifecycle.
-
-When Effect is used, scoped resource combinators and `Scope` should represent that lifetime according to the installed version.
-
-Do not state resource cleanup as a generic "type guarantee." The guarantee comes from using the runtime's scoped acquisition/finalization semantics correctly.
-
-For forked/background work ask:
-
-```text
-Does it belong to the parent's scope?
-Should interruption cancel it?
-Can it outlive the request?
-Who owns cleanup?
-```
-
-Unowned background work is a lifecycle bug waiting to happen.
-
-## 9. Choose the smallest faithful verification
-
-Verification is part of implementation, but not every test problem belongs here.
-
-For obvious cases:
-
-```text
-pure business rule
-→ targeted unit test
-
-simple bug
-→ direct regression test
-
-existing integration pattern clearly proves it
-→ use that pattern
-```
-
-Use `test-engineering` when testing itself requires design:
-
-```text
-transaction semantics
-concurrency/race
-migration compatibility
-async/queue semantics
-failure/recovery
-complex integration boundary
-flaky/brittle suite
-```
-
-### Substitute R only when fidelity is preserved
-
-A fake dependency is useful when the property under test lives above that boundary.
-
-Examples:
-
-```text
-business decision
-→ fake repository may be sufficient
-
-time-based retry policy
-→ controllable/test clock may be sufficient
-```
-
-Use the real dependency when correctness belongs to that dependency's semantics:
-
-```text
-SQL uniqueness
-→ real DB
-
-transaction isolation
-→ real DB + concurrency
-
-filesystem semantics
-→ real filesystem boundary
-
-HTTP serialization
-→ real integration boundary
-
-migration behavior
-→ real migration against representative schema/data
-```
-
-Do not claim that swapping `R` proves the whole graph correct.
-
-It proves only the behavior whose semantics are preserved by that substitution.
-
-Core rule:
-
-```text
-Choose the smallest test
-that faithfully proves
-the actual risk.
-```
-
-## 10. Project to Effect only when Effect is actually used
-
-The graph model is language/framework-neutral.
-
-Use Effect-specific projection only when:
-
-```text
-the repository uses Effect
-or
-the task explicitly requests Effect-style implementation
-```
-
-Before writing Effect API-specific code:
-
-```text
-inspect package.json / lockfile
-        ↓
-identify installed Effect version
-        ↓
-use matching repository APIs/docs/patterns
-```
-
-Do not write APIs from another Effect version.
-
-### A / E / R projection
-
-When applicable:
-
-```text
-A
-→ success value/data flow
-
-E
-→ expected typed failure
-
-R
-→ contextual capabilities required to run
-```
-
-Defects and interruption are not simply extra variants of `E`; reason about the runtime/Cause model appropriate to the installed version.
-
-### `Effect.gen`
-
-Use `Effect.gen` when it makes sequential success flow clearer.
-
-Do not impose:
-
-```text
-gen body = all A
-outer pipe = all E
-```
-
-as a correctness invariant.
-
-Better rule:
-
-```text
-Keep the happy path visually dominant.
-
-Handle an expected failure at the narrowest boundary
-that owns its recovery policy.
-```
-
-Examples:
-
-```text
-uniform recovery for the whole workflow
-→ outer composition may be appropriate
-
-operation-specific fallback
-→ local handling around that operation
-
-boundary error translation
-→ handle at the boundary
-
-caller-owned failure
-→ propagate in E
-```
-
-### `.pipe()`
-
-`.pipe()` is composition syntax, not proof that the graph is unchanged.
-
-Combinators inside a pipe may alter:
-
-```text
-A
-E
-R
-execution count
-timing
-concurrency
-cancellation
-resource behavior
-```
-
-Use `.pipe()` where it improves composition/readability, while reasoning about the real semantics of each combinator.
-
-### `Layer`
-
-Use Layer/provisioning to satisfy contextual capabilities and service-construction dependencies where appropriate.
-
-Do not expose construction dependencies in service interfaces when they can be discharged during provisioning.
-
-### `Stream`
-
-Use Stream for incremental/multi-emission computations when its semantics are actually needed.
-
-Do not convert every collection or paginated result into Stream by default.
-
-## 11. Write code that traces to the graph
-
-The graph is a model, not an absolute source of truth.
-
-Every consequential implementation path should trace back to it.
-
-Consequential means behavior such as:
-
-```text
-data transformation
-state transition
-dependency
-expected failure
-recovery policy
-concurrency/ordering
-trust boundary
-resource lifetime
-external effect
-```
-
-If code introduces consequential behavior that the graph cannot explain:
-
-```text
-either the implementation is wrong
-or the graph is incomplete
-```
-
-Update the correct side.
-
-Do not force minor syntax, helper extraction, or incidental language detail into the graph.
-
-The graph exists to make important semantics explicit, not to mirror every line of code.
-
----
-
-## Relationship to other skills
-
-### `product-design`
-
-Owns:
-
-```text
-what product behavior is required
-```
-
-Design Thinking does not reopen product scope during implementation.
-
-### `engineering-design`
-
-Owns:
-
-```text
-system responsibilities
-state ownership
-boundaries/contracts
-system guarantees
-architectural decisions
-```
-
-Design Thinking consumes that contract and decides how the local software graph implements it.
-
-If implementation reveals an architectural contradiction, return the issue to `engineering-design`.
-
-### `design-graph`
-
-Use when implementation includes non-trivial interface interaction/state.
-
-`design-graph` owns surface/move/void/attention modeling.
-
-Design Thinking owns the software/runtime behavior behind that interface.
-
-### `test-engineering`
-
-Design Thinking owns obvious targeted verification.
-
-`test-engineering` owns verification when the proof boundary or environment itself requires design.
-
-### `security-review`
-
-Design Thinking implements known security controls.
-
-`security-review` determines whether changed trust/authority/data paths violate a security property.
-
-### `code-review`
-
-Design Thinking is forward reasoning:
-
-```text
-intent / engineering contract
-→ implementation graph
-→ code
-```
-
-Code Review is reverse reasoning:
-
-```text
-code / diff
-→ actual graph
-→ compare with intent
-```
-
-Do not use Design Thinking as a substitute for post-implementation review.
-
-### `production-ops`
-
-Production Ops owns runtime health, observability, incident response, and recovery requirements.
-
-Design Thinking implements application-level changes required by those operational properties.
-
----
 
 ## Proportionality
 
-Depth follows implementation risk.
-
 ```text
-tiny local change
-→ inspect → change → targeted verification
-
-normal behavior change
-→ shapes + success flow + expected failure + dependencies
-
-state / boundary / concurrency / resource change
-→ model the affected execution graph explicitly
-
-complex/high-risk implementation
-→ use the full method
+tiny local change              → inspect → change → targeted check
+normal behavior change         → shapes + flow + failure + capabilities
+state, boundary, concurrency,
+  or resource change           → model the affected execution graph explicitly
+high-risk implementation       → full method
 ```
 
-Do not force all sections onto every change.
+Depth follows implementation risk. Use only the parts that can change correctness or maintainability.
 
-Use only the parts that can change correctness or maintainability.
+## Handoff
 
----
-
-## The Pipeline
-
-```text
-ENGINEERING CONTRACT / LOCAL TASK
-        ↓
-"What values exist?"
-        → define only meaningful shapes
-
-        ↓
-"What successful transformation must happen?"
-        → draw A: implementation/call graph
-
-        ↓
-"What ordering, cardinality, concurrency, or interruption matters?"
-        → execution semantics
-
-        ↓
-"What expected failures exist?"
-"What defects/interruption matter?"
-        → E / runtime failure model
-
-        ↓
-"What contextual capabilities are required?"
-        → R / provisioning
-
-        ↓
-"Where does external data cross trust boundaries?"
-        → decode ingress / encode egress
-
-        ↓
-"What runtime policies change semantics?"
-        → retry / timeout / cache / recovery / limits
-
-        ↓
-"What resources or child work have lifetimes?"
-        → scope / finalization
-
-        ↓
-"What is the smallest faithful proof?"
-        → targeted verification
-        → test-engineering only if proof itself is non-trivial
-
-        ↓
-"Does this repo actually use Effect?"
-        ├─ no  → preserve language-native implementation
-        └─ yes → inspect installed version and project graph to Effect
-
-        ↓
-CODE
-```
-
-**Every consequential implementation path should trace to the graph. If code introduces behavior, dependency, failure, concurrency, boundary, or lifetime semantics that the graph cannot explain, either the implementation or the graph is incomplete.**
+`test-engineering` consumes O, FL, PL, LF, VER, and the P# trace, and designs the suites the proof needs. `code-review` later reverses the graph: from the diff back to intent, including a security pass over changed trust paths. `release-engineering` consumes compat rules, migration steps, and emitted signals.
