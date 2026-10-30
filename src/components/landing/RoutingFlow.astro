@@ -1,0 +1,69 @@
+---
+---
+<div class="af-routing-flow" role="img" aria-label="How Agentflow routes a task: is a decision unresolved? If none, act directly. If yes, route to the smallest relevant specialist, apply its guidance, then verify results.">
+  <p class="af-routing-flow__line is-task">Your task</p>
+  <p class="af-routing-flow__arrow" aria-hidden="true">↓</p>
+  <p class="af-routing-flow__line is-question">What decision is unresolved?</p>
+  <div class="af-routing-flow__branch">
+    <p class="af-routing-flow__line is-none">none <span class="af-routing-flow__route" aria-hidden="true">→</span> act directly</p>
+    <p class="af-routing-flow__line is-route">yes <span class="af-routing-flow__route" aria-hidden="true">→</span> select the relevant specialist <span class="af-routing-flow__route" aria-hidden="true">→</span> apply its guidance <span class="af-routing-flow__route" aria-hidden="true">→</span> verify results</p>
+  </div>
+</div>
+
+<style>
+  .af-routing-flow {
+    min-width: 0;
+    max-width: 44rem;
+    margin: 1.5rem 0 0;
+    padding: 1.25rem 1.375rem 1.125rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 10px;
+    background: var(--af-surface, #16171D);
+    color: var(--af-ivory, #F6F4EF);
+  }
+
+  .af-routing-flow p { margin: 0; }
+
+  .af-routing-flow__line {
+    font: 400 13px/1.75 var(--af-font-mono);
+    letter-spacing: 0.005em;
+  }
+
+  .is-task ::selection, .af-routing-flow ::selection { background: rgba(155, 139, 222, 0.35); }
+
+  .is-task,
+  .is-route {
+    color: #F6F4EF;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .is-question {
+    color: rgba(214, 222, 235, 0.92);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .is-none,
+  .is-route { color: rgba(185, 186, 199, 0.95); }
+
+  .af-routing-flow__arrow {
+    padding-left: 2px;
+    color: rgba(255, 255, 255, 0.4);
+    font: 400 13px/1 var(--af-font-mono);
+  }
+
+  .af-routing-flow__branch {
+    margin-top: 0.55rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .af-routing-flow__route { color: var(--af-accent, #9B8BDE); }
+
+  .is-none { padding-left: 1.1rem; }
+
+  @media (max-width: 640px) {
+    .is-route { white-space: normal; }
+  }
+</style>

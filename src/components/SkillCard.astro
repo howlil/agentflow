@@ -5,9 +5,10 @@ interface Props {
   description: string;
   href: string;
   featured?: boolean;
+  meta?: string;
 }
 
-const { title, skill, description, href, featured = false } = Astro.props;
+const { title, skill, description, href, featured = false, meta } = Astro.props;
 ---
 
 <a href={href} class:list={['af-skill-card', featured && 'af-skill-card--router']}>
@@ -19,6 +20,7 @@ const { title, skill, description, href, featured = false } = Astro.props;
     <h3>{title}</h3>
     <p>{description}</p>
   </div>
+  {(meta || featured) && <span class="af-skill-card__meta">{meta ?? 'routes unresolved decisions → smallest skill set'}</span>}
   <span class="af-skill-card__slug">{skill}</span>
 </a>
 
@@ -102,6 +104,17 @@ const { title, skill, description, href, featured = false } = Astro.props;
     margin: 0.5rem 0 0;
     color: var(--sl-color-gray-2);
     font: 400 0.875rem/1.55 var(--af-font-ui);
+  }
+
+  .af-skill-card__meta {
+    margin-top: -0.25rem;
+    color: var(--sl-color-gray-3);
+    font: 500 0.7rem/1.5 var(--af-font-mono);
+    letter-spacing: 0.01em;
+  }
+
+  .af-skill-card--router .af-skill-card__meta {
+    color: var(--sl-color-accent);
   }
 
   .af-skill-card__slug {

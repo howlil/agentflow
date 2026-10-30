@@ -1,0 +1,181 @@
+---
+import SkillGrid from '../SkillGrid.astro';
+import RoutingFlow from './RoutingFlow.astro';
+---
+<section class="af-section is-intro">
+  <h2>Start with the decision, not the skill name</h2>
+  <p>
+    Every engineering task contains decisions. Some need product clarity, some need
+    architecture, a test strategy, or a code review. Invoking every skill for every
+    task adds unnecessary work.
+  </p>
+  <p>
+    <strong>Agentflow helps coding agents choose the smallest relevant set of skills
+    for the decision in front of them.</strong> If the solution is already clear,
+    skip the ceremony.
+  </p>
+  <RoutingFlow />
+</section>
+
+<section class="af-section is-catalog">
+  <h2>One router. Seven specialists.</h2>
+  <p>
+    The <code>agentflow</code> skill is the entry point when you need help deciding
+    which engineering lens to use and running the safe implement-verify-review loop.
+    Each specialist owns one distinct decision: product behavior, architecture,
+    interface, implementation, verification, release, or code review.
+  </p>
+  <div class="af-section__catalog">
+    <SkillGrid />
+  </div>
+  <p class="af-section__links">
+    <a href="/start/choose-a-skill/">Choose a skill</a> by its engineering
+    responsibility, or read the <a href="/start/quickstart/">quickstart</a> to see
+    how skills compose.
+  </p>
+</section>
+
+<section class="af-section is-portable">
+  <h2>Portable by design</h2>
+  <p>
+    Agentflow is a set of versioned <code>SKILL.md</code> instructions, not a
+    standalone AI model, hosted orchestration platform, or another package manager.
+    Install selected skills through the <a href="/start/distribution/">skills
+    ecosystem</a>, or use the <a href="/start/native-plugins/">native Claude Code
+    and Codex plugins</a> where available.
+  </p>
+  <p>
+    <strong>Install the router and specialists together</strong> if you want the
+    router to consult their full instructions. Installing the router alone does not
+    install the seven specialists. Activation and invocation syntax depend on your
+    coding agent.
+  </p>
+  <div class="af-section__actions">
+    <a class="af-pill is-primary" href="/start/install/">Install Agentflow</a>
+    <a class="af-pill is-secondary" href="https://github.com/howlil/agentflow" target="_blank" rel="noopener noreferrer">View the source on GitHub</a>
+  </div>
+</section>
+
+<style>
+  .af-section {
+    width: min(1180px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 5.5rem 0 0;
+    scroll-margin-top: 5rem;
+  }
+
+  .af-section:last-of-type {
+    padding-bottom: 6.5rem;
+  }
+
+  .af-section h2 {
+    margin: 0;
+    font-family: var(--af-font-display, "Instrument Serif", Georgia, serif);
+    font-weight: 400;
+    font-size: clamp(1.8rem, 3.4vw, 2.4rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--sl-color-white);
+  }
+
+  .af-section p {
+    max-width: 42rem;
+    margin: 1.1rem 0 0;
+    font: 400 0.975rem/1.75 var(--af-font-ui, inherit);
+    color: var(--sl-color-gray-2);
+  }
+
+  .af-section strong {
+    color: var(--sl-color-white);
+    font-weight: 500;
+  }
+
+  .af-section code {
+    font: 500 0.85em/1.5 var(--af-font-mono);
+    color: var(--sl-color-text-accent);
+    background: var(--sl-color-bg-inline-code);
+    border-radius: 0.3rem;
+    padding: 0.1rem 0.35rem;
+  }
+
+  .af-section a:not(.af-pill) {
+    color: var(--sl-color-text-accent);
+    text-decoration-color: color-mix(in srgb, var(--sl-color-text-accent) 45%, transparent);
+    text-underline-offset: 3px;
+  }
+
+  .af-section__catalog {
+    margin: 1.75rem 0 0;
+    max-width: none;
+  }
+
+  .af-section__links {
+    font-size: 0.9rem;
+  }
+
+  .is-catalog .af-section__links { margin-top: 1.75rem; }
+
+  .af-section__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 2.25rem 0 0;
+  }
+
+  .af-pill {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0 1.25rem;
+    font: 500 0.8125rem/1 var(--af-font-ui, inherit);
+    text-decoration: none;
+    transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+  }
+
+  .af-pill.is-primary {
+    background: var(--af-ivory, #F6F4EF);
+    color: var(--af-ink, #0C0D10);
+  }
+
+  .af-pill.is-primary:hover {
+    background: #E4DFFF;
+    color: #111214;
+  }
+
+  .af-pill.is-secondary {
+    border: 1px solid var(--sl-color-hairline);
+    background: transparent;
+    color: var(--sl-color-white);
+  }
+
+  .af-pill.is-secondary:hover {
+    border-color: var(--sl-color-gray-4);
+  }
+
+  .af-pill:focus-visible,
+  .af-section a:focus-visible {
+    outline: 2px solid var(--af-accent, #9B8BDE);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  .af-pill.is-primary:focus-visible,
+  .af-pill.is-secondary:focus-visible { border-radius: 999px; }
+
+  @media (max-width: 760px) {
+    .af-section {
+      width: min(100% - 28px, 1180px);
+      padding-top: 4rem;
+    }
+
+    .af-section:last-of-type { padding-bottom: 4.5rem; }
+
+    .af-section__actions { margin-top: 1.75rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .af-pill { transition: none; }
+  }
+</style>

@@ -5,6 +5,7 @@
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
+/* Agentflow brand tokens. Canonical values: BRAND.md / .agents/DESIGN.md. */
 :root {
   --af-ink: #0C0D10;
   --af-surface: #16171D;
@@ -19,20 +20,144 @@
   --sl-font: var(--agentflow-font);
   --sl-font-mono: var(--af-font-mono);
   --sl-content-width: 52rem;
+
+  /* Dark theme (ink). Starlight resolves --sl-color-* from this root. */
+  --sl-color-accent-low: #241C3B;
+  --sl-color-accent: #9B8BDE;
+  --sl-color-accent-high: #E6DFFF;
+  --sl-color-white: #F6F4EF;
+  --sl-color-gray-1: #F0EEE7;
+  --sl-color-gray-2: #C7C8D1;
+  --sl-color-gray-3: #9A9CA9;
+  --sl-color-gray-4: #767886;
+  --sl-color-gray-5: #2A2C34;
+  --sl-color-gray-6: #16171D;
+  --sl-color-gray-7: #121317;
+  --sl-color-black: #0C0D10;
+  --sl-color-bg-nav: #16171D;
+  --sl-color-bg-sidebar: #16171D;
+  --sl-color-bg-inline-code: #1D1F26;
+  --sl-color-bg-accent: var(--sl-color-accent-high);
+  --sl-color-hairline: #26272E;
+  --sl-color-hairline-light: #30323B;
+  --sl-color-hairline-shade: #0A0B0E;
+
+}
+
+/* Light theme (warm ivory), same bg/text/accent semantics as Starlight's light block. */
+:root[data-theme='light'],
+[data-theme='light'] ::backdrop {
   --sl-color-accent-low: #EFEAFF;
   --sl-color-accent: #6651A5;
   --sl-color-accent-high: #3E2B78;
+  --sl-color-white: #0C0D10;
+  --sl-color-gray-1: #17181D;
+  --sl-color-gray-2: #3C3E48;
+  --sl-color-gray-3: #5C5D69;
+  --sl-color-gray-4: #8B8C99;
+  --sl-color-gray-5: #DFDACE;
+  --sl-color-gray-6: #ECE9E1;
+  --sl-color-gray-7: #FAF8F3;
+  --sl-color-black: #F6F4EF;
+  --sl-color-bg-nav: #FAF8F3;
+  --sl-color-bg-sidebar: #F6F4EF;
+  --sl-color-bg-inline-code: #ECE9E1;
+  --sl-color-bg-accent: var(--sl-color-accent);
+  --sl-color-text-accent: var(--sl-color-accent);
+  --sl-color-hairline: #E3DED4;
+  --sl-color-hairline-light: #EFEBE3;
+  --sl-color-hairline-shade: #D9D4CA;
 }
 
-:root[data-theme='dark'] {
-  --sl-color-accent-low: #241C3B;
-  --sl-color-accent: #B4A5FF;
-  --sl-color-accent-high: #E6DFFF;
+/*
+  Expressive Code overrides. Starlight ships EC defaults in a stylesheet that loads
+  AFTER this file, and its light-mode rules set EC vars on the `.expressive-code`
+  wrapper, so plain `:root` values would lose. These selectors out-specific the
+  generated defaults while keeping the same shape as the generated rules
+  (verified against dist/_astro/ec.*.css at build time).
+
+  The code block stays an ink slab with a hairline in both themes: the product is
+  SKILL.md text, and fenced blocks are that product shown as an object.
+*/
+:root:root {
+  --ec-brdCol: #30323B;
+  --ec-brdRad: 8px;
+  --ec-codeBg: #16171D;
+  --ec-codeFg: #D6DEEB;
+  --ec-codeSelBg: #1D3B53;
+  --ec-frm-edBg: #16171D;
+  --ec-frm-edTabBarBg: #121317;
+  --ec-frm-edActTabBg: #1D1F26;
+  --ec-frm-edActTabFg: #D6DEEB;
+  --ec-frm-trmBg: #16171D;
+  --ec-frm-trmTtbBg: #0C0D10;
+  --ec-frm-trmTtbFg: #D6DEEB;
+  --ec-frm-trmTtbDotsFg: #565963;
+  --ec-frm-trmTtbBrdBtmCol: #26272E;
+  --ec-frm-frameBoxShdCssVal: none;
+}
+
+:root:root[data-theme='light'] .expressive-code:not([data-theme]):not([data-theme='dark']) {
+  --ec-codeBg: #16171D;
+  --ec-codeFg: #D6DEEB;
+  --ec-codeSelBg: #1D3B53;
+  --ec-gtrFg: #63798B;
+  --ec-gtrBrdCol: #63798B33;
+  --ec-gtrHlFg: #C5E4FD97;
+  --ec-brdCol: #30323B;
+  --ec-brdRad: 8px;
+  --ec-sbThumbCol: #ffffff17;
+  --ec-sbThumbHoverCol: #ffffff47;
+  --ec-uiSelBg: #234D708C;
+  --ec-uiSelFg: #ffffff;
+  --ec-focusBrd: #30323B;
+  --ec-frm-edBg: #16171D;
+  --ec-frm-edTabBarBg: #121317;
+  --ec-frm-edActTabBg: #1D1F26;
+  --ec-frm-edActTabFg: #D6DEEB;
+  --ec-frm-trmBg: #16171D;
+  --ec-frm-trmTtbBg: #0C0D10;
+  --ec-frm-trmTtbFg: #D6DEEB;
+  --ec-frm-trmTtbDotsFg: #565963;
+  --ec-frm-trmTtbBrdBtmCol: #26272E;
+  --ec-frm-frameBoxShdCssVal: none;
+  --ec-tm-markBg: #ffffff17;
+  --ec-tm-markBrdCol: #ffffff40;
+}
+
+/* Same specificity shape as the generated light span rule, one :not() deeper. */
+:root:root[data-theme='light'] .expressive-code:not([data-theme]):not([data-theme='dark']) .ec-line :where(span[style^='--']:not([class])) {
+  color: var(--0, inherit);
+  background-color: var(--0bg, transparent);
+  font-style: var(--0fs, inherit);
+  font-weight: var(--0fw, inherit);
+  text-decoration: var(--0td, inherit);
 }
 
 html,
 body {
   font-family: var(--agentflow-font);
+}
+
+/* Type: page titles belong to the editorial face; body stays Geist. */
+.sl-markdown-content h1 {
+  font-family: var(--af-font-display);
+  font-weight: 400;
+  font-size: var(--sl-text-h1);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-top: 0;
+}
+
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4,
+.sl-markdown-content h5 {
+  font-weight: 500;
+}
+
+.sl-markdown-content h2 {
+  margin-top: 2.5rem;
 }
 
 .skill-grid {
@@ -41,17 +166,3 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
 }
 
-.flow {
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.75rem;
-  background: var(--sl-color-gray-7);
-  padding: 1rem;
-}
-
-.sl-markdown-content h1 {
-  letter-spacing: -0.025em;
-}
-
-.sl-markdown-content h2 {
-  margin-top: 2.5rem;
-}

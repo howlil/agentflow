@@ -52,7 +52,7 @@ test('generated static discovery index tracks changes to canonical skill descrip
 test('README, hero, documentation and sidebar keep a truthful installation path', async () => {
   const readme = await read('README.md');
   const guide = await read('src/content/docs/start/distribution.md');
-  const home = await read('src/content/docs/index.mdx');
+  const home = await read('src/components/landing/LandingSections.astro');
   const hero = await read('src/components/landing/LandingHero.astro');
   const config = await read('astro.config.mjs');
   assert.ok(readme.indexOf('## Install and use') < readme.indexOf('## Development'));
@@ -77,6 +77,7 @@ test('brand and README describe capabilities without claiming a separate runtime
   const readme = await read('README.md');
   const brand = await read('BRAND.md');
   const index = await read('src/content/docs/index.mdx');
+  const sections = await read('src/components/landing/LandingSections.astro');
   const hero = await read('src/components/landing/LandingHero.astro');
   const config = await read('astro.config.mjs');
   for (const copy of [readme, index, brand, config]) {
@@ -89,7 +90,7 @@ test('brand and README describe capabilities without claiming a separate runtime
   assert.ok(readme.includes('SECURITY.md'));
   assert.ok(readme.includes('SUPPORT.md'));
   assert.ok(readme.includes('npx skills@1.7.4 add howlil/agentflow'));
-  assert.ok(index.includes('<SkillGrid />'));
+  assert.ok(sections.includes('<SkillGrid />'));
   assert.ok(hero.includes('href="/start/distribution/"'));
   assert.doesNotMatch(hero, /workflow automation|swarm/);
 });
