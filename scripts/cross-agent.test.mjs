@@ -29,3 +29,10 @@ test('guide describes the matrix and its limitations', async () => {
   assert.match(guide, /Out of scope/);
   assert.match(guide, /not guaranteed/i);
 });
+
+test('guide documents tested versions and pinning', async () => {
+  const guide = await read('src/content/docs/start/cross-agent-compatibility.md');
+  for (const trace of ['## Tested versions', 'skills@1.7.4', '## Pinning and reproducibility', 'list -g', '/start/upgrade-and-migration/']) {
+    assert.ok(guide.includes(trace), 'compatibility guide missing: ' + trace);
+  }
+});
