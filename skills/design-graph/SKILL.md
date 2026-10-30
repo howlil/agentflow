@@ -32,6 +32,8 @@ Read product.md for B, X, P, Q; engineering.md for Structure and F rules; DESIGN
 
 **Entry.** Two ways in, the same graph: **build** a surface that does not exist yet, or **clean** a surface that already renders (audit first, then decide how much it needs). A clean run keeps features, content, and section order; `references/direction.md` holds both ladders.
 
+**Evidence-led UX (proportional).** Before changing a meaningful interaction, identify the user task and outcome from J#/P#, inspect the existing flow when available, and use observed friction (rendered behavior, issue, or user feedback) and engineering constraints to guide the choice. Separate facts from A# assumptions; never invent user research, usability results, or competitor findings. Research outside UX patterns only when an unresolved choice materially affects the outcome. For a tiny or established interaction, reuse existing patterns and proceed without a research step.
+
 ## 2. Surfaces (U)
 
 A surface is a place the person can encounter that owns content, interaction, state, navigation, or attention: screen, route, pane, dialog, drawer, menu, form, list, detail, status region. Do not split every visual group into one. A step with one trivial in-edge and out-edge may merge, unless it owns distinct state, attention, or interaction.
@@ -49,6 +51,8 @@ M1 (B1): U1 --select--> U2 --edit--> U2[editing] --save--> U2[saved]
 ```
 
 Each edge answers: what triggers it, what changes, what becomes reachable. Add no screen because convention suggests one.
+
+**Interaction decision.** Every meaningful new or changed move must trace to B#, X#, or P#. Reuse an existing surface, navigation step, or UI state unless the required task cannot be completed correctly without a new one. When alternatives matter, choose by task completion, discoverability, error prevention and recovery, interaction cost, consistency, and engineering constraints. Visual novelty alone never justifies a new move or surface.
 
 ## 4. State (ST)
 
@@ -136,7 +140,7 @@ Palette, type, and composition craft may be delegated to `frontend-design` when 
 |---|---|---|---|
 | Web performance (public web only) | LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 at p75 field data | Reserve space for media and embeds, keep interactions responsive | release-engineering (field), test-engineering (lab) |
 | Accessibility | WCAG 2.2 AA: text contrast 4.5:1, UI and non-text 3:1, targets ≥ 24×24 px, focus never fully hidden by sticky UI, a non-drag alternative for every drag, no cognitive-test-only authentication | Each M has a keyboard path; drag has an alternative | test-engineering |
-| Task outcome | Each P is one task: completable without error | Each P has a UI path | test-engineering (e2e), walkthrough for small projects |
+| Task outcome | Each P is one task: completable without error | Each P has a UI path | test-engineering at the cheapest faithful existing boundary; E2E only when justified |
 
 Scale: internal tools and personal projects need accessibility and task success only. SUS or HEART only with real users and research budget; read task success with time and error rate, never alone. For a quick heuristic pass check system status visibility, error prevention and recovery, and consistency.
 
@@ -145,6 +149,8 @@ Scale: internal tools and personal projects need accessibility and task success 
 Prove completability under the contexts that apply, not identical graphs: empty data, partial or error state, least-privileged role, representative density, supported small and large viewport, keyboard-only, reduced motion if motion exists, slow or offline if supported, stale or conflicting data if the product allows it. Do not invent scale, offline support, or touch-only use. Per context: can the person understand the state, reach the allowed action, recover, and finish the job?
 
 Judge what renders, not only what the code says: open the surface or read its rendered output when that is possible, and compare it against the audit list.
+
+**No extra UX gates.** Reuse product P# and the existing test-engineering proof and review stages; do not add mandatory manual usability tests, per-iteration visual approvals, UX sign-off, separate research/acceptance documents, or browser E2E infrastructure by default. Inspecting available UI evidence is design work, not a new manual acceptance stage. Automated tests demonstrate observable behavior, not subjective ease of use. When user evidence is unavailable, keep the uncertainty explicit as A# instead of claiming usability is validated. Return contradictions to the owning product or engineering contract; stop when the required behavior and existing gates are satisfied.
 
 Ready for `design-thinking` only if all hold:
 
