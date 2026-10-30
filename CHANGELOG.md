@@ -2,6 +2,30 @@
 
 Agentflow releases track the canonical `skills/*/SKILL.md` library, website and optional native plugin manifests. The private root package is **not** an npm CLI. Updates to this changelog are part of a reviewed release request.
 
+## v0.9.0
+
+**Agentflow v0.9.0 — Design craft: direction gate, craft order, and bundled references** (2026-10-30)
+
+### Added
+
+- **`design-graph` reference library:** five files ship inside `skills/design-graph/references/` — `direction.md`, `craft.md`, `signs.md`, `tokens.md`, `visuals.md`. Canonical instructions stay in `SKILL.md`; the references hold the procedure and the starting values that `SKILL.md` cites.
+- **Direction gate:** five written lines (product, character, world, moments, signature) before composing, with templated character words refused. Product, character, and world are durable in `.agents/DESIGN.md ## Direction`; moments and signature are per surface.
+- **Two entry modes:** build a surface that does not exist, or clean one that already renders (audit → decide how much it needs → fix). A clean run keeps features, content, and section order.
+- **Craft order:** spacing → color → icons → copy → type → layout → details → visuals → motion, with the reason for the order, an explicit deferral of focus, announcements, pending and conflict behavior, reduced motion, and environment to §6/§7, and implementation detail to `design-thinking`.
+- **Tell audit list:** `signs.md` pairs each tell with its fix by group; `SKILL.md` keeps the reject verdict.
+- **Bundled starting values:** one tinted neutral ramp family, spacing and type scales, nested radius, and a motion curve. `tokens.md` is a starting point that the direction moves, never a default palette.
+- **Visual doctrine:** whether a surface needs a visual at all, product preview in code before a generated image, one-sentence subject, and a no-placeholder rule for hero slots.
+- `CREDITS.md` records the license boundary for adapted material.
+
+### Changed
+
+- `design-graph` description, ready gate (direction recorded in DESIGN.md; every tell fixed or recorded as a non-blocking A#), and the `.agents/DESIGN.md` `## Direction` section now carry the direction contract.
+- The routing test for router-private references now allows a specialist to cite files it ships in its own `references/` directory, and still fails when a specialist cites the router's files.
+
+### Attribution
+
+- The five reference files adapt [unslop](https://github.com/heydamir/unslop) by Damir Sokolovsky ([@heydamir](https://x.com/heydamir)), CC BY 4.0. They remain CC BY 4.0 and are not relicensed by the repository's MIT grant. unslop's snapshot and story-video scripts, its reference screenshots, and its code-effect recipes are intentionally not included; no runtime, asset, or image-generation tool is added.
+
 ## v0.8.0
 
 **Agentflow v0.8.0 — Router chain contract, seven-specialist catalog, and upgrade path** (2026-10-30)
