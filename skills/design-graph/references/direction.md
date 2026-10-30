@@ -19,7 +19,7 @@ A clean run keeps features, content, and section order. Fixing is not redesignin
 
 ## Five lines
 
-Write these five lines, then get agreement before composing. Changing the direction later means redoing every pass. Skip the wait only when the person already said to just do it.
+Write these five lines before composing. Proceed without separate approval when the direction follows the existing product contract, brand, and DESIGN.md. Ask for a decision only when an unresolved choice would materially change product behavior, scope, or established visual identity. Do not require per-surface visual sign-off. If the direction changes materially, revisit only the affected design decisions and passes.
 
 - **Product**: what it does and for whom, in one plain sentence.
 - **Character**: two or three concrete words, like `calm, exact, a little warm`. `clean`, `modern`, `sleek`, `minimal`, `premium` are banned: they describe every template.
