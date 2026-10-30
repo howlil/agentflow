@@ -72,7 +72,7 @@ test('upgrade guide covers every route, migration, and deprecation', async () =>
   const contributing = await readFile(join(root, 'CONTRIBUTING.md'), 'utf8');
   assert.match(contributing, /keep the old one for at least one minor release/i);
   const changelog = await readFile(join(root, 'CHANGELOG.md'), 'utf8');
-  assert.match(changelog, /## Unreleased/);
+  assert.match(changelog, /## v\d+\.\d+\.\d+/);
   assert.match(changelog, /upgrade and migration/);
 });
 

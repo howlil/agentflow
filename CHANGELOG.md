@@ -2,7 +2,9 @@
 
 Agentflow releases track the canonical `skills/*/SKILL.md` library, website and optional native plugin manifests. The private root package is **not** an npm CLI. Updates to this changelog are part of a reviewed release request.
 
-## Unreleased
+## v0.8.0
+
+**Agentflow v0.8.0 — Router chain contract, seven-specialist catalog, and upgrade path** (2026-10-30)
 
 ### Changed
 

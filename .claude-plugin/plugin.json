@@ -1,7 +1,7 @@
 {
   "name": "agentflow",
   "displayName": "Agentflow",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Better judgment for AI agents. One decision router and seven portable engineering specialist skills.",
   "author": {
     "name": "howlil",
