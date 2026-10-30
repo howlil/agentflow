@@ -23,16 +23,18 @@ mkdir -p "$PROJECT_DIR/unrelated"
 printf 'Other publisher\n' > "$PROJECT_DIR/unrelated/SKILL.md"
 # Reference policies must ship with the selected skill (project and global).
 assert_installed() {
-  local target="$1" reference
-  cmp "$REPO/skills/agentflow/SKILL.md" "$target/SKILL.md"
-  for reference in cli.md chatgpt-github.md delegation.md ai-implementation.md; do
-    cmp "$REPO/skills/agentflow/references/$reference" "$target/references/$reference"
+  local skill="$1" target="$2" reference
+  shift 2
+  cmp "$REPO/skills/$skill/SKILL.md" "$target/SKILL.md"
+  for reference in "$@"; do
+    cmp "$REPO/skills/$skill/references/$reference" "$target/references/$reference"
   done
 }
 assert_removed() {
   local target="$1" reference
+  shift
   test ! -e "$target/SKILL.md"
-  for reference in cli.md chatgpt-github.md delegation.md ai-implementation.md; do
+  for reference in "$@"; do
     test ! -e "$target/references/$reference"
   done
 }
@@ -40,16 +42,22 @@ npx --yes skills@1.7.4 add "$REPO" --list > "$TEMP/discovery.txt" 2>&1
 grep -Fq agentflow "$TEMP/discovery.txt"
 grep -Fq code-review "$TEMP/discovery.txt"
 npx --yes skills@1.7.4 add "$REPO" --skill agentflow --agent "$AGENT" --copy --yes
-assert_installed "$PROJECT_DIR/agentflow"
+assert_installed agentflow "$PROJECT_DIR/agentflow" cli.md chatgpt-github.md delegation.md ai-implementation.md
 npx --yes skills@1.7.4 list --agent "$AGENT" | grep -Fq agentflow
 npx --yes skills@1.7.4 remove agentflow --agent "$AGENT" --yes
-assert_removed "$PROJECT_DIR/agentflow"
+assert_removed "$PROJECT_DIR/agentflow" cli.md chatgpt-github.md delegation.md ai-implementation.md
+# A specialist's bundled references must travel too; global scope is proven above.
+npx --yes skills@1.7.4 add "$REPO" --skill design-graph --agent "$AGENT" --copy --yes
+assert_installed design-graph "$PROJECT_DIR/design-graph" direction.md craft.md signs.md tokens.md visuals.md
+npx --yes skills@1.7.4 list --agent "$AGENT" | grep -Fq design-graph
+npx --yes skills@1.7.4 remove design-graph --agent "$AGENT" --yes
+assert_removed "$PROJECT_DIR/design-graph" direction.md craft.md signs.md tokens.md visuals.md
 test -f "$PROJECT_DIR/unrelated/SKILL.md"
 cmp AGENTS.md "$TEMP/original-agents"
 npx --yes skills@1.7.4 add "$REPO" --skill agentflow --global --agent "$AGENT" --copy --yes
-assert_installed "$HOME/$GLOBAL_DIR/agentflow"
+assert_installed agentflow "$HOME/$GLOBAL_DIR/agentflow" cli.md chatgpt-github.md delegation.md ai-implementation.md
 npx --yes skills@1.7.4 list --global --agent "$AGENT" | grep -Fq agentflow
 npx --yes skills@1.7.4 remove agentflow --global --agent "$AGENT" --yes
-assert_removed "$HOME/$GLOBAL_DIR/agentflow"
+assert_removed "$HOME/$GLOBAL_DIR/agentflow" cli.md chatgpt-github.md delegation.md ai-implementation.md
 cmp AGENTS.md "$TEMP/original-agents"
 echo "PASS: $AGENT portable project/global lifecycle from current checkout."

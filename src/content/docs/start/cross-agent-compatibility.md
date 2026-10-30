@@ -27,7 +27,7 @@ npx skills@1.7.4 update -g
 
 Select all eight when you require the router and seven specialists. Router-only installation cannot load unavailable specialist instructions.
 
-CI tests the current checkout for each listed agent ID with a temporary HOME and project. It checks install/list/remove, canonical byte equality, and preservation of unrelated skills and `AGENTS.md`. Native Claude and Codex marketplace metadata are tested separately.
+CI tests the current checkout for each listed agent ID with a temporary HOME and project. It checks install/list/remove, canonical byte equality of `SKILL.md`, and preservation of unrelated skills and `AGENTS.md`. Byte equality also covers bundled references: the router's four files at project and global scope, and the `design-graph` specialist's five at project scope, so a skill's references must travel with it. Native Claude and Codex marketplace metadata are tested separately.
 
 ## Tested versions
 

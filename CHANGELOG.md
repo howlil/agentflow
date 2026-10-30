@@ -21,6 +21,7 @@ Agentflow releases track the canonical `skills/*/SKILL.md` library, website and 
 
 - `design-graph` description, ready gate (direction recorded in DESIGN.md; every tell fixed or recorded as a non-blocking A#), and the `.agents/DESIGN.md` `## Direction` section now carry the direction contract.
 - The routing test for router-private references now allows a specialist to cite files it ships in its own `references/` directory, and still fails when a specialist cites the router's files.
+- Cross-agent compatibility now compares bundled references after install for both the router and the `design-graph` specialist, so a specialist's `references/` must actually travel with it.
 
 ### Attribution
 
