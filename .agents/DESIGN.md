@@ -17,6 +17,12 @@ Canonical source: `BRAND.md` and `src/styles/global.css`.
 - Homepage is goal-first (`LandingHero.astro` + `SkillGrid.astro`), separating the single router card from the eight specialist cards using generated canonical metadata.
 - Flat cards with crisp borders, pill primary/secondary CTAs, and zero heavy drop shadows or stock AI illustrations.
 
+## Deliberate exceptions
+Recorded so a later craft pass does not remove them as generic tells:
+- Mono uppercase eyebrows (`01 / Start here`, `02 / Specialists`) carry the numbered catalog sequence.
+- Pill primary/secondary CTAs, flat bordered cards, no drop shadows.
+- The ASCII wave field loops on the homepage hero only: that surface's single moment, paused off-canvas and under `prefers-reduced-motion`.
+
 ## States & Accessibility
 - Visible `:focus-visible` outlines on interactive links and cards.
 - Respect `prefers-reduced-motion` on animated backgrounds (`AsciiWaves.astro`) and transitions.
