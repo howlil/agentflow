@@ -8,7 +8,11 @@ test('release requires matching tag, reviewed master, tests and native manifests
   for (const key of ['workflow_dispatch:', 'git merge-base --is-ancestor', 'ROOT_VERSION', 'bun run plugins:check', 'bun run test', 'bun run build', 'gh release create']) assert.ok(text.includes(key), 'Missing ' + key);
   assert.match(text, /contents: write/);
   assert.match(text, /refs\/heads\/master/);
-  assert.doesNotMatch(text, /npm publish|publish-npm|NPM_KEY|NODE_AUTH_TOKEN|id-token: write/);
+  assert.doesNotMatch(text, /npm publish|publish-npm|NPM_KEY|NODE_AUTH_TOKEN/);
+  assert.match(text, /id-token: write/);
+  assert.match(text, /attestations: write/);
+  assert.match(text, /actions\/attest-build-provenance@v4/);
+  assert.match(text, /subject-path: dist-package\/\*\.zip/);
 });
 test('release request is version-aligned, has changelog and never publishes npm', async () => {
   const pkg = JSON.parse(await read('package.json'));
