@@ -39,7 +39,15 @@ test('specialists never depend on router-private reference files', async () => {
     .filter(entry => entry.isDirectory() && entry.name !== 'agentflow').map(entry => entry.name);
   for (const name of names) {
     const content = await read('skills/' + name + '/SKILL.md');
-    assert.doesNotMatch(content, /references\//, name + ' must not reference router-private files');
+    const cited = [...content.matchAll(/references\/([a-z0-9-]+\.md)/g)].map(match => match[1]);
+    if (!cited.length) continue;
+    // A specialist may cite only files it ships, so the router's references
+    // stay private and every installed specialist remains self-contained.
+    const owned = (await readdir(join(root, 'skills', name, 'references'), { withFileTypes: true }))
+      .filter(entry => entry.isFile()).map(entry => entry.name);
+    for (const file of cited) {
+      assert.ok(owned.includes(file), name + ' cites references/' + file + ' it does not ship');
+    }
   }
 });
 

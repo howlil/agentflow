@@ -1,6 +1,6 @@
 ---
 name: design-graph
-description: 'Turn a product behavior contract into an explicit interface graph (surfaces, moves, state ownership, rendered variants, prerequisites, interaction semantics, environment projections) and a frontend structure, then build UI that passes quality gates (accessibility, performance, anti-generic visual defaults). Use this whenever the user builds, changes, reviews, or audits any UI: a screen, page, landing page, form, dashboard, navigation, interactive component, responsive layout, or frontend app, or asks for "tampilan", "UI", "frontend", state management, or a DESIGN.md, even if they never say "design". Reads .agents/product.md and .agents/engineering.md when present; reads and maintains .agents/DESIGN.md. Does not redefine product behavior (product-design), system architecture (engineering-design), or code-level patterns (design-thinking).'
+description: 'Turn a product behavior contract into an explicit interface graph (surfaces, moves, state ownership, rendered variants, prerequisites, interaction semantics, environment projections) and a frontend structure, then build UI that passes quality gates (visual direction, anti-generic tells, craft order, accessibility, performance). Use this whenever the user builds, changes, reviews, or audits any UI: a screen, page, landing page, form, dashboard, navigation, interactive component, responsive layout, or frontend app, or asks for "tampilan", "UI", "frontend", state management, or a DESIGN.md, even if they never say "design". Writes the five-line visual direction, audits AI-looking tells, and fixes craft in a fixed order using bundled token values. Reads .agents/product.md and .agents/engineering.md when present; reads and maintains .agents/DESIGN.md. Does not redefine product behavior (product-design), system architecture (engineering-design), or code-level patterns (design-thinking).'
 ---
 
 # Design Graph
@@ -11,6 +11,7 @@ Turn required product behavior into an interface a person can navigate and opera
 In:   .agents/product.md (J, B, X, P, Q) + .agents/engineering.md (Structure, F, G) + .agents/DESIGN.md
 Out:  interface graph (in the task or PR) + .agents/DESIGN.md (durable preferences only)
 Next: design-thinking
+Refs: references/direction.md, craft.md, signs.md, tokens.md, visuals.md
 
 B → M → U → ST/V/N → Structure → Gates → Proof
 ```
@@ -28,6 +29,8 @@ A  assumption (continues numbering; [blocking] if it changes B, scope, or visual
 Read product.md for B, X, P, Q; engineering.md for Structure and F rules; DESIGN.md for tokens and conventions. With no product contract, infer only the minimum behavior the task clearly establishes and mark the rest A#.
 
 **Ask or assume.** Ask only when the answer changes J, B, scope, or visual direction that cannot be guessed; max 3 questions. Otherwise assume, record A#, continue.
+
+**Entry.** Two ways in, the same graph: **build** a surface that does not exist yet, or **clean** a surface that already renders (audit first, then decide how much it needs). A clean run keeps features, content, and section order; `references/direction.md` holds both ladders.
 
 ## 2. Surfaces (U)
 
@@ -115,12 +118,17 @@ domain   pure rules, no framework (only if rules exist)
 
 **Visual and copy: anti-generic gate.** Direction comes from the brief and DESIGN.md. Where the brief pins a look, follow it; where it leaves an axis free, do not spend it on a default.
 
-1. **Tokens only** (automatable, add as F#): no raw color, size, or radius values in components.
-2. **Tell checklist**: reject by default unless the brief asks: cream background with serif and terracotta accent; near-black with one neon accent; newspaper layout; identical rounded cards sharing one radius and shadow; ALL-CAPS eyebrow above headings; numbered markers on non-sequences; a single accented word in a headline; fade-slide entrances on every section; hover motion on every card.
-3. **Specificity test**: before building, would this plan be produced for any similar brief? If yes, revise it and say what changed. Spend boldness in one element; keep the rest quiet.
-4. **Copy**: real content, no filler. Buttons are specific verbs ("Save changes", not "Submit"); one action keeps one name through the whole flow; errors say what went wrong and how to fix it; empty states point to the next action.
+1. **Direction** (`references/direction.md`): five written lines — product, character, world, moments, signature — before composing, with no templated character word. The durable part is recorded in DESIGN.md `## Direction`.
+2. **Tokens only** (automatable, add as F#): no raw color, size, or radius values in components. With no token source yet, start from `references/tokens.md` and record the result as A#.
+3. **Tell checklist**: reject by default unless the brief asks: cream background with serif and terracotta accent; near-black with one neon accent; newspaper layout; identical rounded cards sharing one radius and shadow; ALL-CAPS eyebrow above headings; numbered markers on non-sequences; a single accented word in a headline; fade-slide entrances on every section; hover motion on every card.
+4. **Specificity test**: before building, would this plan be produced for any similar brief? If yes, revise it and say what changed. Spend boldness in one Moment; keep the chrome quiet.
+5. **Copy**: real content, no filler. Buttons are specific verbs ("Save changes", not "Submit"); one action keeps one name through the whole flow; errors say what went wrong and how to fix it; empty states point to the next action.
 
-Aesthetic direction (palette, type, composition) is delegated to `frontend-design` when available. This skill owns the gate and records the chosen result in DESIGN.md.
+`references/signs.md` is how you find these tells, `references/craft.md` is the order to fix them, `references/visuals.md` decides whether the surface gets a visual at all.
+
+**Craft order.** Fix in one order and finish a pass across the whole surface before starting the next: spacing → color → icons → copy → type → layout → details → visuals → motion. Spacing first because every other value reads differently once the rhythm is right; copy before type and layout because the length of a headline decides its size and where it sits; visuals and motion last because they must fit a surface that already works without them. Values are in `references/tokens.md`. §6 and §7 keep ownership of focus, announcements, pending and conflict behavior, reduced motion, and environment, and `design-thinking` owns implementation detail.
+
+Palette, type, and composition craft may be delegated to `frontend-design` when that skill is available. The direction procedure and this gate stay here, and the result is recorded in DESIGN.md.
 
 **Quality targets.** Take UG from product.md Q first. Otherwise use these published defaults and record them as A# when applied.
 
@@ -136,6 +144,8 @@ Scale: internal tools and personal projects need accessibility and task success 
 
 Prove completability under the contexts that apply, not identical graphs: empty data, partial or error state, least-privileged role, representative density, supported small and large viewport, keyboard-only, reduced motion if motion exists, slow or offline if supported, stale or conflicting data if the product allows it. Do not invent scale, offline support, or touch-only use. Per context: can the person understand the state, reach the allowed action, recover, and finish the job?
 
+Judge what renders, not only what the code says: open the surface or read its rendered output when that is possible, and compare it against the audit list.
+
 Ready for `design-thinking` only if all hold:
 
 - every B has an M, and every M reaches a U;
@@ -143,6 +153,8 @@ Ready for `design-thinking` only if all hold:
 - every ST has exactly one owner;
 - every addressable surface has a route;
 - the plan passes the tell checklist and the specificity test;
+- the five direction lines are written and recorded in DESIGN.md;
+- every tell the audit found is fixed or recorded as a non-blocking A#;
 - UG is filled, or an A# says it is undefined;
 - DESIGN.md exists or is created in this task;
 - no `[blocking]` A# is open.
@@ -151,7 +163,7 @@ If a check fails, fix the graph. Do not pass the gap downstream.
 
 ## 11. Persist: `.agents/DESIGN.md`
 
-One file, near 100 lines, only durable rules that every future surface must follow. No per-screen specs; those live in the task or PR. If it exists, read it first and follow it; update only what a durable decision changed. If it does not, create a minimal one before the second surface is built (the first surface may derive it). When tokens live in code, point to that source instead of copying values.
+One file, near 100 lines, only durable rules that every future surface must follow. No per-screen specs; those live in the task or PR. If it exists, read it first and follow it; update only what a durable decision changed. If it does not, create a minimal one before the second surface is built (the first surface may derive it). When tokens live in code, point to that source instead of copying values; with neither, `references/tokens.md` is a starting point that the direction moves, never a default.
 
 Format: YAML front matter for machine-readable tokens, then short prose for rationale (the pattern of Google Labs' DESIGN.md, which is alpha: use a conservative subset, keep keys mappable to W3C design tokens, and check its spec when generating tokens).
 
@@ -165,7 +177,8 @@ motion:     {…}
 components: {button: {…}}                                    # only stable ones
 ---
 ## Direction
-Tone, audience, what to avoid (3–5 lines).
+Product, Character, World from `references/direction.md` (3–5 lines), including what to avoid.
+Per-surface Moments and the Signature stay in the task, not here.
 
 ## Guardrails
 Project-specific overrides of the §9 gates.
@@ -190,9 +203,24 @@ simple local interaction               → U + M + relevant V
 form, async, permissions               → add ST, N, interaction semantics, failure and recovery V
 multi-surface flow, responsive nav,
   complex state, new app               → full method
+
+existing surface, a few tells          → audit with signs.md + the affected passes, keep the brand
+existing surface, many tells           → direction, then the full craft order
 ```
 
-Depth follows interaction risk, not component count.
+Depth follows interaction risk, not component count. Direction is not proportional: a new surface always needs it, and a mostly designed surface keeps the one it has.
+
+## References
+
+```text
+references/direction.md  five lines, two entry modes, how much to change
+references/craft.md      the nine passes, in order, and what each one changes
+references/signs.md      audit: tell → fix, by group
+references/tokens.md     starting values, moved by the direction
+references/visuals.md    whether a visual, what it is, how it sits on the page
+```
+
+They travel with this skill. Load one when its pass is in scope; do not restate them in the task.
 
 ## Handoff
 
