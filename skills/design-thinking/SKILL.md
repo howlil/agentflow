@@ -165,7 +165,7 @@ Reduce nesting with guard clauses and extract-by-responsibility. Do not game the
 
 ## 11. Verification (VER)
 
-Choose the smallest test that faithfully proves the actual risk. Run the `test-engineering` triage (does an existing proof already cover it?) before adding a test, and give every VER a stage: local checks run at `iter`; integration belongs to `pr`, E2E and manual acceptance to `release`, never to a per-change iteration. Pure rule → unit test. Simple bug → regression test. Existing integration pattern covers it → reuse it. Hand off to `test-engineering` when the proof boundary itself needs design (transactions, races, migrations, async or queue semantics, recovery, flaky suites).
+Choose the smallest test that faithfully proves the actual risk. Run the `test-engineering` triage (does an existing proof already cover it?) before adding a test, and give every VER a stage: local checks run at `iter`; integration belongs to `pr`, E2E and routine manual acceptance to `release`, never to a per-change iteration; a one-off pre-merge critical UX proof is allowed only under the test-engineering exception. Pure rule → unit test. Simple bug → regression test. Existing integration pattern covers it → reuse it. Hand off to `test-engineering` when the proof boundary itself needs design (transactions, races, migrations, async or queue semantics, recovery, flaky suites).
 
 Substitute a dependency only when the property under test lives above it; use the real one when correctness lives in its semantics:
 

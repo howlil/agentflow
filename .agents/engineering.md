@@ -21,6 +21,8 @@ src/content/docs + Astro/Starlight → static dist/ → Cloudflare
 - **Three-file `.agents/` cap** — consolidated ADR decisions, verification notes, and release/recovery notes into `.agents/engineering.md` and added `.agents/DESIGN.md` over per-skill files. Consequence: bounded context per turn.
 - **PR + existing CI over Issue ledger gates** — removed `acceptance.yml` and custom Issue-table validators so ChatGPT relies on existing test suites and exact-SHA CI status. Consequence: faster shipping without bespoke workflow overhead.
 
+- **Risk-adaptive proof budget** — existing RK tiers govern minimum faithful proof. Fast-path and three-workflow limits are defaults; a critical boundary may require a narrowly documented exception with owner and proof stage. No additional project-memory file.
+
 ## Verification
 - `bun install --frozen-lockfile`
 - `bun run plugins:check` — version and manifest parity across `package.json`, `plugin.json`, `.claude-plugin/`, `.codex-plugin/`, and `.agents/plugins/marketplace.json`

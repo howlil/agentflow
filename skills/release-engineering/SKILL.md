@@ -110,6 +110,8 @@ verified SHA → one build → identified artifact → authorized publish/deploy
 
 A merge, a build, a GitHub Release, a package publish, and a deployment are separate events; one does not imply another.
 
+**Critical workflow exception:** the three-workflow guideline is a default. A separate workflow is permitted only when an explicit security, regulatory, or deployment boundary cannot be validated in the existing gate, with a named owner and documented reason. Do not add a workflow merely to separate tools.
+
 ## 6. Recovery and compatibility
 
 Apply the compat rule from engineering.md: code N must work with schema or contract N-1 and N+1 during rollout. For a stateful or externally consumed change, prefer expand → migrate or backfill → verify → contract, the last step in a later safe release. A harmless additive change does not need the sequence. Ownership of migrations, locking, and idempotency belongs to `engineering-design`; the application code to `design-thinking`.
