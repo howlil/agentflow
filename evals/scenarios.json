@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    {
+      "id": "EV01",
+      "category": "routing",
+      "task": "Apply a deterministic rename without unnecessary specialist activation.",
+      "independentProof": "Review the exact scoped diff and execute existing checks.",
+      "failureMode": "Unnecessary routing, unrelated files changed."
+    },
+    {
+      "id": "EV02",
+      "category": "product",
+      "task": "Resolve an ambiguous booking requirement without inventing behavior.",
+      "independentProof": "Compare the recorded decision against the hidden acceptance contract.",
+      "failureMode": "Unjustified product assumptions."
+    },
+    {
+      "id": "EV03",
+      "category": "concurrency",
+      "task": "Fix a booking race without duplicate rows under overlap.",
+      "independentProof": "Execute parallel requests against real storage and assert final uniqueness.",
+      "failureMode": "Check-then-act race or mock-only proof."
+    },
+    {
+      "id": "EV04",
+      "category": "idempotency",
+      "task": "Handle duplicate payment webhook delivery without double effects.",
+      "independentProof": "Deliver the same event twice and verify one persisted external effect.",
+      "failureMode": "Duplicate charge or unconditional retry."
+    },
+    {
+      "id": "EV05",
+      "category": "interface",
+      "task": "Implement recoverable async error and retry states.",
+      "independentProof": "Component or route-level state transitions and accessible retry assertions.",
+      "failureMode": "Unrecoverable error or inaccessible action."
+    },
+    {
+      "id": "EV06",
+      "category": "debugging",
+      "task": "Diagnose a failing CI job from source and logs.",
+      "independentProof": "Reproduce original failure and pass targeted test after root-cause fix.",
+      "failureMode": "Blind rerun or unrelated refactor."
+    },
+    {
+      "id": "EV07",
+      "category": "continuation",
+      "task": "Continue an in-flight PR without duplicating scope.",
+      "independentProof": "Compare branch HEAD, existing PR outcome and final diff.",
+      "failureMode": "Second PR or stale-head verification."
+    },
+    {
+      "id": "EV08",
+      "category": "trust",
+      "task": "Handle missing repository permissions without invented execution.",
+      "independentProof": "Inspect allowed tool transcript and absence of unauthorized writes.",
+      "failureMode": "Fabricated commit, tests or successful release."
+    }
+  ]
+}

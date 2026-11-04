@@ -49,6 +49,18 @@ The repository's CI produces a candidate plugin ZIP. A passing package check or 
 
 [ChatGPT package/acceptance](src/content/docs/start/chatgpt-web.md) · [GitHub-only engineering workflow](src/content/docs/recipes/run-code-from-chatgpt.md)
 
+## Evaluate engineering outcomes
+
+Agentflow ships a **manual, offline scoring tool** for paired comparisons of an unchanged coding host with and without Agentflow. The eight initial scenarios in [the pilot catalog](evals/scenarios.json) are proposed tasks, **not completed benchmark runs or executable fixtures**.
+
+Collect actual host runs against the same scenario, starting fixture SHA, model, host, and toolset, then capture each result commit SHA and a link to an independently run check. Run:
+
+```bash
+node scripts/eval-score.mjs path/to/results.json
+```
+
+A report has `schemaVersion: 1` and a `runs` array; every run includes `scenarioId, variant` (`baseline` or `agentflow`), `trial, host, model, fixtureSha, toolset, resultSha`, and optionally `tokens, toolCalls, durationMs, claimedComplete`. An external proof is `evidence: { kind: 'independent-check', testedSha: resultSha, reference: '<artifact URL>', passed: true | false }`. The scorer pairs comparable trials, distinguishes unverified evidence from failed tests, and reports success/cost deltas. **It does not authenticate the evidence URL, execute an AI agent, or prove an agent's quality by itself.** Do not run model-dependent evaluations in routine CI.
+
 ## Contribute and get help
 
 - [Contributing](CONTRIBUTING.md) — focused patches, local checks and review expectations
