@@ -61,6 +61,14 @@ node scripts/eval-score.mjs path/to/results.json
 
 A report has `schemaVersion: 1` and a `runs` array; every run includes `scenarioId, variant` (`baseline` or `agentflow`), `trial, host, model, fixtureSha, toolset, resultSha`, and optionally `tokens, toolCalls, durationMs, claimedComplete`. An external proof is `evidence: { kind: 'independent-check', testedSha: resultSha, reference: '<artifact URL>', passed: true | false }`. The scorer pairs comparable trials, distinguishes unverified evidence from failed tests, and reports success/cost deltas. **It does not authenticate the evidence URL, execute an AI agent, or prove an agent's quality by itself.** Do not run model-dependent evaluations in routine CI.
 
+Read-only contract diagnostics can inspect explicit `B#/X#/P#` and `PF#` relationships in existing project memory:
+
+```bash
+node scripts/contract-check.mjs .agents/product.md .agents/engineering.md
+```
+
+The diagnostic distinguishes missing, dangling and unverified relationships; unstructured memory is `UNKNOWN`. **A documented relationship is not evidence that tests passed.** This is not a required CI gate.
+
 ## Contribute and get help
 
 - [Contributing](CONTRIBUTING.md) — focused patches, local checks and review expectations
