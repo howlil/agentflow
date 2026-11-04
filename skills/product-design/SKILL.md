@@ -1,6 +1,6 @@
 ---
 name: product-design
-description: Turn a raw idea, business request, client need, or change to an existing product into a minimal testable product contract (job, behavior, scope, constraints, proof) before any engineering design or code. Use this whenever the user describes an app, feature, workflow, side project, or business problem to build or change, asks what to build, how to scope an MVP, or to refine or review requirements, even if they never say "product" or "PRD". Output is `.agents/product.md`. Does not choose architecture or implementation; hands off to `design-graph` (only if UI structure needs modeling) and then `engineering-design`.
+description: Turn a raw idea, business request, client need, or change to an existing product into a minimal testable product contract (job, behavior, scope, constraints, proof) before any engineering design or code. Use this whenever the user describes an app, feature, workflow, side project, or business problem to build or change, asks what to build, how to scope an MVP, or to refine or review requirements, even if they never say "product" or "PRD". Output is `.agents/product.md`. Does not choose architecture or implementation; hands off to `engineering-design` for system contracts and `design-graph` only when interface structure needs explicit modeling.
 ---
 
 # Product Design
@@ -15,7 +15,7 @@ Idea → Graph → Product<J, B, P>
 
 In:   raw idea | business request | change to existing product
 Out:  .agents/product.md          (§10)
-Next: design-graph (only if UI) → engineering-design
+Next: engineering-design → design-graph (only if UI needs modeling)
 ```
 
 ## IDs

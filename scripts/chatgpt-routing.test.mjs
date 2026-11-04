@@ -111,6 +111,12 @@ test('product, engineering, design, and repository contracts agree on eight skil
   }
   assert.match(design, /--af-ink/);
   assert.match(product, /No custom npm installer|@howlil\/agentflow-cli/);
+  assert.match(product, /all eight canonical skills \(router \+ seven specialists\)/);
+  assert.match(product, /discovers all eight canonical skills/);
+  assert.doesNotMatch(product, /(?:all|discovers all) nine canonical skills/i);
+  const productSkill = await read('skills/product-design/SKILL.md');
+  assert.match(productSkill, /Next: engineering-design → design-graph \(only if UI needs modeling\)/);
+  assert.doesNotMatch(productSkill, /Next: design-graph.*→ engineering-design/);
   assert.match(engineering, /No external AI workers/);
   assert.match(steering, /Installing Agentflow does not grant GitHub access/);
   assert.match(guide, /older SHA/);

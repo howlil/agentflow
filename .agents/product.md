@@ -16,7 +16,7 @@ Agentflow consists of one portable code-factory router (`agentflow`) and seven s
 
 ## Distribution behavior
 1. Homepage presents one standard portable installation route using `npx skills` (`skills@1.7.4`).
-2. Users may select all nine canonical skills (router + eight specialists) or individual skills.
+2. Users may select all eight canonical skills (router + seven specialists) or individual skills.
 3. Native Claude/Codex plugins and the skills-only ChatGPT Web ZIP are alternate host distributions, not prerequisites.
 4. `@howlil/agentflow-cli` remains retired. Installing skills never grants shell, GitHub, or write permissions.
 
@@ -24,5 +24,5 @@ Agentflow consists of one portable code-factory router (`agentflow`) and seven s
 No custom npm installer, second registry, Agentflow backend, external AI coding worker, CI workflow bloat, manual QA checklist generation, extra `.agents/` files beyond the canonical three, or mandatory ceremony for trivial edits.
 
 ## Proof
-- Checkout discovers all nine canonical skills, passes five-host portable lifecycle checks, and validates native Claude/Codex/ChatGPT manifests.
+- Checkout discovers all eight canonical skills, passes five-host portable lifecycle checks, and validates native Claude/Codex/ChatGPT manifests.
 - Static tests enforce the three-file `.agents/` contract, the router chain and budget, and honest host/CI boundaries; real host sessions and marketplace publication remain manual host acceptance.
