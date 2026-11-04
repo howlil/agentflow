@@ -9,17 +9,19 @@ recover → first missing contract → do → prove → report → verdict → (
 ```
 
 1. **Recover.** Every conversation starts from GitHub, never from chat memory: read the relevant `.agents/` file(s), the open PR for the same outcome (if any), its HEAD SHA, and the latest CI result for that SHA. If the user says "next", continue that PR.
-2. **Enter at the first missing contract.** Load the specialist that owns the unresolved decision and carry its IDs forward; a failed ready gate returns upstream instead of being pushed into the PR.
-3. **Do.** Default: ship one feature in one vertical branch/PR. Reuse any open PR for the same outcome. Do not split one feature into `M1..M5` milestones or layer-by-layer PRs (DB → API → UI → tests), and do not create branches or PRs per file, skill, retry, or failed check; fix the same PR. Trivial or read-only work needs no branch, PR, or Issue.
-4. **Prove.** Add proofs at the stage the risk needs: unit, handler, component, or DB integration tests run in the existing test command, so existing CI covers `pr`. Default to zero new browser/Playwright E2E tests for ordinary features, and never install Playwright/Cypress or add browser-download CI steps unasked. Follow the router budget and `test-engineering` stage map: at most `ci`, `release`, and `nightly` workflows, automated assertions, one manual acceptance pass at release, no extra documents.
-4. **Report** in the PR description, kept current rather than appended:
-   - what changed (behavior, not a file list);
+2. **Reconcile scope.** Before a nontrivial implementation or new PR, read in-scope B#/X#/P# from `.agents/product.md`, inspect open PRs/Issues for the same *outcome* (not just shared files), and check relevant dependencies/contracts. Reuse an existing PR. When remote evidence is unavailable report `UNKNOWN`, not "no overlap"; route missing P# or contradictions to the owning specialist.
+3. **Enter at the first missing contract.** Load the specialist that owns the unresolved decision and carry its IDs forward; a failed ready gate returns upstream instead of being pushed into the PR.
+4. **Do.** Default: ship one feature in one vertical branch/PR. Reuse any open PR for the same outcome. Do not split one feature into `M1..M5` milestones or layer-by-layer PRs (DB → API → UI → tests), and do not create branches or PRs per file, skill, retry, or failed check; fix the same PR. Trivial or read-only work needs no branch, PR, or Issue.
+5. **Prove.** Add proofs at the stage the risk needs: unit, handler, component, or DB integration tests run in the existing test command, so existing CI covers `pr`. Default to zero new browser/Playwright E2E tests for ordinary features, and never install Playwright/Cypress or add browser-download CI steps unasked. Follow the router budget and `test-engineering` stage map: at most `ci`, `release`, and `nightly` workflows, automated assertions, one manual acceptance pass at release, no extra documents.
+6. **Report** in the PR description, kept current rather than appended:
+   - what changed (behavior, not a file list), and the in-scope B#/X# → P#/PF coverage;
    - tests added or changed, with their PF stage;
    - CI result for the exact head SHA: `green @<sha>`, `red @<sha>: <failing check>`, or `not run`;
    - at most one line `Not auto-verifiable: <what> — <why>` when truly needed;
+   - any unresolved `PARTIAL`, `MISSING`, `OVERLAP`, `UNVERIFIED`, or `UNKNOWN` exceptions (omit when clear);
    - `Next:` one concrete action if work remains.
-5. **Verdict.** Run `code-review` gates first, then the verdict. A `Block` or failed conformance returns to implement; report the findings on the PR.
-6. **Merge** only with user approval and an Approve or Approve with Minor verdict. Do not merge, tag, or release because CI turned green. Merge is not release: `release-engineering` owns the version, lane, changelog, and produces `PUBLISHED`, `DEPLOYED`, or `RELEASED` evidence.
+7. **Verdict.** Reconcile the actual diff, P#/PF assertions and CI for exact HEAD SHA; then run `code-review` gates and verdict. A `Block` or failed conformance returns to implement; report the findings on the PR.
+8. **Merge** only with user approval and an Approve or Approve with Minor verdict. Do not merge, tag, or release because CI turned green. Merge is not release: `release-engineering` owns the version, lane, changelog, and produces `PUBLISHED`, `DEPLOYED`, or `RELEASED` evidence.
 
 ## Evidence rules
 
@@ -27,6 +29,7 @@ recover → first missing contract → do → prove → report → verdict → (
 - An edited file is not a verified outcome. Distinguish `IMPLEMENTED` (code exists) from `VERIFIED` (CI green on that SHA covering the behavior), and never claim `PUBLISHED`, `DEPLOYED`, or `RELEASED` without observed evidence.
 - If the connector cannot read CI, write files, or perform an operation, say which operation is unavailable and stop that step. Never invent commits, job output, or runs.
 - Before writing, re-read the branch HEAD and the files you will change; if another writer changed them, reconcile instead of overwriting.
+- Global B#/X# coverage audits run only when explicitly requested or at release readiness; derive evidence from real code and proof, without creating a status ledger.
 
 ## Issues (optional)
 

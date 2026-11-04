@@ -88,6 +88,7 @@ typecheck/lint: <cmd>  build: <cmd>
 ## Verification gate
 <what must pass before done, and before merge>
 Stage map and proof rules: `.agents/engineering.md` (`## Verification`).
+For nontrivial slices, apply Agentflow scope reconciliation before implementation and before merge; do not create a coverage ledger.
 
 ## Conventions
 <only rules the repo actually enforces: layout, naming, error handling>
@@ -130,8 +131,20 @@ intake
 - Reproduce a bug with a failing test before fixing it. TDD is optional, not mandated.
 - A failed check, a `Block` verdict, or a review blocker returns to implement; re-run only affected checks. Flaky is a defect, not a retry.
 - **Stop rule:** before adding any abstraction, check, or file, name the concrete current requirement, defect, or invariant that requires it; if none, stop.
-- **Gate to integrate:** required behavior works, invariants hold, a PF matches the risk and stage, verdict is Approve or Approve with Minor, no known blocker, no unrelated change, no obsolete path left behind.
+- **Gate to integrate:** required behavior works, invariants hold, in-scope B#/X# reconcile to P#/PF and current-HEAD evidence, no unresolved duplicate outcome, verdict is Approve or Approve with Minor, no known blocker, no unrelated change, no obsolete path left behind.
 - Releasing is a separate step: `release-engineering` owns the decision, version, lanes, changelog, and recovery. `RELEASED` requires observed evidence.
+
+### Mandatory scope reconciliation (nontrivial slices)
+
+Run **before implementation/new PR and again before declaring the slice verified or merge-ready**. This is a lightweight read-and-check gate, not a new artifact or mandatory specialist.
+
+1. **Scope:** Read relevant B#/X#/P# and constraints from `.agents/product.md`; identify the exact behavior/outcome and P# proof(s). Consult `.agents/engineering.md` selectively for affected dependencies, contracts, and boundaries.
+2. **Deduplicate:** Inspect accessible open PRs and Issues for the *same outcome*, even if wording/IDs differ. Resume an existing PR for that outcome; shared files alone do not imply duplicate scope. If evidence is inaccessible, report `UNKNOWN`, not "no overlap."
+3. **Gaps:** Every in-scope B#/X# needs a P#; critical failures/constraints must have an owner and risk-proportionate proof. Return missing/contradictory contracts to their owner before implementation.
+4. **Recheck:** Compare actual PR diff, tests, P#/PF mappings, and CI at the exact HEAD SHA with *all in-scope* behaviors. Resolve duplicate outcomes, unproven paths, and unrelated changes before review/merge.
+5. **Report exceptions only:** `PARTIAL` = implemented in part; `MISSING` = no implementation; `OVERLAP` = duplicated active outcome; `UNVERIFIED` = implementation without adequate current-HEAD proof; `UNKNOWN` = evidence unavailable. `COVERED` requires verified code/proof; if no exceptions, report one line.
+
+On explicit **global coverage audit** or release readiness, scan the full in-scope B#/X# inventory against current code and real proof; do **not** run a full audit on every slice. Use a transient response or existing PR description, **never** a status ledger, new document, CI job, GitHub Project, or extra Issue.
 
 ## 7. Budget (both modes)
 
