@@ -36,7 +36,7 @@ To keep shipping fast, the router forbids these unless you ask for them explicit
 
 - multi-milestone roadmaps (`M1..M5`) or layer-only PR splits for a single feature;
 - Playwright/browser E2E tests or new browser test runners for ordinary features that unit/integration tests can prove;
-- new CI workflows beyond the stage map (`ci`, `release`, `nightly`), or a job when an existing gate can run the check;
+- new CI workflows beyond the default stage map (`ci`, `release`, `nightly`), except an independently justified critical trust/deployment boundary that existing gates cannot verify;
 - CI that validates Issues, ledgers, acceptance tables, or doc formatting;
 - per-iteration manual QA scripts or acceptance checklists (one manual exploratory and acceptance pass at `release` is allowed);
 - plans, summaries, reports, extra ADR files, or `.agents/` files beyond the three above.
