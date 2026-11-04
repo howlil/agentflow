@@ -155,6 +155,10 @@ On explicit **global coverage audit** or release readiness, scan the full in-sco
 - **Documentation:** only `.agents/{product,engineering,DESIGN}.md`, `README.md` when setup or public behavior changes, and `CHANGELOG.md` or release notes as part of an intentional release. Do not create plans, summaries, reports, notes, extra ADR files, or status ledgers.
 - **Tracking:** do not create Issues, branches, or PRs for trivial or read-only work.
 
+### Risk-adaptive exceptions
+
+Use the existing RK tiers from `test-engineering`; do not create another severity taxonomy. The workflow and test budgets are defaults, not limits that may suppress proof of a Critical P#, G#, or FL#. An exceptional critical boundary may justify earlier faithful integration/E2E proof, a single pre-merge human UX check when automation cannot prove the property, or a separate security/compliance workflow. Record the requirement, owner, proof boundary and stage in the existing engineering memory. A new browser harness still needs user authorization. Avoid recurring manual checklists.
+
 ## 8. Execution modes
 
 - **CLI agent** (shell + local git): load `references/cli.md` when coordinating nontrivial local work; run the loop with real commands and report what actually ran.

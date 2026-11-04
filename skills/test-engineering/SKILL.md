@@ -85,6 +85,8 @@ Choose the cheapest boundary that still contains the semantics at risk:
 
 **Manual and acceptance**: manual is for exploration and human judgment (visual, UX), run once at `release`, scoped to the critical P# list. Stable, repeatable, high-impact flows are automated instead. Manual acceptance per iteration is not allowed.
 
+**Critical RK exception:** default proof stages and CI workflow budgets may be escalated for a concrete P#/G#/FL# correctness, safety, or compliance risk that the standard stage cannot prove faithfully. Use the smallest sufficient proof and record the risk, owner, stage and reason in existing engineering memory. One one-off pre-merge UX inspection is admissible when automation cannot validate a material property; no routine per-iteration manual QA or new browser harness without authorization.
+
 ## 6. Execute
 
 - **Setup**: control only what affects the property: initial state, clock, randomness, identity, config, dependency behavior, concurrency coordination. Prefer ephemeral data, isolated databases, explicit clocks, seeded randomness. No shared mutable state, arbitrary sleeps, order dependence, or production data.
