@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
@@ -7,6 +6,13 @@ const VARIANTS = new Set(['baseline', 'agentflow']);
 function requiredString(value, name) {
   if (typeof value !== 'string' || !value.trim()) throw new TypeError(name + ' must be a non-empty string');
   return value;
+}
+
+function requiredSha(value, name) {
+  requiredString(value, name);
+  if (!/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i.test(value)) {
+    throw new TypeError(name + ' must be a full Git SHA (40 or 64 hex characters)');
+  }
 }
 
 function proofState(run) {
@@ -36,9 +42,8 @@ export function scoreReport(report, knownScenarios) {
     if (!knownScenarios.has(scenarioId)) throw new Error('Unknown scenario: ' + scenarioId);
     if (!VARIANTS.has(run.variant)) throw new Error('Unknown variant: ' + run.variant);
     if (!Number.isInteger(run.trial) || run.trial < 1) throw new TypeError('trial must be a positive integer');
-    for (const name of ['host', 'model', 'fixtureSha', 'toolset', 'resultSha']) {
-      requiredString(run[name], name);
-    }
+    for (const name of ['host', 'model', 'toolset']) requiredString(run[name], name);
+    for (const name of ['fixtureSha', 'resultSha']) requiredSha(run[name], name);
     for (const name of ['durationMs', 'tokens', 'toolCalls']) {
       if (run[name] !== undefined && (!Number.isFinite(run[name]) || run[name] < 0)) {
         throw new TypeError(name + ' must be nonnegative and finite');

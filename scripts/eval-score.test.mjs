@@ -11,16 +11,16 @@ function sample(variant, overrides = {}) {
     trial: 1,
     host: 'codex',
     model: 'model-pinned',
-    fixtureSha: 'fixture-123',
+    fixtureSha: 'f'.repeat(40),
     toolset: 'tools-v1',
-    resultSha: variant + '-result',
+    resultSha: (variant === 'baseline' ? 'a' : 'b').repeat(40),
     durationMs: 800,
     tokens: 250,
     toolCalls: 3,
     claimedComplete: true,
     evidence: {
       kind: 'independent-check',
-      testedSha: variant + '-result',
+      testedSha: (variant === 'baseline' ? 'a' : 'b').repeat(40),
       reference: 'https://example.test/proof/' + variant,
       passed: true
     },
@@ -72,6 +72,7 @@ test('rejects duplicate trials and unknown scenario IDs', () => {
 
 test('rejects invalid numeric measures and incompatible report versions', () => {
   assert.throws(() => scoreReport({ schemaVersion: 1, runs: [sample('baseline', { tokens: -5 })] }, ids), /tokens/);
+  assert.throws(() => scoreReport({ schemaVersion: 1, runs: [sample('baseline', { resultSha: 'main' })] }, ids), /resultSha/);
   assert.throws(() => scoreReport({ schemaVersion: 2, runs: [] }, ids), /schemaVersion/);
 });
 
