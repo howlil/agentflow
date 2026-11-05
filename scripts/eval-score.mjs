@@ -18,7 +18,8 @@ function requiredSha(value, name) {
 function proofState(run) {
   const e = run.evidence;
   // This validates a reported independent check, not the authenticity of the linked artifact.
-  if (!e || e.kind !== 'independent-check' || e.testedSha !== run.resultSha ||
+  if (!e || e.kind !== 'independent-check' || typeof e.testedSha !== 'string' ||
+      e.testedSha.toLowerCase() !== run.resultSha.toLowerCase() ||
       typeof e.reference !== 'string' || !e.reference.trim() || typeof e.passed !== 'boolean') {
     return 'UNVERIFIED';
   }
@@ -52,7 +53,7 @@ export function scoreReport(report, knownScenarios) {
     if (run.claimedComplete !== undefined && typeof run.claimedComplete !== 'boolean') {
       throw new TypeError('claimedComplete must be boolean');
     }
-    const pairKey = JSON.stringify([scenarioId, run.trial, run.host, run.model, run.fixtureSha, run.toolset]);
+    const pairKey = JSON.stringify([scenarioId, run.trial, run.host, run.model, run.fixtureSha.toLowerCase(), run.toolset]);
     const group = groups.get(pairKey) ?? { scenarioId, trial: run.trial };
     if (group[run.variant]) throw new Error('Duplicate variant for trial: ' + pairKey);
     group[run.variant] = { run, proof: proofState(run) };
@@ -60,6 +61,10 @@ export function scoreReport(report, knownScenarios) {
   }
 
   const paired = [...groups.values()].filter(g => g.baseline && g.agentflow);
+  const complete = paired.filter(g => g.baseline.proof !== 'UNVERIFIED' && g.agentflow.proof !== 'UNVERIFIED');
+  // An unknown result is not a failed task. Do not publish a definitive A/B
+  // success rate unless every paired trial has independent evidence on both sides.
+  const comparable = paired.length > 0 && complete.length === paired.length;
   const unpaired = [...groups.values()].filter(g => !g.baseline || !g.agentflow)
     .map(g => ({ scenarioId: g.scenarioId, trial: g.trial, missing: g.baseline ? 'agentflow' : 'baseline' }));
   function summarize(variant) {
@@ -71,7 +76,7 @@ export function scoreReport(report, knownScenarios) {
       failedIndependentChecks: entries.filter(e => e.proof === 'FAIL').length,
       unverified: entries.filter(e => e.proof === 'UNVERIFIED').length,
       unsupportedCompletionClaims: entries.filter(e => e.run.claimedComplete === true && e.proof !== 'PASS').length,
-      successRate: entries.length ? entries.filter(e => e.proof === 'PASS').length / entries.length : null,
+      successRate: comparable ? entries.filter(e => e.proof === 'PASS').length / entries.length : null,
       meanDurationMs: average(values.map(r => r.durationMs).filter(Number.isFinite)),
       meanTokens: average(values.map(r => r.tokens).filter(Number.isFinite)),
       meanToolCalls: average(values.map(r => r.toolCalls).filter(Number.isFinite))
@@ -82,10 +87,12 @@ export function scoreReport(report, knownScenarios) {
   return {
     schemaVersion: 1,
     pairedTrials: paired.length,
+    comparableTrials: complete.length,
+    incompletePairedTrials: paired.length - complete.length,
     unpaired,
     baseline,
     agentflow,
-    successRateDelta: paired.length ? agentflow.successRate - baseline.successRate : null,
+    successRateDelta: comparable ? agentflow.successRate - baseline.successRate : null,
     evidenceCaveat: 'Evidence links and execution provenance must be checked independently; the scorer validates only report consistency.'
   };
 }
