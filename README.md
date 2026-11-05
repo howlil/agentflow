@@ -59,7 +59,7 @@ Collect actual host runs against the same scenario, starting fixture SHA, model,
 node scripts/eval-score.mjs path/to/results.json
 ```
 
-A report has `schemaVersion: 1` and a `runs` array; every run includes `scenarioId, variant` (`baseline` or `agentflow`), `trial, host, model, fixtureSha, toolset, resultSha`, and optionally `tokens, toolCalls, durationMs, claimedComplete`. An external proof is `evidence: { kind: 'independent-check', testedSha: resultSha, reference: '<artifact URL>', passed: true | false }`. The scorer pairs comparable trials, distinguishes unverified evidence from failed tests, and reports success/cost deltas. **It does not authenticate the evidence URL, execute an AI agent, or prove an agent's quality by itself.** Do not run model-dependent evaluations in routine CI.
+A report has `schemaVersion: 1` and a `runs` array; every run includes `scenarioId, variant` (`baseline` or `agentflow`), `trial, host, model, fixtureSha, toolset, resultSha`, and optionally `tokens, toolCalls, durationMs, claimedComplete`. An external proof is `evidence: { kind: 'independent-check', testedSha: resultSha, reference: '<artifact URL>', passed: true | false }`. The scorer pairs comparable trials, distinguishes unverified evidence from failed tests, and reports success/cost deltas **only when all paired trials have independently reported outcomes on both sides**. Otherwise `successRate` and `successRateDelta` are `null`; `comparableTrials`, `incompletePairedTrials` and evidence counts explain what is missing. **It does not authenticate the evidence URL, execute an AI agent, or prove an agent's quality by itself.** Do not run model-dependent evaluations in routine CI.
 
 Read-only contract diagnostics can inspect explicit `B#/X#/P#` and `PF#` relationships in existing project memory:
 
@@ -67,7 +67,7 @@ Read-only contract diagnostics can inspect explicit `B#/X#/P#` and `PF#` relatio
 node scripts/contract-check.mjs .agents/product.md .agents/engineering.md
 ```
 
-The diagnostic distinguishes missing, dangling and unverified relationships; unstructured memory is `UNKNOWN`. **A documented relationship is not evidence that tests passed.** This is not a required CI gate.
+The diagnostic checks every `P# → PF#` link, supports canonical `B1-B3` ranges and `B1 → B2` behavior paths, and distinguishes missing, dangling and unverified relationships. Unstructured memory without declared behaviors is `UNKNOWN`. **A documented relationship is not evidence that tests passed.** This is not a required CI gate.
 
 ## Contribute and get help
 

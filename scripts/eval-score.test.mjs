@@ -52,6 +52,11 @@ test('missing or stale-head proof never counts as success', () => {
   assert.equal(result.agentflow.unverified, 1);
   assert.equal(result.agentflow.verifiedSuccess, 0);
   assert.equal(result.agentflow.unsupportedCompletionClaims, 1);
+  assert.equal(result.comparableTrials, 0);
+  assert.equal(result.incompletePairedTrials, 1);
+  assert.equal(result.agentflow.successRate, null);
+  assert.equal(result.baseline.successRate, null);
+  assert.equal(result.successRateDelta, null);
 });
 
 test('mismatched host, model, fixture or toolset is not a comparable pair', () => {
@@ -85,4 +90,36 @@ test('pilot catalog has eight distinct scenario goals without pretending they ex
     assert.match(s.id, /^EV0[1-8]$/);
     assert.ok(s.task && s.independentProof && s.failureMode);
   }
+});
+
+test('a mixed batch with incomplete evidence has no definitive comparative rate', () => {
+  const report = { schemaVersion: 1, runs: [
+    sample('baseline'),
+    sample('agentflow'),
+    sample('baseline', { trial: 2 }),
+    sample('agentflow', { trial: 2, evidence: undefined })
+  ] };
+  const result = scoreReport(report, ids);
+  assert.equal(result.pairedTrials, 2);
+  assert.equal(result.comparableTrials, 1);
+  assert.equal(result.incompletePairedTrials, 1);
+  assert.equal(result.agentflow.unverified, 1);
+  assert.equal(result.baseline.successRate, null);
+  assert.equal(result.agentflow.successRate, null);
+  assert.equal(result.successRateDelta, null);
+});
+
+test('Git SHA comparison and fixture pairing are case-insensitive', () => {
+  const upperResult = 'B'.repeat(40);
+  const result = scoreReport({ schemaVersion: 1, runs: [
+    sample('baseline', { fixtureSha: 'F'.repeat(40) }),
+    sample('agentflow', {
+      resultSha: upperResult,
+      evidence: { ...sample('agentflow').evidence, testedSha: 'b'.repeat(40) }
+    })
+  ] }, ids);
+  assert.equal(result.pairedTrials, 1);
+  assert.equal(result.comparableTrials, 1);
+  assert.equal(result.agentflow.verifiedSuccess, 1);
+  assert.equal(result.successRateDelta, 0);
 });
