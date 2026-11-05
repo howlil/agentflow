@@ -4,8 +4,24 @@ import { pathToFileURL } from 'node:url';
 const declaration = /^\s*(?:[-*]\s*)?((?:PF|B|X|P)\d+)(?=\s*[:(|])/;
 const reference = /\b(?:PF|B|X|P)\d+\b/g;
 
+function linkedIds(line) {
+  // Only the declaration's link clause is authoritative; prose may mention other IDs.
+  const clause = line.match(/^\s*(?:[-*]\s*)?(?:PF|P)\d+\s*\(([^)]*)\)/)?.[1] ?? '';
+  const refs = new Set(clause.match(reference) ?? []);
+  for (const [, kind, first, last] of clause.matchAll(/\b([BX])(\d+)\s*-\s*\1(\d+)\b/g)) {
+    const start = Number(first);
+    const end = Number(last);
+    if (end < start || end - start > 1000) {
+      throw new RangeError('Invalid or oversized contract ID range: ' + kind + first + '-' + kind + last);
+    }
+    for (let n = start; n <= end; n++) refs.add(kind + n);
+  }
+  return refs;
+}
+
 function collect(source, allowed) {
   const declarations = new Map();
+  const explicit = new Set();
   const duplicates = [];
   let fenced = false;
   for (const line of source.split(/\r?\n/)) {
@@ -14,14 +30,24 @@ function collect(source, allowed) {
       continue;
     }
     if (fenced) continue;
+
     const match = line.match(declaration);
-    if (!match || !allowed.has(match[1].replace(/\d+$/, ''))) continue;
-    const id = match[1];
-    if (declarations.has(id)) {
-      duplicates.push(id);
-      continue;
+    if (match && allowed.has(match[1].replace(/\d+$/, ''))) {
+      const id = match[1];
+      if (explicit.has(id)) duplicates.push(id);
+      explicit.add(id);
+      declarations.set(id, linkedIds(line));
     }
-    declarations.set(id, new Set((line.slice(match[0].length).match(reference) ?? []).filter(ref => ref !== id)));
+    // Product-design permits a path graph instead of individual B# declarations.
+    // Repeated nodes in the graph are references, not duplicate declarations.
+    if (allowed.has('B')) {
+      const path = line.match(/^\s*(?:[-*]\s*)?B\d+(?:\s*(?:→|->)\s*B\d+)+/);
+      if (path) {
+        for (const id of path[0].match(/\bB\d+\b/g) ?? []) {
+          if (!declarations.has(id)) declarations.set(id, new Set());
+        }
+      }
+    }
   }
   return { declarations, duplicates };
 }
@@ -54,20 +80,21 @@ export function inspectContracts(productMd, engineeringMd) {
     }
   }
   for (const id of behaviors) {
-    const linkedPs = proofs.filter(([, refs]) => refs.has(id)).map(([proof]) => proof);
-    if (!linkedPs.length) {
+    if (!proofs.some(([, refs]) => refs.has(id))) {
       findings.push({ id, code: 'MISSING', detail: 'No explicitly linked P# acceptance proof' });
-      continue;
-    }
-    const linkedPf = [...engineering.declarations.values()].some(refs => linkedPs.some(proof => refs.has(proof)));
-    if (!linkedPf) {
-      findings.push({ id, code: 'UNVERIFIED', detail: 'P# is documented but has no linked PF# declaration' });
     }
   }
-  const incomplete = !behaviors.length || !proofs.length;
+  // A P# is verified by documentation only if it independently links to a PF#.
+  // One PF for B1's P1 must not silently cover B1's separate P2.
+  for (const [id] of proofs) {
+    if (![...engineering.declarations.values()].some(refs => refs.has(id))) {
+      findings.push({ id, code: 'UNVERIFIED', detail: 'P# has no linked PF# declaration' });
+    }
+  }
   const severe = findings.some(f => ['DANGLING', 'DUPLICATE', 'MISSING'].includes(f.code));
+  const unknown = !behaviors.length;
   return {
-    status: incomplete ? 'UNKNOWN' : severe ? 'MISSING' : findings.length ? 'UNVERIFIED' : 'DOCUMENTED',
+    status: severe ? 'MISSING' : unknown ? 'UNKNOWN' : findings.length ? 'UNVERIFIED' : 'DOCUMENTED',
     behaviorCount: behaviors.length,
     acceptanceCount: proofs.length,
     proofDeclarationCount: engineering.declarations.size,
